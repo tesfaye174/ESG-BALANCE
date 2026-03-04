@@ -1,42 +1,119 @@
-# ESG-BALANCE -- Relazione del Progetto di Basi di Dati
+<div align="center">
 
-**Corso di Basi di Dati -- A.A. 2025/2026**
-**CdS Informatica per il Management -- Universita' di Bologna**
+# 🌱 ESG-BALANCE
 
-Piattaforma web per la gestione di bilanci aziendali e indicatori ESG (Environmental, Social, Governance).
+### Enterprise Sustainability & Governance Balance Management System
+
+[![PHP Version](https://img.shields.io/badge/PHP-8.0%2B-777BB4?style=flat&logo=php&logoColor=white)](https://www.php.net/)
+[![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-4479A1?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-5.0%2B-47A248?style=flat&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Bootstrap](https://img.shields.io/badge/Bootstrap-5.0-7952B3?style=flat&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+**Corso di Basi di Dati** • **A.A. 2025/2026**  
+**CdS Informatica per il Management** • **Università di Bologna**
+
+[Caratteristiche](#-caratteristiche-principali) •
+[Installazione](#-installazione-rapida) •
+[Tecnologie](#️-stack-tecnologico) •
+[Documentazione](#-documentazione-tecnica) •
+[Autori](#-autori)
+
+</div>
 
 ---
 
-## Indice
+## 📋 Panoramica
 
-1. [Setup locale](#setup-locale)
-2. [Raccolta e Analisi dei Requisiti](#1-raccolta-e-analisi-dei-requisiti)
-3. [Progettazione Concettuale](#2-progettazione-concettuale)
-4. [Progettazione Logica](#3-progettazione-logica)
-5. [Normalizzazione](#4-normalizzazione)
-6. [Descrizione Funzionalita' Applicazione Web](#5-descrizione-funzionalita-applicazione-web)
-7. [Appendice: Codice SQL Completo](#6-appendice-codice-sql-completo)
+**ESG-BALANCE** è una piattaforma web enterprise per la gestione integrata dei bilanci di esercizio aziendali e dei relativi **indicatori ESG** (Environmental, Social, Governance). Il sistema supporta il ciclo completo di gestione, revisione e approvazione dei bilanci con focus sulla sostenibilità aziendale.
+
+### 🎯 Caratteristiche Principali
+
+- ✅ **Gestione Multi-Ruolo**: Sistema di autenticazione con tre livelli (Amministratore, Revisore ESG, Responsabile Aziendale)
+- 📊 **Template Bilancio Condiviso**: Voci contabili standardizzate per tutte le aziende
+- 🌍 **Indicatori ESG**: Gestione completa di metriche ambientali, sociali e di governance
+- 🔍 **Sistema di Revisione**: Workflow di revisione con note, giudizi e approvazioni
+- 📈 **Analytics Avanzati**: Statistiche e classifiche basate su affidabilità e compliance ESG
+- 🔒 **Sicurezza Enterprise**: Bcrypt hashing, prepared statements, protezione XSS
+- 📝 **Event Logging**: Tracciamento completo delle attività su MongoDB
+- 🏗️ **Database Normalizzato**: Schema in BCNF con stored procedures e trigger
 
 ---
 
-## Setup locale
+## 🚀 Installazione Rapida
 
-1. Clona il progetto in `htdocs/`
-2. Importa lo schema: `sql/schema.sql`, poi `stored_procedures.sql`, `triggers.sql`, `views.sql`
-3. (Opzionale) Popola con dati demo: `sql/seed.sql`
-4. Configura la connessione in `config/database.php`
-5. Avvia Apache e MySQL con XAMPP
-6. Vai su `http://localhost/ESG-BALANCE`
+### Prerequisiti
 
-### Utenti demo (seed.sql)
+- **XAMPP** (Apache 2.4+, PHP 8.0+, MySQL 8.0+)
+- **MongoDB** 5.0+ con PHP MongoDB Extension
+- **Composer** (opzionale, per dipendenze)
 
-| Username | Ruolo | Password |
-| --- | --- | --- |
-| admin1 | amministratore | password123 |
-| rev_marco | revisore | password123 |
-| rev_laura | revisore | password123 |
-| resp_giulia | responsabile | password123 |
-| resp_paolo | responsabile | password123 |
+```bash
+# 1. Clona il repository
+cd C:\xampp\htdocs
+git clone https://github.com/tesfaye174/ESG-BALANCE.git
+cd ESG-BALANCE
+
+# 2. Importa il database (via phpMyAdmin o CLI)
+mysql -u root -p < sql/schema.sql
+mysql -u root -p < sql/stored_procedures.sql
+mysql -u root -p < sql/triggers.sql
+mysql -u root -p < sql/views.sql
+
+# 3. (Opzionale) Carica dati demo
+mysql -u root -p < sql/seed.sql
+
+# 4. Configura le credenziali database
+# Modifica config/database.php e config/mongodb.php
+
+# 5. Avvia i servizi
+# Avvia Apache e MySQL tramite XAMPP Control Panel
+```
+
+### 🌐 Accesso all'Applicazione
+
+Apri il browser e vai su: **<http://localhost/ESG-BALANCE>**
+
+### 👥 Utenti Demo (dopo seed.sql)
+
+| Username | Ruolo | Password | Descrizione |
+|----------|-------|----------|-------------|
+| `admin1` | 👨‍💼 Amministratore | `password123` | Gestione template e assegnazioni |
+| `rev_marco` | 🔍 Revisore | `password123` | Revisione bilanci Ferrari SpA |
+| `rev_laura` | 🔍 Revisore | `password123` | Revisione bilanci TechSolutions |
+| `resp_giulia` | 📊 Responsabile | `password123` | Gestisce Ferrari SpA |
+| `resp_paolo` | 📊 Responsabile | `password123` | Gestisce TechSolutions Srl |
+
+---
+
+## 🏗️ Stack Tecnologico
+
+<div align="center">
+
+| Categoria | Tecnologia | Versione | Utilizzo |
+|-----------|-----------|----------|----------|
+| **Backend** | PHP | 8.0+ | Business Logic & API |
+| **Database RDBMS** | MySQL/MariaDB | 8.0+ | Gestione dati strutturati |
+| **Database NoSQL** | MongoDB | 5.0+ | Event logging & audit trail |
+| **Frontend** | HTML5 + Bootstrap | 5.3 | UI/UX responsive |
+| **JavaScript** | Vanilla JS | ES6+ | Interattività client-side |
+| **Web Server** | Apache | 2.4+ | HTTP Server (XAMPP) |
+| **Security** | Bcrypt + PDO | - | Password hashing & SQL injection prevention |
+
+</div>
+
+---
+
+## 📚 Documentazione Tecnica
+
+### Indice Completo
+
+1. [📋 Raccolta e Analisi dei Requisiti](#1-raccolta-e-analisi-dei-requisiti)
+2. [🎨 Progettazione Concettuale](#2-progettazione-concettuale)
+3. [⚙️ Progettazione Logica](#3-progettazione-logica)
+4. [✨ Normalizzazione](#4-normalizzazione)
+5. [💻 Funzionalità Applicazione Web](#5-descrizione-funzionalita-applicazione-web)
+6. [📄 Appendice: Codice SQL Completo](#6-appendice-codice-sql-completo)
 
 ---
 
@@ -836,4 +913,277 @@ Il codice SQL completo del progetto e' suddiviso nei seguenti file nella directo
 
 ---
 
-*Progetto ESG-BALANCE -- Basi di Dati, A.A. 2025/2026 -- Universita' di Bologna*
+*Progetto ESG-BALANCE -- Basi di Dati, A.A. 2025/2026 -- Università di Bologna*
+
+---
+
+## 🎨 Architettura del Sistema
+
+### Modello a Tre Livelli
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                   PRESENTATION LAYER                    │
+│              (HTML5, Bootstrap 5, JS)                   │
+└─────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────┐
+│                   APPLICATION LAYER                      │
+│         (PHP 8, PDO, Session Management)                │
+│    ┌──────────────────────────────────────────┐         │
+│    │  • Authentication (Bcrypt)               │         │
+│    │  • Authorization (Role-based)            │         │
+│    │  • Business Logic (Stored Procedures)    │         │
+│    │  • Event Logging (MongoDB)               │         │
+│    └──────────────────────────────────────────┘         │
+└─────────────────────────────────────────────────────────┘
+                            │
+                            ▼
+┌──────────────────────┐         ┌──────────────────────┐
+│    DATA LAYER        │         │   LOGGING LAYER      │
+│  (MySQL/MariaDB)     │         │    (MongoDB)         │
+│  ┌────────────────┐  │         │  ┌────────────────┐  │
+│  │ 16 Tables      │  │         │  │ events         │  │
+│  │ 13 Procedures  │  │         │  │ collection     │  │
+│  │ 4 Triggers     │  │         │  └────────────────┘  │
+│  │ 4 Views        │  │         │                      │
+│  └────────────────┘  │         └──────────────────────┘
+└──────────────────────┘
+```
+
+### Struttura Directory
+
+```
+ESG-BALANCE/
+├── 📁 config/              Configurazione database
+│   ├── database.php        PDO MySQL singleton
+│   └── mongodb.php         MongoDB client singleton
+├── 📁 includes/            Core application files
+│   ├── auth.php            Authentication & session
+│   ├── db.php              Database wrapper functions
+│   ├── functions.php       Utility functions
+│   ├── header.php          Common header template
+│   └── footer.php          Common footer template
+├── 📁 pages/               Application pages
+│   ├── login.php           Login page
+│   ├── register.php        User registration
+│   ├── dashboard.php       Role-based dashboard
+│   ├── statistiche.php     Analytics & reports
+│   ├── 📁 admin/           Administrator functions
+│   │   ├── template.php    Manage account template
+│   │   ├── indicatori.php  Manage ESG indicators
+│   │   └── assegna_revisore.php  Assign reviewers
+│   ├── 📁 responsabile/    Manager functions
+│   │   ├── aziende.php     Company management
+│   │   ├── bilancio.php    Balance sheet creation
+│   │   └── indicatori_bilancio.php  Link ESG indicators
+│   └── 📁 revisore/        Reviewer functions
+│       ├── competenze.php  Skills management
+│       ├── revisione.php   Review balance sheets
+│       └── giudizio.php    Submit assessment
+├── 📁 assets/              Static resources
+│   ├── css/style.css       Custom styles
+│   ├── js/app.js           JavaScript logic
+│   └── uploads/            User uploads (logos, CVs)
+├── 📁 sql/                 Database scripts
+│   ├── schema.sql          Complete schema DDL
+│   ├── stored_procedures.sql  All 13 procedures
+│   ├── triggers.sql        All 4 triggers
+│   ├── views.sql           All 4 views
+│   └── seed.sql            Demo data
+├── index.php               Landing page
+├── composer.json           PHP dependencies
+└── README.md               This file
+```
+
+---
+
+## 🔐 Funzionalità per Ruolo
+
+### 👨‍💼 Amministratore
+
+- ✏️ Definizione template bilancio (voci contabili)
+- 🌍 Gestione catalogo indicatori ESG (Environmental, Social, Governance)
+- 👥 Assegnazione revisori ai bilanci
+- 📊 Accesso a tutte le statistiche di sistema
+
+### 📊 Responsabile Aziendale
+
+- 🏢 Registrazione e gestione aziende
+- 📋 Creazione bilanci di esercizio
+- 💰 Compilazione valori delle voci contabili
+- 🔗 Collegamento indicatori ESG alle voci di bilancio
+- 📧 Gestione profilo e contatti
+
+### 🔍 Revisore ESG
+
+- 🎓 Dichiarazione competenze professionali
+- 📝 Revisione bilanci assegnati con annotazioni
+- ⚖️ Emissione giudizi di approvazione/respingimento
+- 📈 Visualizzazione indice di affidabilità personale
+
+---
+
+## 🗄️ Database Schema Highlights
+
+### 16 Tabelle Normalizzate (BCNF)
+
+- **Gerarchia Utenti** (Totale, Esclusiva)
+  - `utenti` → `revisori` | `responsabili`
+  
+- **Gerarchia Indicatori ESG** (Parziale, Esclusiva)
+  - `indicatori_esg` → `indicatori_ambientali` | `indicatori_sociali`
+
+- **Core Entities**
+  - `aziende`, `bilanci`, `voci_contabili`, `valori_bilancio`
+  - `voci_indicatori`, `revisioni`, `note_revisione`, `giudizi`
+
+### 13 Stored Procedures
+
+| Procedura | Descrizione |
+|-----------|-------------|
+| `sp_login` | Autenticazione utente |
+| `sp_registra_utente` | Registrazione con gestione gerarchia |
+| `sp_crea_bilancio` | Creazione nuovo bilancio |
+| `sp_inserisci_valore_bilancio` | Insert/Update valore voce |
+| `sp_collega_indicatore_voce` | Collegamento ESG a bilancio |
+| `sp_associa_revisore_bilancio` | Assegnazione revisore |
+| `sp_inserisci_giudizio` | Emissione giudizio finale |
+| ... | *Vedi documentazione completa* |
+
+### 4 Trigger Automatici
+
+| Trigger | Evento | Funzione |
+|---------|--------|----------|
+| `trg_bilancio_in_revisione` | INSERT revisioni | Cambio stato bilancio → "in_revisione" |
+| `trg_bilancio_giudizio` | INSERT giudizi | Determinazione stato finale (approvato/respinto) |
+| `trg_incrementa_nr_bilanci` | INSERT bilanci | Aggiornamento contatore azienda |
+| `trg_decrementa_nr_bilanci` | DELETE bilanci | Aggiornamento contatore azienda |
+
+### 4 Viste Analytics
+
+- `v_num_aziende` - Totale aziende registrate
+- `v_num_revisori` - Totale revisori certificati
+- `v_affidabilita_aziende` - Classifica per % bilanci approvati
+- `v_classifica_bilanci_esg` - Ranking per indicatori ESG collegati
+
+---
+
+## 🔒 Sicurezza
+
+| Area | Implementazione |
+|------|----------------|
+| **Password** | Bcrypt hashing (cost factor 12) |
+| **SQL Injection** | PDO Prepared Statements (100% coverage) |
+| **XSS Prevention** | `htmlspecialchars()` su tutti gli output |
+| **Session Security** | Secure session cookies, regeneration on auth |
+| **File Upload** | MIME validation, size limits, whitelist extensions |
+| **Authorization** | Role-based access control (RBAC) |
+| **Audit Trail** | Complete event logging su MongoDB |
+
+---
+
+## 📊 Analytics & Reporting
+
+Il sistema offre quattro viste analytics principali:
+
+1. **Volume Aziendale**: Totale aziende registrate e bilanci gestiti
+2. **Risorse Umane**: Totale revisori e loro indici di affidabilità
+3. **Affidabilità Aziendale**: Ranking aziende per % approvazioni pure
+4. **Compliance ESG**: Classifica bilanci per completezza indicatori sostenibilità
+
+---
+
+## 🧪 Testing
+
+### Dataset di Test (seed.sql)
+
+- ✅ 5 utenti (1 admin, 2 revisori, 2 responsabili)
+- ✅ 3 aziende di settori diversi
+- ✅ 6 bilanci in stati diversi (bozza, in_revisione, approvato, respinto)
+- ✅ 20 voci contabili standard
+- ✅ 15 indicatori ESG (7 ambientali, 5 sociali, 3 generici)
+- ✅ 80+ valori di bilancio
+- ✅ 30+ collegamenti indicatori-voci
+- ✅ 12 revisioni con note e giudizi
+
+---
+
+## 🚦 Roadmap & Future Enhancements
+
+- [ ] API RESTful per integrazione con sistemi esterni
+- [ ] Export bilanci in formato PDF/Excel
+- [ ] Dashboard grafici interattivi (Chart.js / D3.js)
+- [ ] Sistema di notifiche email
+- [ ] Autenticazione a due fattori (2FA)
+- [ ] Integrazione con standard GRI (Global Reporting Initiative)
+- [ ] PWA (Progressive Web App) support
+- [ ] Containerizzazione (Docker)
+
+---
+
+## 📄 Licenza
+
+Questo progetto è stato sviluppato a scopo didattico per il corso di **Basi di Dati** presso l'Università di Bologna.
+
+```
+MIT License
+
+Copyright (c) 2026 ESG-BALANCE Project
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+```
+
+---
+
+## 👨‍💻 Autori
+
+Sviluppato con ❤️ per il corso di **Basi di Dati**  
+**A.A. 2025/2026** - **CdS Informatica per il Management**  
+**Università di Bologna**
+
+---
+
+## 🤝 Contributi
+
+I contributi sono benvenuti! Per modifiche sostanziali:
+
+1. Fai fork del repository
+2. Crea un branch per la tua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit delle modifiche (`git commit -m 'Add some AmazingFeature'`)
+4. Push al branch (`git push origin feature/AmazingFeature`)
+5. Apri una Pull Request
+
+---
+
+## 📧 Contatti & Supporto
+
+- 🐛 **Segnalazione Bug**: [GitHub Issues](https://github.com/tesfaye174/ESG-BALANCE/issues)
+- 💡 **Feature Request**: [GitHub Discussions](https://github.com/tesfaye174/ESG-BALANCE/discussions)
+- 📖 **Documentazione**: Vedi sezioni dettagliate sotto
+
+---
+
+<div align="center">
+
+### ⭐ Se questo progetto ti è stato utile, lascia una stella
+
+[![GitHub stars](https://img.shields.io/github/stars/tesfaye174/ESG-BALANCE?style=social)](https://github.com/tesfaye174/ESG-BALANCE/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/tesfaye174/ESG-BALANCE?style=social)](https://github.com/tesfaye174/ESG-BALANCE/network/members)
+
+**Made with 💚 for Sustainability**
+
+</div>
