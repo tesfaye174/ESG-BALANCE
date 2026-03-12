@@ -4,1260 +4,1361 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESG-BALANCE &mdash; Presentazione Progetto</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
-        rel="stylesheet">
+    <title>ESG-BALANCE - Presentazione</title>
     <style>
-        :root {
-            --blue: #1d4ed8;
-            --blue-light: #3b82f6;
-            --blue-bg: #eff6ff;
-            --blue-border: #bfdbfe;
-            --black: #111827;
-            --gray: #4b5563;
-            --gray-light: #9ca3af;
-            --white: #ffffff;
-            --surface: #f9fafb;
-            --border: #e5e7eb;
-            --radius: 8px;
-        }
-
-        * {
+        body {
+            font-family: Calibri, Arial, sans-serif;
+            background: #eee;
+            color: #222;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background: var(--white);
-            color: var(--black);
-            overflow: hidden;
-            height: 100vh;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        /* ── SLIDE ── */
         .slide {
-            display: none;
-            width: 100vw;
-            height: 100vh;
-            padding: 44px 64px 52px;
+            width: 960px;
+            min-height: 720px;
+            margin: 20px auto;
+            background: white;
+            padding: 45px 55px;
+            box-shadow: 0 1px 6px rgba(0, 0, 0, 0.15);
+            page-break-after: always;
             position: relative;
-            flex-direction: column;
-            justify-content: center;
-            background: var(--white);
         }
 
-        .slide.active {
-            display: flex;
-            animation: fadeSlide .3s ease-out;
+        .slide-num {
+            position: absolute;
+            bottom: 18px;
+            right: 30px;
+            font-size: 12px;
+            color: #999;
         }
 
-        @keyframes fadeSlide {
-            from {
-                opacity: 0;
-                transform: translateY(6px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
+        .piede {
+            position: absolute;
+            bottom: 18px;
+            left: 30px;
+            font-size: 11px;
+            color: #bbb;
         }
 
-        /* ── TYPOGRAPHY ── */
-        h1 {
-            font-size: 2.4em;
-            font-weight: 800;
-            color: var(--black);
-            margin-bottom: 8px;
-            line-height: 1.15;
-            letter-spacing: -.02em;
-        }
-
-        h1.mega {
-            font-size: 4em;
+        /* titolo */
+        .titolo {
             text-align: center;
-            letter-spacing: -.03em;
+            padding-top: 120px;
+        }
+
+        .titolo h1 {
+            font-size: 42px;
+            margin-bottom: 8px;
+        }
+
+        .titolo p {
+            font-size: 18px;
+            color: #555;
+        }
+
+        .titolo .info {
+            margin-top: 35px;
+            font-size: 15px;
+            color: #666;
+            line-height: 2;
         }
 
         h2 {
-            font-size: 1.2em;
-            color: var(--blue);
-            margin-bottom: 16px;
-            font-weight: 500;
+            font-size: 26px;
+            color: #1a1a1a;
+            border-bottom: 2px solid #336699;
+            padding-bottom: 6px;
+            margin-bottom: 18px;
         }
 
         h3 {
-            font-size: 1em;
-            color: var(--blue);
-            margin: 12px 0 6px;
-            font-weight: 600;
-        }
-
-        p,
-        li {
-            font-size: .95em;
-            line-height: 1.55;
-            color: var(--black);
-        }
-
-        .subtitle {
-            font-size: 1.4em;
-            color: var(--blue);
-            text-align: center;
-            margin-top: 8px;
-            font-weight: 400;
-        }
-
-        .small-text {
-            font-size: .9em;
-            color: var(--gray);
-            text-align: center;
-            margin-top: 24px;
-            line-height: 1.6;
-        }
-
-        strong {
-            color: var(--black);
-            font-weight: 700;
-        }
-
-        .highlight {
-            color: var(--blue);
-            font-weight: 600;
-        }
-
-        .accent {
-            color: var(--blue);
-            font-weight: 700;
-        }
-
-        code {
-            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-            font-size: .9em;
-            color: var(--blue);
-            background: var(--blue-bg);
-            padding: 1px 5px;
-            border-radius: 4px;
-        }
-
-        /* ── LISTS ── */
-        ul {
-            list-style: none;
-            padding-left: 0;
-        }
-
-        ul li {
-            padding: 4px 0 4px 22px;
-            position: relative;
-        }
-
-        ul li::before {
-            content: '';
-            position: absolute;
-            left: 4px;
-            top: 12px;
-            width: 6px;
-            height: 6px;
-            border-radius: 50%;
-            background: var(--blue);
-        }
-
-        /* ── COLUMNS ── */
-        .columns {
-            display: flex;
-            gap: 40px;
-            align-items: flex-start;
-        }
-
-        .col {
-            flex: 1;
-            min-width: 0;
-        }
-
-        /* ── TABLES ── */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 8px 0;
-            font-size: .88em;
-        }
-
-        th {
-            background: var(--blue-bg);
-            color: var(--blue);
-            padding: 8px 12px;
-            text-align: left;
-            font-weight: 600;
-            border-bottom: 2px solid var(--blue-border);
-            font-size: .9em;
-        }
-
-        td {
-            padding: 6px 12px;
-            border-bottom: 1px solid var(--border);
-            color: var(--black);
-        }
-
-        /* ── CARDS ── */
-        .card {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 16px 20px;
-            margin: 6px 0;
-        }
-
-        .card-title {
-            font-size: .95em;
-            color: var(--blue);
-            font-weight: 600;
+            font-size: 18px;
+            color: #336699;
+            margin-top: 16px;
             margin-bottom: 6px;
         }
 
-        .card-body {
-            color: var(--black);
-            font-size: .88em;
+        p {
+            font-size: 15px;
             line-height: 1.55;
         }
 
-        .card-body ul li {
-            font-size: .95em;
-            padding: 2px 0 2px 22px;
+        li {
+            font-size: 15px;
+            line-height: 1.5;
+            margin-bottom: 4px;
         }
 
-        /* ── STAT GRID ── */
-        .stat-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 14px;
-            margin: 14px 0;
+        ul {
+            padding-left: 22px;
+            margin-bottom: 8px;
         }
 
-        .stat-box {
-            background: var(--blue-bg);
-            border: 1px solid var(--blue-border);
-            border-radius: var(--radius);
-            padding: 18px 12px;
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 6px 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #336699;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f5f5f5;
+        }
+
+        .due-col {
+            display: flex;
+            gap: 25px;
+        }
+
+        .due-col>div {
+            flex: 1;
+        }
+
+        .piccolo {
+            font-size: 13px;
+            color: #777;
+        }
+
+        code {
+            font-family: Consolas, monospace;
+            background: #f0f0f0;
+            padding: 1px 4px;
+            font-size: 13px;
+        }
+
+        .riquadro {
+            border: 1px solid #ddd;
+            padding: 12px;
+            background: #fafafa;
+            margin: 8px 0;
             text-align: center;
         }
 
-        .stat-number {
-            font-size: 2.2em;
-            font-weight: 800;
-            color: var(--blue);
-            display: block;
-            letter-spacing: -.02em;
+        .riquadro .grande {
+            font-size: 32px;
+            font-weight: bold;
+            color: #336699;
         }
 
-        .stat-label {
-            font-size: .8em;
-            color: var(--gray);
-            margin-top: 2px;
-            font-weight: 500;
-        }
-
-        /* ── CODE BLOCK ── */
-        .code-block {
-            background: var(--surface);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
-            padding: 14px 18px;
-            font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
-            font-size: .78em;
-            line-height: 1.55;
-            color: var(--black);
-            overflow-x: auto;
-            white-space: pre;
-        }
-
-        .code-block .keyword {
-            color: var(--blue);
-            font-weight: 600;
-        }
-
-        .code-block .string {
-            color: #059669;
-        }
-
-        .code-block .comment {
-            color: var(--gray-light);
-            font-style: italic;
-        }
-
-        /* ── FLOW ── */
-        .flow {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            margin: 16px 0;
-            flex-wrap: wrap;
-        }
-
-        .flow-box {
-            background: var(--blue-bg);
-            border: 1px solid var(--blue-border);
-            border-radius: var(--radius);
-            padding: 10px 18px;
-            text-align: center;
-            min-width: 110px;
-        }
-
-        .flow-arrow {
-            font-size: 1.3em;
-            color: var(--blue);
-        }
-
-        /* ── BADGES ── */
-        .badge {
-            display: inline-block;
-            padding: 3px 10px;
-            border-radius: 16px;
-            font-size: .78em;
-            font-weight: 600;
-            margin: 1px;
-        }
-
-        .badge-blue {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-
-        .badge-green {
-            background: #d1fae5;
-            color: #065f46;
-        }
-
-        .badge-yellow {
-            background: #fef3c7;
-            color: #92400e;
-        }
-
-        .badge-red {
-            background: #fee2e2;
-            color: #991b1b;
-        }
-
-        /* ── SECTION NUMBER ── */
-        .section-num {
-            position: absolute;
-            top: 24px;
-            right: 44px;
-            font-size: 4.5em;
-            font-weight: 900;
-            color: #e5e7eb;
-            z-index: 0;
-            letter-spacing: -.04em;
-        }
-
-        /* ── SLIDE LINE ── */
-        .slide-line {
-            width: 48px;
-            height: 3px;
-            background: var(--blue);
-            border-radius: 2px;
-            margin-bottom: 16px;
-        }
-
-        /* ── TITLE SLIDE SPECIAL ── */
-        .slide-title {
-            background: var(--white);
-            border-bottom: 4px solid var(--blue);
-        }
-
-        /* ── NAVIGATION ── */
-        .nav-bar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 44px;
-            background: var(--white);
-            border-top: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 28px;
-            z-index: 1000;
-        }
-
-        .nav-bar button {
-            background: var(--blue-bg);
-            border: 1px solid var(--blue-border);
-            color: var(--blue);
-            padding: 6px 18px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: .82em;
-            font-family: inherit;
-            font-weight: 500;
-            transition: all .2s;
-        }
-
-        .nav-bar button:hover {
-            background: var(--blue);
-            color: var(--white);
-        }
-
-        .slide-counter {
-            color: var(--gray-light);
-            font-size: .82em;
-            font-weight: 500;
-        }
-
-        .progress-bar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 3px;
-            background: var(--blue);
-            transition: width .3s ease;
-            z-index: 1001;
-        }
-
-        /* ══════════════ PRINT / PDF ══════════════ */
-        @page {
-            size: A4 landscape;
-            margin: 10mm;
+        .riquadro .sotto {
+            font-size: 13px;
+            color: #888;
         }
 
         @media print {
             body {
-                overflow: visible;
+                background: white;
             }
 
             .slide {
-                display: flex !important;
-                page-break-after: always;
-                break-after: page;
-                min-height: calc(210mm - 20mm);
-                height: auto;
-                width: 100%;
-                padding: 12mm 14mm !important;
-                print-color-adjust: exact !important;
-                -webkit-print-color-adjust: exact !important;
+                box-shadow: none;
+                margin: 0;
             }
-
-            .slide:last-of-type {
-                page-break-after: avoid;
-            }
-
-            .nav-bar,
-            .progress-bar {
-                display: none !important;
-            }
-        }
-
-        body.pdf-mode {
-            overflow: visible;
-            height: auto;
-        }
-
-        body.pdf-mode .slide {
-            display: flex !important;
-            page-break-after: always;
-            break-after: page;
-            min-height: calc(210mm - 20mm);
-            height: auto;
-            width: 100%;
-            padding: 12mm 14mm !important;
-            print-color-adjust: exact !important;
-            -webkit-print-color-adjust: exact !important;
-        }
-
-        body.pdf-mode .slide:last-of-type {
-            page-break-after: avoid;
-        }
-
-        body.pdf-mode .nav-bar,
-        body.pdf-mode .progress-bar {
-            display: none !important;
         }
     </style>
 </head>
 
 <body>
-    <div class="progress-bar" id="progressBar"></div>
 
-    <!-- ═══════════════════════════════════════════
-         SLIDE 1 — TITOLO
-         ═══════════════════════════════════════════ -->
-    <div class="slide slide-title active" id="slide-1">
-        <div style="text-align:center; flex:1; display:flex; flex-direction:column; justify-content:center;">
-            <h1 class="mega">ESG-BALANCE</h1>
-            <p class="subtitle">Piattaforma per la gestione dei bilanci aziendali<br>e degli indicatori ESG</p>
-            <div style="margin-top:40px;">
-                <p style="font-size:1.1em;">Progetto di <strong>Basi di Dati</strong> &mdash; A.A. 2025/2026</p>
-                <p style="font-size:.95em; color:#4b5563; margin-top:6px;">CdS Informatica per il Management &mdash;
-                    Universit&agrave; di Bologna</p>
-                <p style="font-size:1.1em; color:#1d4ed8; margin-top:24px; font-weight:600;">Tesfaye Venieri</p>
-            </div>
+    <!-- SLIDE 1 - titolo -->
+    <div class="slide titolo">
+        <h1>ESG-BALANCE</h1>
+        <p>Piattaforma web per la gestione di bilanci aziendali e indicatori ESG</p>
+        <div class="info">
+            Corso di <b>Basi di Dati</b> &mdash; A.A. 2025/2026<br>
+            Informatica per il Management &mdash; Universita' di Bologna<br><br>
+            Studente: Tesfaye Venieri<br>
+            Matricola: 0000990286
         </div>
+        <span class="slide-num">1/14</span>
     </div>
 
-    <!-- ═══════════════════════════════════════════
-         SLIDE 2 — PANORAMICA
-         ═══════════════════════════════════════════ -->
-    <div class="slide" id="slide-2">
-        <span class="section-num">01</span>
-        <div class="slide-line"></div>
-        <h1>Panoramica del Progetto</h1>
-        <h2>Cos'&egrave; ESG-BALANCE?</h2>
-        <p style="font-size:1.1em; margin-bottom:20px; max-width:900px;">
-            Una piattaforma web che integra <strong>bilancio economico</strong> e <strong>indicatori ESG</strong>
-            in un flusso unico: compilazione da parte del responsabile, revisione e approvazione finale.
+    <!-- SLIDE 2 - cos'e' il progetto -->
+    <div class="slide">
+        <h2>Cos'e' ESG-BALANCE</h2>
+
+        <p>E' un'applicazione web che permette di gestire i <b>bilanci di esercizio</b> delle aziende e i relativi
+            <b>indicatori ESG</b> (Environmental, Social, Governance). In pratica il sistema gestisce tutto il ciclo di
+            vita di un bilancio: dalla creazione alla revisione fino all'approvazione o al respingimento.
         </p>
-        <div class="stat-grid">
-            <div class="stat-box">
-                <span class="stat-number">3</span>
-                <span class="stat-label">Ruoli utente</span>
-            </div>
-            <div class="stat-box">
-                <span class="stat-number">16</span>
-                <span class="stat-label">Tabelle</span>
-            </div>
-            <div class="stat-box">
-                <span class="stat-number">14</span>
-                <span class="stat-label">Stored Procedure</span>
-            </div>
-            <div class="stat-box">
-                <span class="stat-number">4+4</span>
-                <span class="stat-label">Trigger + Viste</span>
-            </div>
-        </div>
-    </div>
 
-    <!-- ═══════════════════════════════════════════
-         SLIDE 3 — RUOLI UTENTE
-         ═══════════════════════════════════════════ -->
-    <div class="slide" id="slide-3">
-        <span class="section-num">02</span>
-        <div class="slide-line"></div>
-        <h1>I Tre Ruoli</h1>
-        <div class="columns" style="margin-top:6px;">
-            <div class="col">
-                <div class="card">
-                    <div class="card-title">Amministratore</div>
-                    <div class="card-body">
-                        <ul>
-                            <li>Gestisce il template delle <strong>voci contabili</strong></li>
-                            <li>Definisce gli <strong>indicatori ESG</strong> (ambientali, sociali, generici)</li>
-                            <li>Assegna i <strong>revisori</strong> ai bilanci</li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="card" style="margin-top:8px;">
-                    <div class="card-title">Responsabile Aziendale</div>
-                    <div class="card-body">
-                        <ul>
-                            <li>Registra le <strong>aziende</strong> e carica il logo</li>
-                            <li>Crea i <strong>bilanci</strong> e compila le voci contabili</li>
-                            <li>Collega <strong>indicatori ESG</strong> alle voci</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card">
-                    <div class="card-title">Revisore ESG</div>
-                    <div class="card-body">
-                        <ul>
-                            <li>Dichiara le proprie <strong>competenze</strong> (livello 0-5)</li>
-                            <li>Inserisce <strong>note</strong> sulle voci del bilancio</li>
-                            <li>Emette il <strong>giudizio finale</strong></li>
-                        </ul>
-                    </div>
-                </div>
-                <div class="card" style="margin-top:8px;">
-                    <div class="card-title">Ciclo di vita del bilancio</div>
-                    <div class="card-body">
-                        <div class="flow" style="margin:10px 0 0;">
-                            <div class="flow-box"><span class="badge badge-blue">Bozza</span></div>
-                            <span class="flow-arrow">&rarr;</span>
-                            <div class="flow-box"><span class="badge badge-yellow">In revisione</span></div>
-                            <span class="flow-arrow">&rarr;</span>
-                            <div class="flow-box"><span class="badge badge-green">Approvato</span><br><span
-                                    class="badge badge-red">Respinto</span></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        <p>L'idea nasce dal fatto che oggi le aziende devono rendicontare non solo i dati finanziari ma anche
+            l'impatto ambientale, sociale e di governance. Ho voluto creare un sistema che integra questi due aspetti
+            in un unico flusso di lavoro, con un <b>workflow di revisione completo</b> (bozza &rarr; in revisione &rarr;
+            approvato/respinto).</p>
 
-    <!-- ═══════════════════════════════════════════
-         SLIDE 4 — PROGETTAZIONE CONCETTUALE (E-R)
-         ═══════════════════════════════════════════ -->
-    <div class="slide" id="slide-4">
-        <span class="section-num">03</span>
-        <div class="slide-line"></div>
-        <h1>Progettazione Concettuale</h1>
-        <h2>Schema E-R &mdash; 8 Entit&agrave;, 8 Relazioni</h2>
-        <div class="columns">
-            <div class="col">
-                <h3>Gerarchia Utenti (Totale, Esclusiva)</h3>
-                <div class="code-block"><span class="keyword">UTENTE</span> (username PK, password_hash, CF, ruolo)
-                    ├── <span class="keyword">REVISORE</span> (nr_revisioni, indice_affidabilita)
-                    ├── <span class="keyword">RESPONSABILE</span> (curriculum_pdf)
-                    └── <span class="comment">Amministratore (nessun attributo aggiuntivo)</span></div>
-
-                <h3 style="margin-top:16px;">Gerarchia Indicatori (Parziale, Esclusiva)</h3>
-                <div class="code-block"><span class="keyword">INDICATORE_ESG</span> (nome PK, rilevanza, tipo)
-                    ├── <span class="keyword">AMBIENTALE</span> (codice_normativa)
-                    ├── <span class="keyword">SOCIALE</span> (ambito_sociale, frequenza_rilev.)
-                    └── <span class="comment">Generico (tipo = NULL)</span></div>
-            </div>
-            <div class="col">
-                <h3>Relazioni principali</h3>
+        <div class="due-col">
+            <div>
+                <h3>I tre ruoli del sistema</h3>
                 <table>
                     <tr>
-                        <th>Relazione</th>
-                        <th>Cardinalit&agrave;</th>
+                        <th>Ruolo</th>
+                        <th>Cosa fa</th>
                     </tr>
                     <tr>
-                        <td>Responsabile &mdash; Azienda</td>
-                        <td>(1,N) &mdash; (1,1)</td>
+                        <td><b>Amministratore</b></td>
+                        <td>Gestisce il template contabile, definisce gli indicatori ESG (ambientali, sociali,
+                            governance) e assegna i revisori</td>
                     </tr>
                     <tr>
-                        <td>Azienda &mdash; Bilancio</td>
-                        <td>(0,N) &mdash; (1,1)</td>
+                        <td><b>Responsabile</b></td>
+                        <td>Registra le aziende, crea i bilanci, compila i valori delle voci contabili e collega gli
+                            indicatori ESG ai dati</td>
                     </tr>
                     <tr>
-                        <td>Bilancio &mdash; Voce Contabile</td>
-                        <td>(0,N) &mdash; (0,N)</td>
+                        <td><b>Revisore ESG</b></td>
+                        <td>Dichiara le competenze (livello 0-5), revisiona i bilanci con note puntuali e alla fine
+                            emette un giudizio finale</td>
+                    </tr>
+                </table>
+            </div>
+            <div>
+                <h3>Tecnologie usate</h3>
+                <ul>
+                    <li><b>Backend:</b> PHP 8 procedurale, con PDO e prepared statements</li>
+                    <li><b>Database:</b> MySQL/MariaDB &mdash; 17 tabelle in BCNF</li>
+                    <li><b>Frontend:</b> HTML5, Bootstrap 5.3, JavaScript vanilla</li>
+                    <li><b>Server:</b> Apache tramite XAMPP</li>
+                    <li><b>Sicurezza:</b> Bcrypt (cost 12), rigenerazione sessione, htmlspecialchars su tutti gli output
+                    </li>
+                </ul>
+
+                <h3>Funzionalita' principali</h3>
+                <ul>
+                    <li>Dashboard personalizzata per ruolo</li>
+                    <li>4 pagine statistiche con viste SQL</li>
+                    <li>Log eventi su tabella MySQL dedicata</li>
+                    <li>Upload file (loghi aziende, CV revisori)</li>
+                </ul>
+            </div>
+        </div>
+
+        <span class="piede">Basi di Dati &mdash; A.A. 2025/2026</span>
+        <span class="slide-num">2/14</span>
+    </div>
+
+    <!-- SLIDE 3 - operazioni principali -->
+    <div class="slide">
+        <h2>Operazioni e Volumi</h2>
+
+        <p>Ho individuato <b>17 operazioni principali</b> + 3 ausiliarie per l'analisi di ridondanza. Le ho classificate
+            per tipo (interattiva/batch) e frequenza per calcolare i costi degli accessi.</p>
+
+        <div class="due-col">
+            <div>
+                <h3>Operazioni principali</h3>
+                <table>
+                    <tr>
+                        <th>#</th>
+                        <th>Operazione</th>
+                        <th>Tipo</th>
+                        <th>Freq.</th>
                     </tr>
                     <tr>
-                        <td>Valore &mdash; Indicatore ESG</td>
-                        <td>(0,N) &mdash; (0,N)</td>
+                        <td>Op1</td>
+                        <td>Login utente</td>
+                        <td>I</td>
+                        <td>50/g</td>
                     </tr>
                     <tr>
-                        <td>Revisore &mdash; Bilancio</td>
-                        <td>(0,N) &mdash; (0,N)</td>
+                        <td>Op2</td>
+                        <td>Registrazione (atomica: utente + email + sotto-tab)</td>
+                        <td>I</td>
+                        <td>2/g</td>
                     </tr>
                     <tr>
-                        <td>Revisore &mdash; Giudizio</td>
-                        <td>(0,1) &mdash; (0,N)</td>
+                        <td>Op3</td>
+                        <td>Aggiunta email secondaria</td>
+                        <td>I</td>
+                        <td>1/g</td>
+                    </tr>
+                    <tr>
+                        <td>Op4</td>
+                        <td>Creazione voce contabile</td>
+                        <td>I</td>
+                        <td>2/sett</td>
+                    </tr>
+                    <tr>
+                        <td>Op5</td>
+                        <td>Inserimento indicatore ESG (con gerarchia)</td>
+                        <td>I</td>
+                        <td>3/sett</td>
+                    </tr>
+                    <tr>
+                        <td>Op6</td>
+                        <td>Registrazione azienda</td>
+                        <td>I</td>
+                        <td>1/sett</td>
+                    </tr>
+                    <tr>
+                        <td>Op7</td>
+                        <td>Creazione bilancio</td>
+                        <td>I</td>
+                        <td>3/mese</td>
+                    </tr>
+                    <tr>
+                        <td>Op8</td>
+                        <td>Inserimento valore voce contabile (UPSERT)</td>
+                        <td>I</td>
+                        <td>20/g</td>
+                    </tr>
+                    <tr>
+                        <td>Op9</td>
+                        <td>Collegamento indicatore ESG a voce</td>
+                        <td>I</td>
+                        <td>10/g</td>
+                    </tr>
+                    <tr>
+                        <td>Op10</td>
+                        <td>Assegnazione revisore (trigger cambia stato)</td>
+                        <td>I</td>
+                        <td>5/sett</td>
+                    </tr>
+                    <tr>
+                        <td>Op11</td>
+                        <td>Dichiarazione competenza revisore</td>
+                        <td>I</td>
+                        <td>5/sett</td>
+                    </tr>
+                    <tr>
+                        <td>Op12</td>
+                        <td>Inserimento nota di revisione</td>
+                        <td>I</td>
+                        <td>8/g</td>
+                    </tr>
+                    <tr>
+                        <td>Op13</td>
+                        <td>Emissione giudizio (trigger decide stato)</td>
+                        <td>I</td>
+                        <td>3/sett</td>
+                    </tr>
+                    <tr>
+                        <td>Op14-17</td>
+                        <td>4 viste statistiche (SELECT sulle view)</td>
+                        <td>I</td>
+                        <td>5/g cad.</td>
+                    </tr>
+                </table>
+            </div>
+            <div>
+                <h3>Tavola dei volumi</h3>
+                <table>
+                    <tr>
+                        <th>Concetto</th>
+                        <th>Volume</th>
+                    </tr>
+                    <tr>
+                        <td>Utenti</td>
+                        <td>~50</td>
+                    </tr>
+                    <tr>
+                        <td>Aziende</td>
+                        <td>~10</td>
+                    </tr>
+                    <tr>
+                        <td>Bilanci</td>
+                        <td>~50</td>
+                    </tr>
+                    <tr>
+                        <td>Indicatori ESG</td>
+                        <td>~30</td>
+                    </tr>
+                    <tr>
+                        <td>Voci contabili</td>
+                        <td>~20</td>
+                    </tr>
+                    <tr>
+                        <td>Valori bilancio</td>
+                        <td>~250</td>
+                    </tr>
+                    <tr>
+                        <td>Voci-Indicatori</td>
+                        <td>~150</td>
+                    </tr>
+                    <tr>
+                        <td>Note revisione</td>
+                        <td>~120</td>
+                    </tr>
+                    <tr>
+                        <td>Giudizi</td>
+                        <td>~60</td>
+                    </tr>
+                </table>
+
+                <h3>Operazioni ausiliarie (per ridondanza)</h3>
+                <table>
+                    <tr>
+                        <th>#</th>
+                        <th>Operazione</th>
+                        <th>Freq.</th>
+                    </tr>
+                    <tr>
+                        <td>OpA</td>
+                        <td>Registra azienda + 3 bilanci</td>
+                        <td>1/mese</td>
+                    </tr>
+                    <tr>
+                        <td>OpB</td>
+                        <td>Conta bilanci per azienda</td>
+                        <td>3/mese</td>
+                    </tr>
+                    <tr>
+                        <td>OpC</td>
+                        <td>Rimuovi azienda con bilanci</td>
+                        <td>1/mese</td>
+                    </tr>
+                </table>
+                <p class="piccolo">I = Interattiva. Le frequenze servono per il calcolo dei costi nella slide sulla
+                    ridondanza.</p>
+            </div>
+        </div>
+
+        <span class="piede">Basi di Dati &mdash; A.A. 2025/2026</span>
+        <span class="slide-num">3/14</span>
+    </div>
+
+    <!-- SLIDE 4 - schema ER -->
+    <div class="slide">
+        <h2>Schema E-R (Progettazione Concettuale)</h2>
+
+        <div class="due-col">
+            <div>
+                <h3>Gerarchie</h3>
+                <ul>
+                    <li><b>UTENTE</b> &rarr; Revisore / Responsabile<br>
+                        <span class="piccolo">Totale, Esclusiva (discriminatore: ruolo). L'amministratore non ha
+                            sotto-tabella dedicata, è solo un valore dell'ENUM.</span>
+                    </li>
+                    <li><b>INDICATORE_ESG</b> &rarr; Ambientale / Sociale<br>
+                        <span class="piccolo">Parziale, Esclusiva (discriminatore: tipo). Gli indicatori di governance
+                            restano solo nella tabella padre.</span>
+                    </li>
+                </ul>
+
+                <h3>Entita' principali (con identificatori)</h3>
+                <ul>
+                    <li><b>UTENTE</b> &mdash; id: username (interno)</li>
+                    <li><b>AZIENDA</b> &mdash; id: codice auto-incrementale (interno), ragione_sociale (esterno UNIQUE)
+                    </li>
+                    <li><b>VOCE_CONTABILE</b> &mdash; id: nome (interno)</li>
+                    <li><b>BILANCIO</b> &mdash; id: codice auto-incrementale (interno), stato ENUM con 4 valori</li>
+                    <li><b>INDICATORE_ESG</b> &mdash; id: nome (interno), rilevanza CHECK 0-10, tipo ENUM</li>
+                    <li><b>EMAIL</b> &mdash; attributo multivalore di UTENTE</li>
+                    <li><b>NOTA_REVISIONE</b> &mdash; id: codice auto-incrementale</li>
+                    <li><b>GIUDIZIO</b> &mdash; id: (username_revisore, id_bilancio) composito</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Relazioni (con cardinalita')</h3>
+                <ul>
+                    <li><b>GESTISCE</b> &mdash; Responsabile (1,N) : Azienda (1,1)<br>
+                        <span class="piccolo">Un responsabile gestisce 1+ aziende, ogni azienda ha esattamente 1
+                            responsabile</span>
+                    </li>
+                    <li><b>APPARTIENE</b> &mdash; Azienda (0,N) : Bilancio (1,1)<br>
+                        <span class="piccolo">Un'azienda puo' avere 0+ bilanci, ogni bilancio appartiene a 1
+                            azienda</span>
+                    </li>
+                    <li><b>VALORIZZA</b> &mdash; Bilancio : Voce (M:N)<br>
+                        <span class="piccolo">Con attributo di relazione: valore DECIMAL(15,2)</span>
+                    </li>
+                    <li><b>COLLEGA</b> &mdash; relazione ternaria Bilancio-Voce-Indicatore<br>
+                        <span class="piccolo">Con attributi: valore_indicatore, fonte, data_rilevazione</span>
+                    </li>
+                    <li><b>REVISIONA</b> &mdash; Revisore (0,N) : Bilancio (0,N)<br>
+                        <span class="piccolo">Assegnazione M:N, tabella di raccordo</span>
+                    </li>
+                    <li><b>GIUDICA</b> &mdash; Revisore (0,1) : Bilancio (0,N)<br>
+                        <span class="piccolo">Max 1 giudizio per revisore per bilancio (PK composita)</span>
+                    </li>
+                </ul>
+
+                <h3>11 Regole di business</h3>
+                <table style="font-size:12px;">
+                    <tr>
+                        <th>Regole</th>
+                        <th>Come sono implementate</th>
+                    </tr>
+                    <tr>
+                        <td>RV1-RV3</td>
+                        <td>Vincoli CHECK, UNIQUE, ENUM nel DDL</td>
+                    </tr>
+                    <tr>
+                        <td>RV4-RV6</td>
+                        <td>4 trigger (transizioni stato, ridondanza nr_bilanci)</td>
+                    </tr>
+                    <tr>
+                        <td>RV7-RV8</td>
+                        <td>Stored procedure (gerarchia indicatori, registrazione atomica)</td>
+                    </tr>
+                    <tr>
+                        <td>RV9</td>
+                        <td>PK composita su giudizi (impedisce voto doppio)</td>
+                    </tr>
+                    <tr>
+                        <td>RV10</td>
+                        <td>Controllo PHP: modifica valori solo se stato = 'bozza'</td>
+                    </tr>
+                    <tr>
+                        <td>RV11</td>
+                        <td>Trigger T2 chiama SP14 per ricalcolo indice affidabilita'</td>
                     </tr>
                 </table>
             </div>
         </div>
+
+        <span class="piede">Basi di Dati &mdash; A.A. 2025/2026</span>
+        <span class="slide-num">4/14</span>
     </div>
 
-    <!-- ═══════════════════════════════════════════
-         SLIDE 5 — SCHEMA LOGICO
-         ═══════════════════════════════════════════ -->
-    <div class="slide" id="slide-5">
-        <span class="section-num">04</span>
-        <div class="slide-line"></div>
-        <h1>Schema Logico</h1>
-        <h2>Le 16 Tabelle &mdash; tutte in BCNF</h2>
-        <div class="columns">
-            <div class="col">
+    <!-- SLIDE 5 - schema logico -->
+    <div class="slide">
+        <h2>Schema Logico &mdash; 17 Tabelle (tutte in BCNF)</h2>
+
+        <div class="due-col">
+            <div>
+                <h3>Gerarchia Utenti</h3>
+                <ul>
+                    <li><b>utenti</b> (username, password_hash, CF, data_nascita, luogo_nascita, ruolo)</li>
+                    <li><b>email_utente</b> (username, email) &mdash; PK composita</li>
+                    <li><b>revisori</b> (username FK, nr_revisioni, indice_affidabilita)</li>
+                    <li><b>responsabili</b> (username FK, curriculum_pdf)</li>
+                    <li><b>competenze_revisore</b> (username, nome, livello CHECK 0-5)</li>
+                </ul>
+                <h3>Gerarchia Indicatori ESG</h3>
+                <ul>
+                    <li><b>indicatori_esg</b> (nome, immagine, rilevanza, tipo ENUM)</li>
+                    <li><b>indicatori_ambientali</b> (nome FK, codice_normativa)</li>
+                    <li><b>indicatori_sociali</b> (nome FK, ambito, frequenza)</li>
+                </ul>
+                <h3>Logging</h3>
+                <ul>
+                    <li><b>log_eventi</b> (id, evento, utente, dettagli, timestamp)</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Tabelle core</h3>
+                <ul>
+                    <li><b>aziende</b> (id, ragione_sociale UNIQUE, partita_iva, settore, num_dip, logo,
+                        <i>nr_bilanci</i>*)
+                    </li>
+                    <li><b>voci_contabili</b> (nome PK, descrizione)</li>
+                    <li><b>bilanci</b> (id, id_azienda FK, data_creazione, stato ENUM)</li>
+                    <li><b>valori_bilancio</b> (id_bilancio, nome_voce) &rarr; valore DECIMAL(15,2)</li>
+                    <li><b>voci_indicatori</b> (id_bilancio, nome_voce, nome_indicatore) PK ternaria</li>
+                </ul>
+                <h3>Tabelle revisione</h3>
+                <ul>
+                    <li><b>revisioni</b> (username_revisore, id_bilancio) &mdash; M:N</li>
+                    <li><b>note_revisione</b> (id, username_revisore, id_bilancio, nome_voce, testo)</li>
+                    <li><b>giudizi</b> (username_revisore, id_bilancio, esito ENUM, rilievi)</li>
+                </ul>
+                <p class="piccolo" style="margin-top:10px;">* nr_bilanci e' un dato ridondante, mantenuto aggiornato dai
+                    trigger T3 e T4.</p>
+            </div>
+        </div>
+
+        <span class="piede">Basi di Dati &mdash; A.A. 2025/2026</span>
+        <span class="slide-num">5/14</span>
+    </div>
+
+    <!-- SLIDE 6 - ridondanza -->
+    <div class="slide">
+        <h2>Analisi della Ridondanza: nr_bilanci</h2>
+
+        <p>L'attributo <b>nr_bilanci</b> nella tabella <code>aziende</code> e' un dato derivato (si potrebbe calcolare
+            con <code>COUNT(*)</code> sulla tabella bilanci). Ho analizzato se conviene mantenerlo oppure no.</p>
+
+        <div class="due-col" style="margin-top:12px;">
+            <div>
+                <h3>Volumi stimati</h3>
+                <ul>
+                    <li>Aziende: 10</li>
+                    <li>Bilanci: 50 (media 5 per azienda)</li>
+                    <li>Costo scrittura interattiva: 1</li>
+                    <li>Costo scrittura batch: 0.5</li>
+                    <li>Rapporto alfa: 2</li>
+                </ul>
+
+                <h3>Operazioni considerate</h3>
                 <table>
                     <tr>
-                        <th>#</th>
-                        <th>Tabella</th>
-                        <th>PK</th>
+                        <th>Op</th>
+                        <th>Cosa fa</th>
+                        <th>Freq/mese</th>
                     </tr>
                     <tr>
+                        <td>OpA</td>
+                        <td>Registra azienda + crea 3 bilanci</td>
                         <td>1</td>
-                        <td>utenti</td>
-                        <td>username</td>
                     </tr>
                     <tr>
-                        <td>2</td>
-                        <td>email_utente</td>
-                        <td>(username, email)</td>
-                    </tr>
-                    <tr>
+                        <td>OpB</td>
+                        <td>Conta bilanci di tutte le aziende</td>
                         <td>3</td>
-                        <td>revisori</td>
-                        <td>username</td>
                     </tr>
                     <tr>
-                        <td>4</td>
-                        <td>responsabili</td>
-                        <td>username</td>
-                    </tr>
-                    <tr>
-                        <td>5</td>
-                        <td>competenze_revisore</td>
-                        <td>(username, nome_comp.)</td>
-                    </tr>
-                    <tr>
-                        <td>6</td>
-                        <td>aziende</td>
-                        <td>id (auto-inc.)</td>
-                    </tr>
-                    <tr>
-                        <td>7</td>
-                        <td>voci_contabili</td>
-                        <td>nome</td>
-                    </tr>
-                    <tr>
-                        <td>8</td>
-                        <td>bilanci</td>
-                        <td>id (auto-inc.)</td>
+                        <td>OpC</td>
+                        <td>Rimuovi azienda con bilanci</td>
+                        <td>1</td>
                     </tr>
                 </table>
             </div>
-            <div class="col">
+            <div>
+                <h3>Confronto costi</h3>
                 <table>
                     <tr>
-                        <th>#</th>
-                        <th>Tabella</th>
-                        <th>PK</th>
+                        <th></th>
+                        <th>OpA</th>
+                        <th>OpB</th>
+                        <th>OpC</th>
+                        <th>Tot</th>
                     </tr>
                     <tr>
-                        <td>9</td>
-                        <td>valori_bilancio</td>
-                        <td>(id_bilancio, nome_voce)</td>
-                    </tr>
-                    <tr>
-                        <td>10</td>
-                        <td>indicatori_esg</td>
-                        <td>nome</td>
-                    </tr>
-                    <tr>
-                        <td>11</td>
-                        <td>indicatori_ambientali</td>
-                        <td>nome</td>
-                    </tr>
-                    <tr>
-                        <td>12</td>
-                        <td>indicatori_sociali</td>
-                        <td>nome</td>
-                    </tr>
-                    <tr>
-                        <td>13</td>
-                        <td>voci_indicatori</td>
-                        <td>(id_bil., voce, ind.)</td>
-                    </tr>
-                    <tr>
+                        <td><b>CON ridondanza</b></td>
                         <td>14</td>
-                        <td>revisioni</td>
-                        <td>(username_rev., id_bil.)</td>
-                    </tr>
-                    <tr>
                         <td>15</td>
-                        <td>note_revisione</td>
-                        <td>id (auto-inc.)</td>
-                    </tr>
-                    <tr>
-                        <td>16</td>
-                        <td>giudizi</td>
-                        <td>(username_rev., id_bil.)</td>
-                    </tr>
-                </table>
-            </div>
-        </div>
-        <p style="margin-top:14px; font-size:.9em;">
-            Vincoli FK con CASCADE &bull; CHECK su livello competenza [0-5] e rilevanza [0-10] &bull; UNIQUE su
-            ragione_sociale
-        </p>
-    </div>
-
-    <!-- ═══════════════════════════════════════════
-         SLIDE 6 — NORMALIZZAZIONE & RIDONDANZA
-         ═══════════════════════════════════════════ -->
-    <div class="slide" id="slide-6">
-        <span class="section-num">05</span>
-        <div class="slide-line"></div>
-        <h1>Normalizzazione e Ridondanza</h1>
-        <h2>Tutte le 16 tabelle in BCNF &mdash; Ridondanza volontaria su <code>nr_bilanci</code></h2>
-        <div class="columns">
-            <div class="col">
-                <h3>Verifica BCNF (selezione)</h3>
-                <table>
-                    <tr>
-                        <th>Tabella</th>
-                        <th>Dipendenza Funzionale</th>
-                        <th>BCNF</th>
-                    </tr>
-                    <tr>
-                        <td>utenti</td>
-                        <td>username &rarr; tutto</td>
-                        <td>S&igrave;</td>
-                    </tr>
-                    <tr>
-                        <td>aziende</td>
-                        <td>id &rarr; tutto; rag_soc &rarr; tutto</td>
-                        <td>S&igrave;</td>
-                    </tr>
-                    <tr>
-                        <td>bilanci</td>
-                        <td>id &rarr; tutto</td>
-                        <td>S&igrave;</td>
-                    </tr>
-                    <tr>
-                        <td>valori_bilancio</td>
-                        <td>(id_bil, voce) &rarr; valore</td>
-                        <td>S&igrave;</td>
-                    </tr>
-                    <tr>
-                        <td>voci_indicatori</td>
-                        <td>(id_bil, voce, ind) &rarr; val, fonte, data</td>
-                        <td>S&igrave;</td>
-                    </tr>
-                    <tr>
-                        <td>giudizi</td>
-                        <td>(user, id_bil) &rarr; esito, data, rilievi</td>
-                        <td>S&igrave;</td>
-                    </tr>
-                </table>
-                <p style="margin-top:10px; font-size:.85em; color:#4b5563;">
-                    Nessuna decomposizione necessaria. Ogni determinante &egrave; superchiave.
-                </p>
-            </div>
-            <div class="col">
-                <h3>Analisi dei costi &mdash; <code>nr_bilanci</code> in <code>aziende</code></h3>
-                <div class="card">
-                    <div class="card-title">Con ridondanza (Trigger T3/T4)</div>
-                    <div class="card-body">
-                        <ul>
-                            <li><strong>OpA</strong> Creazione bilancio: trigger +1W</li>
-                            <li><strong>OpB</strong> Conteggio: lettura diretta (10R)</li>
-                        </ul>
-                        <p style="margin-top:8px;"><strong>Costo = <span class="accent">35</span></strong></p>
-                    </div>
-                </div>
-                <div class="card" style="margin-top:6px;">
-                    <div class="card-title">Senza ridondanza</div>
-                    <div class="card-body">
-                        <ul>
-                            <li><strong>OpB</strong> Conteggio: COUNT(*) su bilanci (50R)</li>
-                        </ul>
-                        <p style="margin-top:8px;"><strong>Costo = <span class="accent">89</span></strong></p>
-                    </div>
-                </div>
-                <p style="margin-top:10px; font-size:.9em; text-align:center;">
-                    <strong>35 &lt; 89</strong> &rarr; ridondanza mantenuta con <span class="highlight">T3</span> (+1) e
-                    <span class="highlight">T4</span> (-1)
-                </p>
-            </div>
-        </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════
-         SLIDE 7 — TRIGGER
-         ═══════════════════════════════════════════ -->
-    <div class="slide" id="slide-7">
-        <span class="section-num">06</span>
-        <div class="slide-line"></div>
-        <h1>Trigger</h1>
-        <h2>4 Trigger per automatizzare il ciclo di vita</h2>
-        <div class="columns">
-            <div class="col">
-                <div class="card">
-                    <div class="card-title">T1: trg_bilancio_in_revisione</div>
-                    <div class="card-body">
-                        AFTER INSERT su <strong>revisioni</strong><br>
-                        Primo revisore assegnato &rarr; bilancio da
-                        <span class="badge badge-blue">bozza</span> a
-                        <span class="badge badge-yellow">in_revisione</span>
-                    </div>
-                </div>
-                <div class="card" style="margin-top:8px;">
-                    <div class="card-title">T2: trg_bilancio_giudizio</div>
-                    <div class="card-body">
-                        AFTER INSERT su <strong>giudizi</strong><br>
-                        Tutti i revisori hanno votato:
-                        <ul>
-                            <li>Nessun respingimento &rarr; <span class="badge badge-green">approvato</span></li>
-                            <li>Almeno un respingimento &rarr; <span class="badge badge-red">respinto</span></li>
-                            <li>Ricalcola <strong>indice_affidabilita</strong> (SP14)</li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-            <div class="col">
-                <div class="card">
-                    <div class="card-title">T3: trg_incrementa_nr_bilanci</div>
-                    <div class="card-body">
-                        AFTER INSERT su <strong>bilanci</strong><br>
-                        Incrementa <code>nr_bilanci</code> dell'azienda di +1
-                    </div>
-                </div>
-                <div class="card" style="margin-top:8px;">
-                    <div class="card-title">T4: trg_decrementa_nr_bilanci</div>
-                    <div class="card-body">
-                        AFTER DELETE su <strong>bilanci</strong><br>
-                        Decrementa <code>nr_bilanci</code> dell'azienda di -1
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ═══════════════════════════════════════════
-         SLIDE 8 — STORED PROCEDURE
-         ═══════════════════════════════════════════ -->
-    <div class="slide" id="slide-8">
-        <span class="section-num">07</span>
-        <div class="slide-line"></div>
-        <h1>Stored Procedure</h1>
-        <h2>14 SP &mdash; tutta la logica dati lato server</h2>
-        <div class="columns">
-            <div class="col">
-                <table>
-                    <tr>
-                        <th>#</th>
-                        <th>Nome</th>
-                        <th>Funzione</th>
-                    </tr>
-                    <tr>
-                        <td>1</td>
-                        <td>sp_login</td>
-                        <td>Verifica credenziali</td>
-                    </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>sp_registra_utente</td>
-                        <td>Registrazione + sotto-tabella</td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>sp_aggiungi_email</td>
-                        <td>Aggiunta email</td>
-                    </tr>
-                    <tr>
-                        <td>4</td>
-                        <td>sp_crea_voce_contabile</td>
-                        <td>Nuova voce template</td>
-                    </tr>
-                    <tr>
-                        <td>5</td>
-                        <td>sp_inserisci_indicatore_esg</td>
-                        <td>Nuovo indicatore + gerarchia</td>
-                    </tr>
-                    <tr>
                         <td>6</td>
-                        <td>sp_registra_azienda</td>
-                        <td>Nuova azienda</td>
+                        <td><b style="color:green;">35</b></td>
                     </tr>
                     <tr>
-                        <td>7</td>
-                        <td>sp_crea_bilancio</td>
-                        <td>Nuovo bilancio (bozza)</td>
-                    </tr>
-                </table>
-            </div>
-            <div class="col">
-                <table>
-                    <tr>
-                        <th>#</th>
-                        <th>Nome</th>
-                        <th>Funzione</th>
-                    </tr>
-                    <tr>
+                        <td>SENZA ridondanza</td>
                         <td>8</td>
-                        <td>sp_inserisci_valore_bilancio</td>
-                        <td>Valore voce (UPSERT)</td>
-                    </tr>
-                    <tr>
-                        <td>9</td>
-                        <td>sp_collega_indicatore_voce</td>
-                        <td>Link indicatore-voce</td>
-                    </tr>
-                    <tr>
-                        <td>10</td>
-                        <td>sp_associa_revisore_bilancio</td>
-                        <td>Assegna revisore</td>
-                    </tr>
-                    <tr>
-                        <td>11</td>
-                        <td>sp_inserisci_competenza</td>
-                        <td>Competenza revisore</td>
-                    </tr>
-                    <tr>
-                        <td>12</td>
-                        <td>sp_inserisci_nota</td>
-                        <td>Nota su voce</td>
-                    </tr>
-                    <tr>
-                        <td>13</td>
-                        <td>sp_inserisci_giudizio</td>
-                        <td>Giudizio finale</td>
-                    </tr>
-                    <tr>
-                        <td>14</td>
-                        <td>sp_aggiorna_indice_affidabilita</td>
-                        <td>Ricalcola indice revisore</td>
+                        <td>75</td>
+                        <td>6</td>
+                        <td><b style="color:red;">89</b></td>
                     </tr>
                 </table>
-                <div class="card" style="margin-top:12px;">
-                    <div class="card-body">
-                        Nel PHP: solo <code>CALL sp_nome(...)</code> con prepared statements &mdash; nessuna query SQL
-                        inline.
-                    </div>
+
+                <div class="riquadro" style="margin-top:14px;">
+                    <div class="grande">-60.7%</div>
+                    <div class="sotto">Risparmio con la ridondanza</div>
                 </div>
+
+                <p class="piccolo" style="margin-top:8px;">Il vantaggio grosso e' su OpB: con la ridondanza leggo solo
+                    10 righe (aziende), senza dovrei fare COUNT su 50 bilanci. Lo mantengo aggiornato coi trigger T3 e
+                    T4.</p>
             </div>
         </div>
+
+        <span class="piede">Basi di Dati &mdash; A.A. 2025/2026</span>
+        <span class="slide-num">6/14</span>
     </div>
 
-    <!-- ═══════════════════════════════════════════
-         SLIDE 9 — VISTE & VINCOLI
-         ═══════════════════════════════════════════ -->
-    <div class="slide" id="slide-9">
-        <span class="section-num">08</span>
-        <div class="slide-line"></div>
-        <h1>Viste e Vincoli di Business</h1>
-        <div class="columns">
-            <div class="col">
-                <h3>4 Viste per le statistiche</h3>
-                <div class="card">
-                    <div class="card-title">V1: v_num_aziende</div>
-                    <div class="card-body">Conteggio aziende registrate</div>
-                </div>
-                <div class="card" style="margin-top:6px;">
-                    <div class="card-title">V2: v_num_revisori</div>
-                    <div class="card-body">Conteggio revisori registrati</div>
-                </div>
-                <div class="card" style="margin-top:6px;">
-                    <div class="card-title">V3: v_affidabilita_aziende</div>
-                    <div class="card-body">Classifica aziende per <strong>% bilanci approvati</strong> senza rilievi
-                    </div>
-                </div>
-                <div class="card" style="margin-top:6px;">
-                    <div class="card-title">V4: v_classifica_bilanci_esg</div>
-                    <div class="card-body">Classifica bilanci per <strong>n. indicatori ESG</strong> collegati (LEFT
-                        JOIN)</div>
-                </div>
-            </div>
-            <div class="col">
-                <h3>Regole implementate</h3>
+    <!-- SLIDE 7 - stored procedures -->
+    <div class="slide">
+        <h2>Le 14 Stored Procedure</h2>
+
+        <p>Ho deciso di fare passare <b>tutte le operazioni di scrittura</b> tramite stored procedure, cosi' la logica
+            sta
+            dentro il database e non nel codice PHP. In questo modo il codice applicativo chiama solo
+            <code>CALL sp_nome(...)</code> e non fa mai INSERT/UPDATE direttamente. Questo e' utile anche per la
+            manutenzione: se devo cambiare la logica di business, modifico solo la SP senza toccare il PHP.
+        </p>
+
+        <table>
+            <tr>
+                <th>#</th>
+                <th>Nome</th>
+                <th>Cosa fa</th>
+            </tr>
+            <tr>
+                <td>SP1</td>
+                <td>sp_login</td>
+                <td>Ritorna username, hash password e ruolo</td>
+            </tr>
+            <tr>
+                <td>SP2</td>
+                <td>sp_registra_utente</td>
+                <td>Registra utente + email + sotto-tabella in modo atomico</td>
+            </tr>
+            <tr>
+                <td>SP3</td>
+                <td>sp_aggiungi_email</td>
+                <td>Aggiunge un'email a un utente</td>
+            </tr>
+            <tr>
+                <td>SP4</td>
+                <td>sp_crea_voce_contabile</td>
+                <td>Crea una voce nel template contabile</td>
+            </tr>
+            <tr>
+                <td>SP5</td>
+                <td>sp_inserisci_indicatore_esg</td>
+                <td>Inserisce indicatore + eventuale sotto-tabella (ambientale/sociale/governance)</td>
+            </tr>
+            <tr>
+                <td>SP6</td>
+                <td>sp_registra_azienda</td>
+                <td>Registra un'azienda per il responsabile</td>
+            </tr>
+            <tr>
+                <td>SP7</td>
+                <td>sp_crea_bilancio</td>
+                <td>Crea bilancio in stato 'bozza', ritorna l'ID</td>
+            </tr>
+            <tr>
+                <td>SP8</td>
+                <td>sp_inserisci_valore_bilancio</td>
+                <td>UPSERT del valore di una voce (ON DUPLICATE KEY UPDATE)</td>
+            </tr>
+            <tr>
+                <td>SP9</td>
+                <td>sp_collega_indicatore_voce</td>
+                <td>Collega un indicatore ESG a una voce del bilancio</td>
+            </tr>
+            <tr>
+                <td>SP10</td>
+                <td>sp_associa_revisore_bilancio</td>
+                <td>Assegna revisore al bilancio, incrementa nr_revisioni</td>
+            </tr>
+            <tr>
+                <td>SP11</td>
+                <td>sp_inserisci_competenza</td>
+                <td>UPSERT competenza del revisore</td>
+            </tr>
+            <tr>
+                <td>SP12</td>
+                <td>sp_inserisci_nota</td>
+                <td>Inserisce nota del revisore su una voce</td>
+            </tr>
+            <tr>
+                <td>SP13</td>
+                <td>sp_inserisci_giudizio</td>
+                <td>Registra il giudizio finale del revisore</td>
+            </tr>
+            <tr>
+                <td>SP14</td>
+                <td>sp_aggiorna_indice_affidabilita</td>
+                <td>Ricalcola l'indice di affidabilita'</td>
+            </tr>
+        </table>
+
+        <p class="piccolo" style="margin-top:6px;"><b>Note implementative:</b> SP2 usa una transazione per garantire
+            atomicita' (inserisce nella tabella padre + sotto-tabella + email in un colpo solo). SP8 e SP11 usano
+            <code>ON DUPLICATE KEY UPDATE</code> per fare UPSERT. Tutte le SP sono chiamate dal PHP tramite una funzione
+            wrapper <code>callSP()</code> / <code>execSP()</code> che usa PDO prepared statements.
+        </p>
+
+        <span class="piede">Basi di Dati &mdash; A.A. 2025/2026</span>
+        <span class="slide-num">7/14</span>
+    </div>
+
+    <!-- SLIDE 8 - trigger e viste -->
+    <div class="slide">
+        <h2>Trigger e Viste</h2>
+
+        <div class="due-col">
+            <div>
+                <h3>4 Trigger</h3>
                 <table>
                     <tr>
-                        <th>Regola</th>
-                        <th>Meccanismo</th>
+                        <th>Nome</th>
+                        <th>Quando scatta</th>
+                        <th>Cosa fa</th>
                     </tr>
                     <tr>
-                        <td>Livello competenza [0,5]</td>
-                        <td>CHECK</td>
+                        <td><b>T1</b><br><span class="piccolo">trg_bilancio_in_revisione</span></td>
+                        <td>AFTER INSERT su revisioni</td>
+                        <td>bozza &rarr; in_revisione (al primo revisore)</td>
                     </tr>
                     <tr>
-                        <td>Rilevanza indicatore [0,10]</td>
-                        <td>CHECK</td>
+                        <td><b>T2</b><br><span class="piccolo">trg_bilancio_giudizio</span></td>
+                        <td>AFTER INSERT su giudizi</td>
+                        <td>Quando tutti votano: se c'e' un respingimento &rarr; respinto, altrimenti &rarr; approvato.
+                            Chiama anche SP14</td>
                     </tr>
                     <tr>
-                        <td>Ragione sociale univoca</td>
-                        <td>UNIQUE</td>
+                        <td><b>T3</b><br><span class="piccolo">trg_incrementa_nr_bilanci</span></td>
+                        <td>AFTER INSERT su bilanci</td>
+                        <td>nr_bilanci += 1</td>
                     </tr>
                     <tr>
-                        <td>Primo revisore &rarr; in_revisione</td>
-                        <td>Trigger T1</td>
-                    </tr>
-                    <tr>
-                        <td>Stato finale da giudizi</td>
-                        <td>Trigger T2</td>
-                    </tr>
-                    <tr>
-                        <td>nr_bilanci aggiornato</td>
-                        <td>Trigger T3/T4</td>
-                    </tr>
-                    <tr>
-                        <td>1 giudizio/revisore/bilancio</td>
-                        <td>PK composita</td>
-                    </tr>
-                    <tr>
-                        <td>Modifica solo in bozza</td>
-                        <td>Logica PHP</td>
+                        <td><b>T4</b><br><span class="piccolo">trg_decrementa_nr_bilanci</span></td>
+                        <td>AFTER DELETE su bilanci</td>
+                        <td>nr_bilanci -= 1</td>
                     </tr>
                 </table>
-                <h3 style="margin-top:12px;">Integrit&agrave; referenziale</h3>
-                <p style="font-size:.85em;">
-                    FK con <strong>ON DELETE CASCADE</strong> lungo le catene di dipendenze &bull;
-                    <strong>ON UPDATE CASCADE</strong> per PK testuali (voci, indicatori)
+            </div>
+            <div>
+                <h3>4 Viste</h3>
+                <table>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Cosa mostra</th>
+                    </tr>
+                    <tr>
+                        <td>v_num_aziende</td>
+                        <td>Totale aziende registrate</td>
+                    </tr>
+                    <tr>
+                        <td>v_num_revisori</td>
+                        <td>Totale revisori registrati</td>
+                    </tr>
+                    <tr>
+                        <td>v_affidabilita_aziende</td>
+                        <td>Classifica aziende per % bilanci approvati puri</td>
+                    </tr>
+                    <tr>
+                        <td>v_classifica_bilanci_esg</td>
+                        <td>Bilanci ordinati per nr indicatori ESG collegati</td>
+                    </tr>
+                </table>
+
+                <h3 style="margin-top:18px;">Ciclo di vita del bilancio</h3>
+                <p style="text-align:center; margin-top:10px; font-size:16px;">
+                    <code>bozza</code>
+                    &xrarr;
+                    <code>in_revisione</code>
+                    &xrarr;
+                    <code>approvato</code> oppure <code>respinto</code>
+                </p>
+                <p class="piccolo" style="text-align:center;">T1 fa la prima transizione automaticamente. T2 aspetta che
+                    tutti i revisori assegnati abbiano votato: se anche solo uno vota "respingimento" &rarr; lo stato
+                    diventa respinto, altrimenti &rarr; approvato. T2 chiama anche SP14 per ricalcolare l'indice di
+                    affidabilita' del revisore.</p>
+
+                <h3>Cosa fanno le viste</h3>
+                <p class="piccolo">
+                    <b>v_num_aziende</b> e <b>v_num_revisori</b>: semplici COUNT per la dashboard.<br>
+                    <b>v_affidabilita_aziende</b>: calcola per ogni azienda la % di bilanci approvati senza rilievi
+                    (approvazione pura).<br>
+                    <b>v_classifica_bilanci_esg</b>: ordina i bilanci per numero di indicatori ESG collegati, utile per
+                    capire quali bilanci sono piu' completi.
                 </p>
             </div>
         </div>
+
+        <span class="piede">Basi di Dati &mdash; A.A. 2025/2026</span>
+        <span class="slide-num">8/14</span>
     </div>
 
-    <!-- ═══════════════════════════════════════════
-         SLIDE 10 — STACK TECNOLOGICO
-         ═══════════════════════════════════════════ -->
-    <div class="slide" id="slide-10">
-        <span class="section-num">09</span>
-        <div class="slide-line"></div>
-        <h1>Stack Tecnologico</h1>
-        <div class="columns">
-            <div class="col">
-                <h3>Backend</h3>
-                <ul>
-                    <li><strong>PHP 8+</strong> con PDO e prepared statements</li>
-                    <li><strong>MySQL / MariaDB</strong> &mdash; schema, SP, trigger, viste</li>
-                    <li><strong>MongoDB</strong> &mdash; logging eventi (collezione <em>events</em>)</li>
-                    <li><strong>bcrypt</strong> per hashing password</li>
-                </ul>
-                <h3 style="margin-top:16px;">Frontend</h3>
-                <ul>
-                    <li><strong>Bootstrap 5</strong> per il layout responsive</li>
-                    <li><strong>CSS custom</strong> con palette blu</li>
-                    <li><strong>JavaScript</strong> vanilla</li>
+    <!-- SLIDE 9 - normalizzazione -->
+    <div class="slide">
+        <h2>Normalizzazione (BCNF)</h2>
+
+        <p>Ho verificato che tutte le 17 tabelle sono in <b>BCNF</b>: per ogni dipendenza funzionale non banale X &rarr;
+            Y, X e' una superchiave. Queste sono alcune delle verifiche che ho fatto:</p>
+
+        <table>
+            <tr>
+                <th>Tabella</th>
+                <th>Chiave</th>
+                <th>Dipendenze funzionali</th>
+                <th>OK?</th>
+            </tr>
+            <tr>
+                <td>utenti</td>
+                <td>{username}</td>
+                <td>username &rarr; password_hash, CF, data_nascita, luogo_nascita, ruolo</td>
+                <td>Si'</td>
+            </tr>
+            <tr>
+                <td>email_utente</td>
+                <td>{username, email}</td>
+                <td>Nessun attributo non-chiave</td>
+                <td>Si'</td>
+            </tr>
+            <tr>
+                <td>aziende</td>
+                <td>{id}, {ragione_sociale}</td>
+                <td>Entrambi sono superchiavi &rarr; ok</td>
+                <td>Si'</td>
+            </tr>
+            <tr>
+                <td>valori_bilancio</td>
+                <td>{id_bilancio, nome_voce}</td>
+                <td>PK &rarr; valore</td>
+                <td>Si'</td>
+            </tr>
+            <tr>
+                <td>voci_indicatori</td>
+                <td>{id_bilancio, nome_voce, nome_indicatore}</td>
+                <td>PK &rarr; valore_indicatore, fonte, data</td>
+                <td>Si'</td>
+            </tr>
+            <tr>
+                <td>giudizi</td>
+                <td>{username_revisore, id_bilancio}</td>
+                <td>PK &rarr; esito, data_giudizio, rilievi</td>
+                <td>Si'</td>
+            </tr>
+        </table>
+
+        <h3>Come ho ristrutturato lo schema E-R</h3>
+        <ul>
+            <li><b>Gerarchia utenti (Totale, Escl.):</b> tabella padre <code>utenti</code> + sotto-tabelle
+                <code>revisori</code> e <code>responsabili</code> con stessa PK
+            </li>
+            <li><b>Gerarchia indicatori (Parz., Escl.):</b> tabella padre + sotto-tabelle
+                <code>indicatori_ambientali</code> e <code>indicatori_sociali</code>
+            </li>
+            <li><b>Email multivalore:</b> ho messo una tabella separata con PK composita (username, email)</li>
+            <li><b>Relazione M:N (VALORIZZA):</b> tabella <code>valori_bilancio</code> con PK composita</li>
+            <li><b>Relazione ternaria (COLLEGA):</b> tabella <code>voci_indicatori</code> con PK su 3 attributi</li>
+        </ul>
+
+        <span class="piede">Basi di Dati &mdash; A.A. 2025/2026</span>
+        <span class="slide-num">9/14</span>
+    </div>
+
+    <!-- SLIDE 10 - applicazione web -->
+    <div class="slide">
+        <h2>L'Applicazione Web</h2>
+
+        <div class="due-col">
+            <div>
+                <h3>Architettura</h3>
+                <p>Ho organizzato il codice in 3 livelli:</p>
+                <div style="text-align:center; margin:8px 0;">
+                    <div style="background:#d9e8fc;padding:10px;border:1px solid #99c;">
+                        <b>Presentazione</b><br>
+                        <span class="piccolo">HTML5, Bootstrap 5, JS</span>
+                    </div>
+                    <div style="text-align:center;font-size:20px;">&darr;</div>
+                    <div style="background:#e8e0f8;padding:10px;border:1px solid #aaf;">
+                        <b>Logica applicativa</b><br>
+                        <span class="piccolo">PHP 8, PDO, sessioni, auth bcrypt</span>
+                    </div>
+                    <div style="text-align:center;font-size:20px;">&darr;</div>
+                    <div style="background:#d9f5d9;padding:10px;border:1px solid #9c9;">
+                        <b>Dati</b><br>
+                        <span class="piccolo">MySQL &mdash; 17 tab, 14 SP, 4 trigger, 4 viste</span>
+                    </div>
+                </div>
+
+                <h3>Struttura file</h3>
+                <ul class="piccolo">
+                    <li><b>config/</b> &mdash; connessione DB (singleton PDO)</li>
+                    <li><b>includes/</b> &mdash; auth, wrapper per le SP, funzioni, header/footer</li>
+                    <li><b>pages/admin/</b> &mdash; template, indicatori, assegnazione revisori</li>
+                    <li><b>pages/responsabile/</b> &mdash; aziende, bilancio, indicatori</li>
+                    <li><b>pages/revisore/</b> &mdash; competenze, revisione, giudizio</li>
+                    <li><b>sql/</b> &mdash; schema, SP, trigger, viste, dati demo</li>
                 </ul>
             </div>
-            <div class="col">
+            <div>
+                <h3>Cosa puo' fare ogni ruolo</h3>
+
+                <p><b>Amministratore:</b></p>
+                <ul class="piccolo">
+                    <li>CRUD sulle voci contabili</li>
+                    <li>Gestione indicatori ESG (con sotto-tipi ambientale/sociale/governance)</li>
+                    <li>Assegnare i revisori ai bilanci</li>
+                </ul>
+
+                <p><b>Responsabile:</b></p>
+                <ul class="piccolo">
+                    <li>Registra aziende (con upload del logo)</li>
+                    <li>Crea bilanci e compila i valori delle voci</li>
+                    <li>Collega indicatori ESG alle voci contabili</li>
+                </ul>
+
+                <p><b>Revisore:</b></p>
+                <ul class="piccolo">
+                    <li>Dichiara le competenze (livello da 0 a 5)</li>
+                    <li>Mette note sulle singole voci del bilancio</li>
+                    <li>Emette giudizio: approvazione, con rilievi, o respingimento</li>
+                </ul>
+
+                <p><b>Tutti:</b></p>
+                <ul class="piccolo">
+                    <li>Dashboard personalizzata in base al ruolo</li>
+                    <li>Pagina statistiche (usa le 4 viste SQL)</li>
+                    <li>Possono aggiungere email secondarie al profilo</li>
+                </ul>
+
                 <h3>Sicurezza</h3>
-                <ul>
-                    <li>Sessioni PHP + controllo ruoli (<code>requireRole()</code>)</li>
-                    <li>Prepared statements ovunque (no SQL injection)</li>
-                    <li>Output sanitizzato con <code>htmlspecialchars()</code></li>
-                    <li>Upload con verifica MIME type reale</li>
+                <ul class="piccolo">
+                    <li>Password con <b>bcrypt</b> (cost 12) e <code>password_verify()</code></li>
+                    <li>Rigenerazione sessione al login (<code>session_regenerate_id</code>)</li>
+                    <li>Timeout sessione dopo 1 ora di inattivita'</li>
+                    <li><code>htmlspecialchars()</code> su tutti gli output (anti-XSS)</li>
+                    <li>100% prepared statements con <code>PDO</code> (anti-SQL injection)</li>
+                    <li>Guard functions su ogni pagina: <code>requireLogin()</code> + <code>requireRole()</code></li>
                 </ul>
-                <h3 style="margin-top:16px;">Struttura file</h3>
-                <div class="code-block">ESG-BALANCE/
-                    config/ <span class="comment">-- database.php, mongodb.php</span>
-                    includes/ <span class="comment">-- auth, db, functions, header/footer</span>
-                    pages/ <span class="comment">-- login, register, dashboard, ...</span>
-                    admin/ <span class="comment">-- template, indicatori, assegna</span>
-                    revisore/ <span class="comment">-- competenze, revisione, giudizio</span>
-                    responsabile/ <span class="comment">-- aziende, bilancio, indicatori</span>
-                    sql/ <span class="comment">-- schema, SP, trigger, viste, seed</span>
-                    assets/ <span class="comment">-- css, js, uploads</span></div>
             </div>
         </div>
+
+        <span class="piede">Basi di Dati &mdash; A.A. 2025/2026</span>
+        <span class="slide-num">10/14</span>
     </div>
 
-    <!-- ═══════════════════════════════════════════
-         SLIDE 11 — ESTRATTI DAL CODICE
-         ═══════════════════════════════════════════ -->
-    <div class="slide" id="slide-11">
-        <span class="section-num">10</span>
-        <div class="slide-line"></div>
-        <h1>Estratti dal Codice</h1>
-        <div class="columns">
-            <div class="col">
-                <h3>Trigger T2 &mdash; stato finale bilancio</h3>
-                <div class="code-block"><span class="keyword">CREATE TRIGGER</span> trg_bilancio_giudizio
-                    <span class="keyword">AFTER INSERT ON</span> giudizi
-                    <span class="keyword">FOR EACH ROW</span>
-                    <span class="keyword">BEGIN</span>
-                    <span class="keyword">IF NOT EXISTS</span> (
-                    <span class="keyword">SELECT</span> 1 <span class="keyword">FROM</span> revisioni r
-                    <span class="keyword">WHERE</span> r.id_bilancio = NEW.id_bilancio<span class="keyword">AND NOT EXISTS</span> (
-                    <span class="keyword">SELECT</span> 1 <span class="keyword">FROM</span> giudizi g
-                    <span class="keyword">WHERE</span> g.username_revisore = r.username_revisore
-                    <span class="keyword">AND</span> g.id_bilancio = r.id_bilancio )
-                    ) <span class="keyword">THEN</span>
-                    <span class="keyword">UPDATE</span> bilanci
-                    <span class="keyword">SET</span> stato = <span class="keyword">CASE</span>
-                    <span class="keyword">WHEN EXISTS</span> (...esito=<span class="string">'respingimento'</span>)
-                    <span class="keyword">THEN</span> <span class="string">'respinto'</span>
-                    <span class="keyword">ELSE</span> <span class="string">'approvato'</span> <span
-                        class="keyword">END</span>
-                    <span class="keyword">WHERE</span> id = NEW.id_bilancio;
-                    <span class="keyword">END IF</span>;
-                    <span class="comment">-- Aggiorna indice affidabilita</span>
-                    <span class="keyword">CALL</span> sp_aggiorna_indice_affidabilita(
-                    NEW.username_revisore);
-                    <span class="keyword">END</span>;
-                </div>
+    <!-- SLIDE 11 - codice SQL: trigger T2 e SP14 -->
+    <div class="slide">
+        <h2>Codice SQL: Trigger T2 + SP14</h2>
+
+        <p>Questi sono i due pezzi di codice piu' importanti del progetto: il trigger che decide lo stato finale del
+            bilancio e la SP che ricalcola l'affidabilita' del revisore.</p>
+
+        <div class="due-col">
+            <div>
+                <h3>Trigger T2 &mdash; trg_bilancio_giudizio</h3>
+                <pre
+                    style="background:#f5f5f5;border:1px solid #ddd;padding:10px;font-size:11.5px;overflow-x:auto;line-height:1.4;">
+CREATE TRIGGER trg_bilancio_giudizio
+AFTER INSERT ON giudizi
+FOR EACH ROW
+BEGIN
+  DECLARE v_tot_revisori INT;
+  DECLARE v_tot_giudizi  INT;
+  DECLARE v_respingimenti INT;
+
+  -- Quanti revisori sono assegnati?
+  SELECT COUNT(*) INTO v_tot_revisori
+  FROM revisioni
+  WHERE id_bilancio = NEW.id_bilancio;
+
+  -- Quanti hanno gia' votato?
+  SELECT COUNT(*) INTO v_tot_giudizi
+  FROM giudizi
+  WHERE id_bilancio = NEW.id_bilancio;
+
+  -- Se tutti hanno votato...
+  IF v_tot_giudizi = v_tot_revisori THEN
+    SELECT COUNT(*) INTO v_respingimenti
+    FROM giudizi
+    WHERE id_bilancio = NEW.id_bilancio
+      AND esito = 'respingimento';
+
+    IF v_respingimenti > 0 THEN
+      UPDATE bilanci
+      SET stato = 'respinto'
+      WHERE id = NEW.id_bilancio;
+    ELSE
+      UPDATE bilanci
+      SET stato = 'approvato'
+      WHERE id = NEW.id_bilancio;
+    END IF;
+  END IF;
+
+  -- Ricalcola affidabilita'
+  CALL sp_aggiorna_indice_affidabilita(
+    NEW.username_revisore);
+END$$</pre>
             </div>
-            <div class="col">
-                <h3>PHP &mdash; prepared statement + controllo stato</h3>
-                <div class="code-block"><span class="comment">// Controllo che il bilancio sia in bozza</span>
-                    $stmt = $pdo-><span class="keyword">prepare</span>(
-                    <span class="string">"SELECT stato FROM bilanci WHERE id = ?"</span>
-                    );
-                    $stmt-><span class="keyword">execute</span>([$idBilancio]);
-                    $stato = $stmt-><span class="keyword">fetchColumn</span>();
-                    <span class="keyword">if</span> ($stato !== <span class="string">'bozza'</span>) {
-                    <span class="keyword">throw new</span> Exception(<span class="string">'Solo in bozza'</span>);
-                    }
-                    <span class="comment">// Inserimento valore tramite SP</span>
-                    $call = $pdo-><span class="keyword">prepare</span>(
-                    <span class="string">"CALL sp_inserisci_valore_bilancio(?, ?, ?)"</span>
-                    );
-                    $call-><span class="keyword">execute</span>(
-                    [$idBilancio, $nomeVoce, $valore]
-                    );
-                </div>
+            <div>
+                <h3>SP14 &mdash; Indice di affidabilita'</h3>
+                <pre
+                    style="background:#f5f5f5;border:1px solid #ddd;padding:10px;font-size:11.5px;overflow-x:auto;line-height:1.4;">
+CREATE PROCEDURE
+  sp_aggiorna_indice_affidabilita(
+    IN p_username VARCHAR(50)
+)
+BEGIN
+  DECLARE v_totale INT DEFAULT 0;
+  DECLARE v_positivi INT DEFAULT 0;
+  DECLARE v_indice DECIMAL(3,2)
+    DEFAULT 0.00;
+
+  -- Giudizi totali del revisore
+  SELECT COUNT(*) INTO v_totale
+  FROM giudizi
+  WHERE username_revisore = p_username;
+
+  -- Giudizi con approvazione pura
+  SELECT COUNT(*) INTO v_positivi
+  FROM giudizi
+  WHERE username_revisore = p_username
+    AND esito = 'approvazione';
+
+  -- Calcolo: positivi / totale
+  IF v_totale > 0 THEN
+    SET v_indice =
+      ROUND(v_positivi / v_totale, 2);
+  END IF;
+
+  UPDATE revisori
+  SET indice_affidabilita = v_indice
+  WHERE username = p_username;
+END$$</pre>
+
+                <p class="piccolo" style="margin-top:8px;"><b>Esempio:</b> se un revisore ha emesso 8 giudizi di cui 6
+                    "approvazione" pura, il suo indice sara' 6/8 = <b>0.75</b>. I giudizi "approvazione_con_rilievi" non
+                    contano come positivi.</p>
             </div>
         </div>
+
+        <span class="piede">Basi di Dati &mdash; A.A. 2025/2026</span>
+        <span class="slide-num">11/14</span>
     </div>
 
-    <!-- ═══════════════════════════════════════════
-         SLIDE 12 — CONCLUSIONI
-         ═══════════════════════════════════════════ -->
-    <div class="slide slide-title" id="slide-12">
-        <div style="text-align:center; flex:1; display:flex; flex-direction:column; justify-content:center;">
-            <h1 class="mega">Grazie</h1>
-            <p class="subtitle">Domande?</p>
-            <div style="margin-top:36px;">
-                <div class="stat-grid" style="max-width:720px; margin:0 auto;">
-                    <div class="stat-box">
-                        <span class="stat-number">16</span>
-                        <span class="stat-label">Tabelle BCNF</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="stat-number">14</span>
-                        <span class="stat-label">Stored Procedure</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="stat-number">4+4</span>
-                        <span class="stat-label">Trigger + Viste</span>
-                    </div>
-                    <div class="stat-box">
-                        <span class="stat-number">3</span>
-                        <span class="stat-label">Ruoli utente</span>
-                    </div>
-                </div>
+    <!-- SLIDE 12 - codice SQL: SP2 registrazione atomica + DDL -->
+    <div class="slide">
+        <h2>Codice SQL: Registrazione Atomica + DDL</h2>
+
+        <div class="due-col">
+            <div>
+                <h3>SP2 &mdash; sp_registra_utente (transazione)</h3>
+                <pre
+                    style="background:#f5f5f5;border:1px solid #ddd;padding:10px;font-size:11.5px;overflow-x:auto;line-height:1.4;">
+CREATE PROCEDURE sp_registra_utente(
+  IN p_username      VARCHAR(50),
+  IN p_password_hash VARCHAR(255),
+  IN p_codice_fiscale CHAR(16),
+  IN p_data_nascita  DATE,
+  IN p_luogo_nascita VARCHAR(100),
+  IN p_ruolo         VARCHAR(20),
+  IN p_email         VARCHAR(150),
+  IN p_curriculum    VARCHAR(255)
+)
+BEGIN
+  -- Se fallisce qualcosa: ROLLBACK
+  DECLARE EXIT HANDLER FOR SQLEXCEPTION
+  BEGIN
+    ROLLBACK;
+    RESIGNAL;
+  END;
+
+  START TRANSACTION;
+
+  -- 1) Tabella padre
+  INSERT INTO utenti (username,
+    password_hash, codice_fiscale,
+    data_nascita, luogo_nascita, ruolo)
+  VALUES (p_username, p_password_hash,
+    p_codice_fiscale, p_data_nascita,
+    p_luogo_nascita, p_ruolo);
+
+  -- 2) Email
+  INSERT INTO email_utente
+    (username, email)
+  VALUES (p_username, p_email);
+
+  -- 3) Sotto-tabella per ruolo
+  IF p_ruolo = 'revisore' THEN
+    INSERT INTO revisori (username)
+    VALUES (p_username);
+  ELSEIF p_ruolo = 'responsabile' THEN
+    INSERT INTO responsabili
+      (username, curriculum_pdf)
+    VALUES (p_username, p_curriculum);
+  END IF;
+
+  COMMIT;
+END$$</pre>
+                <p class="piccolo" style="margin-top:4px;">Le 3 INSERT sono atomiche: se una fallisce (es. username
+                    duplicato), nessuna riga viene inserita.</p>
             </div>
-            <p class="small-text" style="margin-top:32px;">
-                <strong style="font-size:1.1em;">Tesfaye Venieri</strong><br>
-                ESG-BALANCE &mdash; Basi di Dati A.A. 2025/2026<br>
-                Universit&agrave; di Bologna
-            </p>
+            <div>
+                <h3>DDL &mdash; Esempio tabelle con vincoli</h3>
+                <pre
+                    style="background:#f5f5f5;border:1px solid #ddd;padding:10px;font-size:11.5px;overflow-x:auto;line-height:1.4;">
+-- Gerarchia utenti: tabella padre
+CREATE TABLE utenti (
+  username      VARCHAR(50)  NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  codice_fiscale CHAR(16)   NOT NULL,
+  data_nascita  DATE         NOT NULL,
+  luogo_nascita VARCHAR(100) NOT NULL,
+  ruolo ENUM('amministratore',
+    'revisore','responsabile') NOT NULL,
+  PRIMARY KEY (username),
+  UNIQUE KEY (codice_fiscale)
+) ENGINE=InnoDB;
+
+-- Sotto-tabella revisori (stessa PK)
+CREATE TABLE revisori (
+  username VARCHAR(50) NOT NULL,
+  nr_revisioni INT DEFAULT 0,
+  indice_affidabilita DECIMAL(3,2)
+    DEFAULT 0.00,
+  PRIMARY KEY (username),
+  FOREIGN KEY (username)
+    REFERENCES utenti(username)
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- Competenze con CHECK
+CREATE TABLE competenze_revisore (
+  username VARCHAR(50) NOT NULL,
+  nome_competenza VARCHAR(100) NOT NULL,
+  livello TINYINT NOT NULL,
+  PRIMARY KEY (username, nome_competenza),
+  FOREIGN KEY (username)
+    REFERENCES revisori(username)
+    ON DELETE CASCADE,
+  CONSTRAINT chk_livello
+    CHECK (livello BETWEEN 0 AND 5)
+) ENGINE=InnoDB;</pre>
+            </div>
         </div>
+
+        <span class="piede">Basi di Dati &mdash; A.A. 2025/2026</span>
+        <span class="slide-num">12/14</span>
     </div>
 
-    <!-- ── NAVIGAZIONE ── -->
-    <div class="nav-bar">
-        <button onclick="prevSlide()">&larr; Precedente</button>
-        <span class="slide-counter" id="slideCounter">1 / 12</span>
-        <button onclick="nextSlide()">Successiva &rarr;</button>
+    <!-- SLIDE 13 - codice PHP + integrità referenziale -->
+    <div class="slide">
+        <h2>Codice PHP + Integrita' Referenziale</h2>
+
+        <div class="due-col">
+            <div>
+                <h3>Login (pages/login.php)</h3>
+                <pre
+                    style="background:#f5f5f5;border:1px solid #ddd;padding:10px;font-size:11.5px;overflow-x:auto;line-height:1.4;">
+// Chiamo la SP1 tramite il wrapper
+$rows = callSP('sp_login', [$username]);
+
+if (empty($rows)) {
+  $error = 'Username o password non validi.';
+} else {
+  $user = $rows[0];
+  // Verifica timing-safe con bcrypt
+  if (password_verify($password,
+      $user['password_hash'])) {
+    session_regenerate_id(true);
+    $_SESSION['username'] = $user['username'];
+    $_SESSION['ruolo']    = $user['ruolo'];
+    $_SESSION['last_activity'] = time();
+    logEvent('login',
+      "Accesso: {$user['username']}");
+    header('Location: .../dashboard.php');
+  } else {
+    // Messaggio generico (non rivela
+    // quale campo e' sbagliato)
+    $error = 'Username o password non validi.';
+  }
+}</pre>
+
+                <h3>Wrapper DB (includes/db.php)</h3>
+                <pre
+                    style="background:#f5f5f5;border:1px solid #ddd;padding:10px;font-size:11.5px;overflow-x:auto;line-height:1.4;">
+function callSP($sp_name, $params=[]) {
+  $pdo = getDBConnection();
+  $placeholders = implode(',',
+    array_fill(0, count($params), '?'));
+  $sql = "CALL {$sp_name}({$placeholders})";
+  $stmt = $pdo->prepare($sql);
+  $stmt->execute($params);
+  $results = $stmt->fetchAll();
+  $stmt->closeCursor();
+  return $results;
+}</pre>
+            </div>
+            <div>
+                <h3>Catena CASCADE (integrita' referenziale)</h3>
+                <p class="piccolo">Tutte le FK usano <code>ON DELETE CASCADE</code>. Ecco cosa succede se cancello un
+                    utente:</p>
+                <div
+                    style="background:#fff8e8;border:1px solid #e8d088;padding:10px;margin:6px 0;font-size:13px;line-height:1.6;">
+                    <code>DELETE FROM utenti WHERE username='mario'</code><br><br>
+                    &rarr; CASCADE elimina <b>email_utente</b> (le sue email)<br>
+                    &rarr; CASCADE elimina <b>revisori</b> (la riga revisore)<br>
+                    &emsp;&rarr; CASCADE elimina <b>competenze_revisore</b><br>
+                    &emsp;&rarr; CASCADE elimina <b>revisioni</b> (assegnazioni)<br>
+                    &emsp;&rarr; CASCADE elimina <b>note_revisione</b><br>
+                    &emsp;&rarr; CASCADE elimina <b>giudizi</b>
+                </div>
+
+                <p class="piccolo">E se cancello un'azienda:</p>
+                <div
+                    style="background:#e8f5e8;border:1px solid #88c888;padding:10px;margin:6px 0;font-size:13px;line-height:1.6;">
+                    <code>DELETE FROM aziende WHERE id=1</code><br><br>
+                    &rarr; CASCADE elimina <b>bilanci</b> dell'azienda<br>
+                    &emsp;&rarr; CASCADE elimina <b>valori_bilancio</b><br>
+                    &emsp;&rarr; CASCADE elimina <b>voci_indicatori</b><br>
+                    &emsp;&rarr; CASCADE elimina <b>revisioni</b><br>
+                    &emsp;&rarr; CASCADE elimina <b>note_revisione</b><br>
+                    &emsp;&rarr; CASCADE elimina <b>giudizi</b><br>
+                    <span class="piccolo">(+ trigger T4 decrementa nr_bilanci)</span>
+                </div>
+
+                <h3>Guard functions (includes/auth.php)</h3>
+                <pre
+                    style="background:#f5f5f5;border:1px solid #ddd;padding:10px;font-size:11.5px;overflow-x:auto;line-height:1.4;">
+function requireRole(string $ruolo): void {
+  requireLogin();
+  if (($_SESSION['ruolo'] ?? '') !== $ruolo) {
+    header('Location: .../dashboard.php');
+    exit;
+  }
+}
+// Uso: in cima ad ogni pagina admin
+requireLogin();
+requireRole('amministratore');</pre>
+            </div>
+        </div>
+
+        <span class="piede">Basi di Dati &mdash; A.A. 2025/2026</span>
+        <span class="slide-num">13/14</span>
     </div>
 
-    <script>
-        let current = 1;
-        const total = 12;
+    <!-- SLIDE 14 - riepilogo -->
+    <div class="slide">
+        <h2>Riepilogo</h2>
 
-        function showSlide(n) {
-            document.querySelectorAll('.slide').forEach(s => s.classList.remove('active'));
-            document.getElementById('slide-' + n).classList.add('active');
-            document.getElementById('slideCounter').textContent = n + ' / ' + total;
-            document.getElementById('progressBar').style.width = ((n / total) * 100) + '%';
-        }
+        <div style="display:flex; gap:15px; margin:12px 0;">
+            <div class="riquadro" style="flex:1;">
+                <div class="grande">17</div>
+                <div class="sotto">Tabelle (BCNF)</div>
+            </div>
+            <div class="riquadro" style="flex:1;">
+                <div class="grande">14</div>
+                <div class="sotto">Stored Procedure</div>
+            </div>
+            <div class="riquadro" style="flex:1;">
+                <div class="grande">4</div>
+                <div class="sotto">Trigger</div>
+            </div>
+            <div class="riquadro" style="flex:1;">
+                <div class="grande">4</div>
+                <div class="sotto">Viste</div>
+            </div>
+            <div class="riquadro" style="flex:1;">
+                <div class="grande">11</div>
+                <div class="sotto">Regole di Business</div>
+            </div>
+        </div>
 
-        function nextSlide() { if (current < total) { current++; showSlide(current); } }
-        function prevSlide() { if (current > 1) { current--; showSlide(current); } }
+        <div class="due-col" style="margin-top:12px;">
+            <div>
+                <h3>Lato progettazione DB</h3>
+                <ul>
+                    <li>Schema E-R con 2 gerarchie (Totale/Escl. e Parziale/Escl.)</li>
+                    <li>Ristrutturazione: sotto-tabelle per gerarchie, M:N con attributi, relazione ternaria</li>
+                    <li>Tutte le 17 tabelle verificate in BCNF</li>
+                    <li>Analisi ridondanza quantitativa: risparmio del 60.7%</li>
+                    <li>11 regole di business (CHECK, trigger, SP, logica applicativa)</li>
+                    <li>14 stored procedures per separare la logica dal PHP</li>
+                    <li>4 trigger per automazione workflow bilancio e ridondanza</li>
+                    <li>4 viste SQL per le pagine statistiche</li>
+                </ul>
+            </div>
+            <div>
+                <h3>Lato applicazione web</h3>
+                <ul>
+                    <li>PHP 8 procedurale su XAMPP (Apache + MySQL)</li>
+                    <li>Tutte le scritture passano dalle stored procedure, mai INSERT diretto</li>
+                    <li>Workflow bilancio completamente automatizzato coi trigger</li>
+                    <li>Sicurezza: bcrypt, sessioni, htmlspecialchars, prepared statements</li>
+                    <li>Interfaccia responsive con Bootstrap 5 e design system custom</li>
+                    <li>Dashboard diversa per ogni ruolo, con widget dedicati</li>
+                    <li>Tabella log_eventi per il tracciamento delle azioni utente</li>
+                    <li>Dati di demo nel seed: 5 utenti, 3 aziende, 6 bilanci, indicatori e revisioni</li>
+                </ul>
+            </div>
+        </div>
 
-        document.addEventListener('keydown', function (e) {
-            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'Enter') { e.preventDefault(); nextSlide(); }
-            if (e.key === 'ArrowLeft' || e.key === 'Backspace') { e.preventDefault(); prevSlide(); }
-            if (e.key === 'Home') { current = 1; showSlide(current); }
-            if (e.key === 'End') { current = total; showSlide(current); }
-        });
+        <p style="text-align:center; margin-top:30px; font-size:20px; font-weight:bold; color:#336699;">Grazie!</p>
 
-        let touchStartX = 0;
-        document.addEventListener('touchstart', e => { touchStartX = e.changedTouches[0].screenX; });
-        document.addEventListener('touchend', e => {
-            const diff = e.changedTouches[0].screenX - touchStartX;
-            if (diff < -50) nextSlide();
-            if (diff > 50) prevSlide();
-        });
+        <span class="piede">Basi di Dati &mdash; A.A. 2025/2026</span>
+        <span class="slide-num">14/14</span>
+    </div>
 
-        if (new URLSearchParams(window.location.search).has('pdf')) {
-            document.body.classList.add('pdf-mode');
-        } else {
-            showSlide(1);
-        }
-    </script>
 </body>
 
 </html>

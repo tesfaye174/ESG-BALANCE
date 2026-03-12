@@ -5,6 +5,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+// Percorso base dell'applicazione (unica definizione)
+if (!defined('BASE_URL')) {
+    define('BASE_URL', '/ESG-BALANCE');
+}
+
 // Timeout di sessione: 1 ora di inattivita'
 $session_timeout = 3600;
 if (!empty($_SESSION['username']) && isset($_SESSION['last_activity'])) {
@@ -13,7 +18,7 @@ if (!empty($_SESSION['username']) && isset($_SESSION['last_activity'])) {
         session_destroy();
         session_start();
         $_SESSION['flash'] = ['type' => 'warning', 'message' => 'Sessione scaduta per inattivita\'. Effettua nuovamente il login.'];
-        header('Location: /ESG-BALANCE/pages/login.php');
+        header('Location: ' . BASE_URL . '/pages/login.php');
         exit;
     }
 }
@@ -24,7 +29,7 @@ if (!empty($_SESSION['username'])) {
 function requireLogin(): void
 {
     if (empty($_SESSION['username'])) {
-        header('Location: /ESG-BALANCE/pages/login.php');
+        header('Location: ' . BASE_URL . '/pages/login.php');
         exit;
     }
 }
@@ -33,7 +38,7 @@ function requireRole(string $ruolo): void
 {
     requireLogin();
     if (($_SESSION['ruolo'] ?? '') !== $ruolo) {
-        header('Location: /ESG-BALANCE/pages/dashboard.php');
+        header('Location: ' . BASE_URL . '/pages/dashboard.php');
         exit;
     }
 }

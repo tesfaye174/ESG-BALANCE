@@ -83,9 +83,9 @@ INSERT INTO indicatori_sociali (nome, ambito_sociale, frequenza_rilevazione) VAL
 ('Ore formazione dipendenti',  'Formazione e sviluppo professionale', 'Annuale'),
 ('Tasso infortuni',            'Salute e sicurezza sul lavoro',       'Trimestrale');
 
--- Indicatore generico (governance, senza sotto-tabella)
+-- Indicatore di governance (senza sotto-tabella dedicata)
 INSERT INTO indicatori_esg (nome, immagine, rilevanza, tipo) VALUES
-('Indice diversita\' CdA',    NULL, 5.5, NULL);
+('Indice diversita\' CdA',    NULL, 5.5, 'governance');
 
 -- BILANCI DI ESERCIZIO
 -- Il trigger T3 aggiorna automaticamente nr_bilanci nelle aziende.

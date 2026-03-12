@@ -10,7 +10,7 @@ function callSP(string $sp_name, array $params = []): array
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $results = $stmt->fetchAll();
-    $stmt->closeCursor(); // serve dopo CALL senno' da errore alla query dopo
+    $stmt->closeCursor(); // senza questo da errore "Cannot execute queries while other unbuffered queries are active"
     return $results;
 }
 

@@ -1,23 +1,21 @@
 <?php
 
-require_once __DIR__ . '/../config/mongodb.php';
+require_once __DIR__ . '/../config/database.php';
 
+// salva un evento nel log (tabella log_eventi)
 function logEvent(string $evento, string $dettagli, ?string $utente = null): void
 {
     try {
-        if (!class_exists('MongoDB\\Client')) {
-            throw new \RuntimeException('MongoDB extension non installata');
-        }
-        $collection = getMongoCollection();
-        $utcClass = 'MongoDB\\BSON\\UTCDateTime';
-        $collection->insertOne([
-            'evento'    => $evento,
-            'utente'    => $utente ?? ($_SESSION['username'] ?? 'sistema'),
-            'dettagli'  => $dettagli,
-            'timestamp' => class_exists($utcClass) ? new $utcClass() : date('Y-m-d H:i:s'),
+        $pdo = getDBConnection();
+        $stmt = $pdo->prepare("INSERT INTO log_eventi (evento, utente, dettagli, timestamp) VALUES (?, ?, ?, NOW())");
+        $stmt->execute([
+            $evento,
+            $utente ?? ($_SESSION['username'] ?? 'sistema'),
+            $dettagli,
         ]);
     } catch (\Throwable $e) {
-        error_log('[ESG-BALANCE] MongoDB log: ' . $e->getMessage());
+        // se il log fallisce non blocco l'applicazione
+        error_log('[ESG-BALANCE] Log evento fallito: ' . $e->getMessage());
     }
 }
 function setFlash(string $type, string $message): void
@@ -55,22 +53,14 @@ function redirectWith(string $url, string $type, string $message): void
     exit;
 }
 
-// Protezione CSRF
-
-function csrfToken(): string
+// Badge stato bilancio (usato in piu' pagine)
+function statoBadgeClass(string $stato): string
 {
-    if (empty($_SESSION['csrf_token'])) {
-        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-    }
-    return $_SESSION['csrf_token'];
-}
-
-function csrfField(): string
-{
-    return '<input type="hidden" name="csrf_token" value="' . csrfToken() . '">';
-}
-
-function verifyCsrf(): bool
-{
-    return hash_equals($_SESSION['csrf_token'] ?? '', $_POST['csrf_token'] ?? '');
+    return match ($stato) {
+        'bozza' => 'bg-secondary text-dark',
+        'in_revisione' => 'bg-accent text-white',
+        'approvato' => 'bg-primary text-white',
+        'respinto' => 'bg-secondary text-dark border border-2 border-primary',
+        default => 'bg-secondary',
+    };
 }

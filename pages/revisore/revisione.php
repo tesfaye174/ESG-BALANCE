@@ -11,11 +11,6 @@ $username = currentUser();
 $id_bilancio = (int)($_GET['id'] ?? 0);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'nota') {
-    if (!verifyCsrf()) {
-        setFlash('danger', 'Richiesta non valida.');
-        header("Location: revisione.php?id=" . (int)($_POST['id_bilancio'] ?? 0));
-        exit;
-    }
     $bil_id   = (int)($_POST['id_bilancio'] ?? 0);
     $voce     = $_POST['nome_voce'] ?? '';
     $testo    = trim($_POST['testo'] ?? '');
@@ -113,15 +108,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <td><?php echo htmlspecialchars($b['azienda']); ?></td>
                                 <td><?php echo $b['data_creazione']; ?></td>
                                 <td><span class="badge text-uppercase px-3 py-2
-                                <?php
-                                echo match ($b['stato']) {
-                                    'bozza' => 'bg-secondary text-dark',
-                                    'in_revisione' => 'bg-accent text-white',
-                                    'approvato' => 'bg-primary text-white',
-                                    'respinto' => 'bg-secondary text-dark border border-2 border-primary',
-                                    default => 'bg-secondary',
-                                };
-                                ?>">
+                                <?php echo statoBadgeClass($b['stato']); ?>">
                                         <?php echo $b['stato']; ?></span></td>
                                 <td>
                                     <a href="revisione.php?id=<?php echo $b['id_bilancio']; ?>"
@@ -145,15 +132,7 @@ require_once __DIR__ . '/../../includes/header.php';
             <?php echo htmlspecialchars($bilancio_detail['azienda']); ?>
             (<?php echo $bilancio_detail['data_creazione']; ?>)
             <span class="badge text-uppercase px-3 py-2
-                <?php
-                echo match ($bilancio_detail['stato']) {
-                    'bozza' => 'bg-secondary text-dark',
-                    'in_revisione' => 'bg-accent text-white',
-                    'approvato' => 'bg-primary text-white',
-                    'respinto' => 'bg-secondary text-dark border border-2 border-primary',
-                    default => 'bg-secondary',
-                };
-                ?> float-end">
+                <?php echo statoBadgeClass($bilancio_detail['stato']); ?> float-end">
                 <?php echo $bilancio_detail['stato']; ?></span>
         </div>
         <div class="card-body">
@@ -209,7 +188,6 @@ require_once __DIR__ . '/../../includes/header.php';
         <div class="card-header bg-accent text-white">Aggiungi Nota</div>
         <div class="card-body">
             <form method="POST">
-                <?php echo csrfField(); ?>
                 <input type="hidden" name="action" value="nota">
                 <input type="hidden" name="id_bilancio" value="<?php echo $id_bilancio; ?>">
                 <div class="row">

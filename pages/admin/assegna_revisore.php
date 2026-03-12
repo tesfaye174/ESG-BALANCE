@@ -8,11 +8,6 @@ require_once __DIR__ . '/../../includes/functions.php';
 requireRole('amministratore');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verifyCsrf()) {
-        setFlash('danger', 'Richiesta non valida.');
-        header('Location: assegna_revisore.php');
-        exit;
-    }
     $revisore   = $_POST['revisore'] ?? '';
     $bilancio   = (int)($_POST['bilancio'] ?? 0);
 
@@ -71,7 +66,6 @@ require_once __DIR__ . '/../../includes/header.php';
             <div class="card-header bg-accent text-white">Nuova Assegnazione</div>
             <div class="card-body">
                 <form method="POST">
-                    <?php echo csrfField(); ?>
                     <div class="mb-3">
                         <label for="revisore" class="form-label">Revisore ESG *</label>
                         <select class="form-select" id="revisore" name="revisore" required>
@@ -124,15 +118,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                     <td>#<?php echo $ass['id_bilancio']; ?> (<?php echo $ass['data_creazione']; ?>)</td>
                                     <td><?php echo htmlspecialchars($ass['azienda']); ?></td>
                                     <td><span class="badge text-uppercase px-3 py-2
-                                    <?php
-                                    echo match ($ass['stato']) {
-                                        'bozza' => 'bg-secondary text-dark',
-                                        'in_revisione' => 'bg-accent text-white',
-                                        'approvato' => 'bg-primary text-white',
-                                        'respinto' => 'bg-secondary text-dark border border-2 border-primary',
-                                        default => 'bg-secondary',
-                                    };
-                                    ?>">
+                                    <?php echo statoBadgeClass($ass['stato']); ?>">
                                             <?php echo $ass['stato']; ?></span></td>
                                 </tr>
                             <?php endforeach; ?>

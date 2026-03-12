@@ -8,11 +8,6 @@ require_once __DIR__ . '/../../includes/functions.php';
 requireRole('amministratore');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verifyCsrf()) {
-        setFlash('danger', 'Richiesta non valida.');
-        header('Location: indicatori.php');
-        exit;
-    }
     $nome       = trim($_POST['nome'] ?? '');
     $rilevanza  = $_POST['rilevanza'] ?? '';
     $tipo       = $_POST['tipo'] ?? '';
@@ -22,11 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $img_path = null;
     if (!empty($_FILES['immagine']['name'])) {
-        $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $real_mime = finfo_file($finfo, $_FILES['immagine']['tmp_name']);
-        finfo_close($finfo);
-        if (in_array($real_mime, $allowed)) {
+        $allowed_ext = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        $ext = strtolower(pathinfo($_FILES['immagine']['name'], PATHINFO_EXTENSION));
+        if (in_array($ext, $allowed_ext)) {
             $img_name = uniqid('esg_') . '_' . basename($_FILES['immagine']['name']);
             $dest = __DIR__ . '/../../assets/uploads/' . $img_name;
             move_uploaded_file($_FILES['immagine']['tmp_name'], $dest);
@@ -92,7 +85,6 @@ require_once __DIR__ . '/../../includes/header.php';
             <div class="card-header bg-accent text-white">Nuovo Indicatore</div>
             <div class="card-body">
                 <form method="POST" enctype="multipart/form-data">
-                    <?php echo csrfField(); ?>
                     <div class="mb-3">
                         <label for="nome" class="form-label">Nome *</label>
                         <input type="text" class="form-control" id="nome" name="nome" required>
@@ -108,6 +100,7 @@ require_once __DIR__ . '/../../includes/header.php';
                             <option value="">Generico (nessuna categoria)</option>
                             <option value="ambientale">Ambientale</option>
                             <option value="sociale">Sociale</option>
+                            <option value="governance">Governance</option>
                         </select>
                     </div>
                     <div class="mb-3">
@@ -167,6 +160,8 @@ require_once __DIR__ . '/../../includes/header.php';
                                             <span class="badge bg-accent">Ambientale</span>
                                         <?php elseif ($ind['tipo'] === 'sociale'): ?>
                                             <span class="badge bg-primary">Sociale</span>
+                                        <?php elseif ($ind['tipo'] === 'governance'): ?>
+                                            <span class="badge bg-dark">Governance</span>
                                         <?php else: ?>
                                             <span class="badge bg-secondary">Generico</span>
                                         <?php endif; ?>

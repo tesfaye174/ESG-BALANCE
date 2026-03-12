@@ -8,11 +8,6 @@ require_once __DIR__ . '/../../includes/functions.php';
 requireRole('amministratore');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verifyCsrf()) {
-        setFlash('danger', 'Richiesta non valida.');
-        header('Location: template.php');
-        exit;
-    }
     $nome = trim($_POST['nome'] ?? '');
     $descrizione = trim($_POST['descrizione'] ?? '');
 
@@ -55,7 +50,6 @@ require_once __DIR__ . '/../../includes/header.php';
             <div class="card-header bg-primary text-white fw-bold">Nuova Voce Contabile</div>
             <div class="card-body">
                 <form method="POST">
-                    <?php echo csrfField(); ?>
                     <div class="mb-3">
                         <label for="nome" class="form-label">Nome voce *</label>
                         <input type="text" class="form-control" id="nome" name="nome" required

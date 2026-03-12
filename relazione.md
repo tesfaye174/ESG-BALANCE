@@ -46,7 +46,7 @@ Ogni revisore puo' inserire **note di revisione** sulle singole voci contabili d
 
 Al termine dell'analisi, ogni revisore esprime un **giudizio complessivo** sul bilancio. Il giudizio possiede un esito che puo' essere *approvazione*, *approvazione_con_rilievi* o *respingimento*, una data e un campo opzionale per i rilievi testuali. Quando tutti i revisori assegnati a un bilancio hanno emesso il proprio giudizio, il sistema determina automaticamente lo stato finale del bilancio: se almeno un giudizio e' di *respingimento*, lo stato diventa *respinto*; altrimenti diventa *approvato*.
 
-Il sistema utilizza inoltre un database **MongoDB** per il logging degli eventi significativi. Ogni evento e' registrato nella collezione *events* con un campo testuale descrittivo, il nome dell'utente che ha effettuato l'operazione, i dettagli dell'evento e un timestamp.
+Il sistema utilizza inoltre una tabella MySQL dedicata (`log_eventi`) per il logging degli eventi significativi. Ogni record contiene un campo testuale per il tipo di evento, il nome dell'utente che ha effettuato l'operazione, i dettagli dell'evento e un timestamp.
 
 ### 1.2 Glossario dei Dati
 
@@ -286,7 +286,7 @@ L'entita' **INDICATORE_ESG** e' la radice di una gerarchia **parziale ed esclusi
 | RV4 | Quando un revisore viene assegnato a un bilancio in stato 'bozza', lo stato del bilancio deve passare automaticamente a 'in_revisione'. | Trigger T1 (`trg_bilancio_in_revisione`) su INSERT di `revisioni` |
 | RV5 | Quando tutti i revisori assegnati a un bilancio hanno emesso il proprio giudizio, lo stato del bilancio deve essere aggiornato: diventa 'respinto' se almeno un giudizio ha esito 'respingimento', altrimenti diventa 'approvato'. | Trigger T2 (`trg_bilancio_giudizio`) su INSERT di `giudizi` |
 | RV6 | L'attributo `nr_bilanci` dell'entita' AZIENDA deve riflettere in ogni istante il numero effettivo di bilanci associati all'azienda. | Trigger T3 (`trg_incrementa_nr_bilanci`) su INSERT di `bilanci` e Trigger T4 (`trg_decrementa_nr_bilanci`) su DELETE di `bilanci` |
-| RV7 | Un indicatore ESG di tipo 'ambientale' deve avere una corrispondente riga nella tabella `indicatori_ambientali` con il codice normativa obbligatorio. Un indicatore di tipo 'sociale' deve avere una corrispondente riga in `indicatori_sociali` con ambito e frequenza obbligatori. | Logica applicativa nella SP `sp_inserisci_indicatore_esg` |
+| RV7 | Un indicatore ESG di tipo 'ambientale' deve avere una corrispondente riga nella tabella `indicatori_ambientali` con il codice normativa obbligatorio. Un indicatore di tipo 'sociale' deve avere una corrispondente riga in `indicatori_sociali` con ambito e frequenza obbligatori. Gli indicatori di tipo 'governance' restano nella sola tabella padre (gerarchia parziale). | Logica applicativa nella SP `sp_inserisci_indicatore_esg` |
 | RV8 | Al momento della registrazione, un utente deve essere inserito nella tabella padre `utenti` e nella sotto-tabella corrispondente al proprio ruolo (`revisori` o `responsabili`), unitamente al primo indirizzo email. | Logica applicativa nella SP `sp_registra_utente` |
 | RV9 | Un revisore puo' emettere al piu' un giudizio per ogni bilancio a cui e' assegnato. | PRIMARY KEY composita su `giudizi(username_revisore, id_bilancio)` |
 | RV10 | La modifica dei valori delle voci contabili e il collegamento degli indicatori ESG sono consentiti solo se il bilancio si trova in stato 'bozza'. | Logica applicativa (controllo PHP prima dell'esecuzione delle SP) |
@@ -511,7 +511,7 @@ Di seguito lo schema relazionale completo con vincoli di chiave primaria (PK), c
 | nome | VARCHAR(150) | **PK** |
 | immagine | VARCHAR(255) | DEFAULT NULL |
 | rilevanza | DECIMAL(3,1) | DEFAULT NULL, CHECK (rilevanza BETWEEN 0 AND 10) |
-| tipo | ENUM('ambientale','sociale') | DEFAULT NULL |
+| tipo | ENUM('ambientale','sociale','governance') | DEFAULT NULL |
 
 ---
 
@@ -578,6 +578,18 @@ Di seguito lo schema relazionale completo con vincoli di chiave primaria (PK), c
 | esito | ENUM('approvazione','approvazione_con_rilievi','respingimento') | NOT NULL |
 | data_giudizio | DATE | NOT NULL |
 | rilievi | TEXT | DEFAULT NULL |
+
+---
+
+#### 17. log_eventi
+
+| Attributo | Tipo | Vincoli |
+| ----------- | ------ | --------- |
+| id | INT | **PK**, AUTO_INCREMENT |
+| evento | VARCHAR(100) | NOT NULL |
+| utente | VARCHAR(50) | DEFAULT NULL |
+| dettagli | TEXT | DEFAULT NULL |
+| timestamp | DATETIME | DEFAULT CURRENT_TIMESTAMP |
 
 ---
 
@@ -712,7 +724,7 @@ Si verifica che tutte le tabelle dello schema relazionale siano in **Forma Norma
 
 ### 4.2 Conclusione
 
-Tutte e 16 le tabelle dello schema relazionale sono in **BCNF**. In nessuna tabella esiste una dipendenza funzionale non banale il cui determinante non sia una superchiave. Lo schema non necessita di ulteriori decomposizioni.
+Tutte e 17 le tabelle dello schema relazionale sono in **BCNF** (la tabella `log_eventi` ha come unico determinante la chiave primaria `id`). In nessuna tabella esiste una dipendenza funzionale non banale il cui determinante non sia una superchiave. Lo schema non necessita di ulteriori decomposizioni.
 
 ---
 
@@ -724,11 +736,10 @@ L'applicazione web ESG-BALANCE e' realizzata con il seguente stack tecnologico:
 
 - **Backend:** PHP 8+ con connessione a MySQL/MariaDB tramite PDO (prepared statements per prevenire SQL injection)
 - **Database relazionale:** MySQL/MariaDB, con stored procedure, trigger e viste
-- **Database documentale:** MongoDB, utilizzato per il logging degli eventi significativi nella collezione `events`
 - **Frontend:** HTML5, Bootstrap 5, CSS personalizzato, Bootstrap Icons, JavaScript
 - **Server:** XAMPP (Apache + MySQL + PHP)
 
-L'architettura dell'applicazione segue un modello **procedurale strutturato**, con separazione tra configurazione, logica di autenticazione, funzioni di utilita' e pagine. Tutte le operazioni di manipolazione dei dati avvengono esclusivamente attraverso le **stored procedure** definite nel database, garantendo che la logica di business sia centralizzata a livello DBMS.
+L'architettura dell'applicazione segue un modello **procedurale strutturato**, con separazione tra configurazione, logica di autenticazione, funzioni di utilita' e pagine. Tutte le operazioni di manipolazione dei dati avvengono esclusivamente attraverso le **stored procedure** definite nel database, garantendo che la logica di business sia centralizzata a livello DBMS. Gli eventi significativi vengono registrati nella tabella `log_eventi` per consentire la tracciabilita' delle operazioni.
 
 ### 5.2 Struttura dei File
 
@@ -736,7 +747,6 @@ L'architettura dell'applicazione segue un modello **procedurale strutturato**, c
 ESG-BALANCE/
   config/
     database.php          -- Connessione MySQL (singleton PDO)
-    mongodb.php           -- Connessione MongoDB (singleton)
   includes/
     auth.php              -- Gestione sessioni, login, controllo ruoli
     db.php                -- Funzioni wrapper: callSP(), execSP(), query(), queryOne()
@@ -793,7 +803,7 @@ ESG-BALANCE/
 
 - **Gestione template bilancio** (`pages/admin/template.php`): l'amministratore definisce le voci contabili del template condiviso (es. "Ricavi vendite", "Costo del personale"). Ogni voce ha un nome univoco e una descrizione opzionale. L'inserimento avviene tramite `sp_crea_voce_contabile`.
 
-- **Gestione indicatori ESG** (`pages/admin/indicatori.php`): l'amministratore inserisce nuovi indicatori specificando nome, rilevanza, tipo (ambientale, sociale o generico) e opzionalmente un'immagine. In base al tipo selezionato, l'interfaccia mostra dinamicamente (tramite JavaScript) i campi specifici: codice normativa per gli ambientali, ambito sociale e frequenza di rilevazione per i sociali. L'inserimento avviene tramite `sp_inserisci_indicatore_esg` che gestisce automaticamente la gerarchia.
+- **Gestione indicatori ESG** (`pages/admin/indicatori.php`): l'amministratore inserisce nuovi indicatori specificando nome, rilevanza, tipo (ambientale, sociale, governance o generico) e opzionalmente un'immagine. In base al tipo selezionato, l'interfaccia mostra dinamicamente (tramite JavaScript) i campi specifici: codice normativa per gli ambientali, ambito sociale e frequenza di rilevazione per i sociali. Gli indicatori di governance non hanno campi aggiuntivi (gerarchia parziale). L'inserimento avviene tramite `sp_inserisci_indicatore_esg` che gestisce automaticamente la gerarchia.
 
 - **Assegnazione revisori** (`pages/admin/assegna_revisore.php`): l'amministratore associa revisori ai bilanci delle aziende. L'interfaccia presenta due menu a tendina (revisore e bilancio) e una tabella riepilogativa delle assegnazioni esistenti. L'inserimento avviene tramite `sp_associa_revisore_bilancio`, che incrementa anche il contatore `nr_revisioni` del revisore. Il trigger T1 cambia automaticamente lo stato del bilancio a 'in_revisione'.
 
@@ -813,22 +823,18 @@ ESG-BALANCE/
 
 - **Emissione giudizio** (`pages/revisore/giudizio.php`): al termine dell'analisi, il revisore esprime un giudizio complessivo scegliendo l'esito (approvazione, approvazione con rilievi, respingimento) e opzionalmente aggiungendo rilievi testuali. L'inserimento avviene tramite `sp_inserisci_giudizio`, che attiva il trigger T2. Il trigger verifica se tutti i revisori assegnati al bilancio hanno votato e, in caso affermativo, determina lo stato finale del bilancio. L'interfaccia mostra anche la lista dei bilanci in attesa di giudizio e impedisce l'emissione di un giudizio duplicato.
 
-### 5.4 Gestione degli Eventi con MongoDB
+### 5.4 Logging degli Eventi
 
-Ogni operazione significativa dell'applicazione viene registrata nella collezione MongoDB `events` del database `esg_balance`. Ogni documento contiene:
+Ogni operazione significativa dell'applicazione viene registrata nella tabella MySQL `log_eventi`. Ogni record contiene:
 
-```json
-{
-    "evento":    "nome_evento",
-    "utente":    "username",
-    "dettagli":  "descrizione testuale dell'operazione",
-    "timestamp": ISODate("...")
-}
-```
+- `evento`: tipo di evento (es. "login", "registrazione_utente", "creazione_bilancio")
+- `utente`: username dell'utente che ha eseguito l'operazione
+- `dettagli`: descrizione testuale dell'operazione
+- `timestamp`: data e ora dell'evento
 
 Gli eventi registrati includono: login, registrazione_utente, aggiunta_email, creazione_voce_contabile, creazione_indicatore, registrazione_azienda, creazione_bilancio, inserimento_valore_bilancio, collegamento_indicatore, assegnazione_revisore, cambio_stato_bilancio, inserimento_competenza, inserimento_nota, inserimento_giudizio.
 
-La funzione `logEvent()` in `includes/functions.php` gestisce la connessione al MongoDB in modo trasparente, con fallback a `error_log()` nel caso in cui il driver MongoDB non sia disponibile.
+La funzione `logEvent()` in `includes/functions.php` gestisce l'inserimento nella tabella tramite PDO, con fallback a `error_log()` nel caso in cui l'operazione di logging fallisca (per non bloccare l'applicazione).
 
 ### 5.5 Sicurezza
 
@@ -836,9 +842,8 @@ La funzione `logEvent()` in `includes/functions.php` gestisce la connessione al 
 - **Autorizzazione:** ogni pagina ristretta invoca `requireRole()` che verifica il ruolo in sessione
 - **Prevenzione SQL Injection:** tutte le query utilizzano prepared statements (parametri `?`) tramite PDO
 - **Prevenzione XSS:** tutti gli output utente sono sanitizzati con `htmlspecialchars()`
-- **Prevenzione CSRF:** ogni form include un token anti-CSRF generato con `random_bytes(32)` e verificato server-side prima di elaborare la richiesta. Le funzioni `csrfToken()`, `csrfField()` e `verifyCsrf()` in `includes/functions.php` gestiscono la generazione del token, il rendering dell'input hidden e la validazione con `hash_equals()`
 - **Timeout di sessione:** dopo 1 ora di inattivita' la sessione viene invalidata automaticamente e l'utente viene reindirizzato alla pagina di login. Il controllo avviene in `includes/auth.php` tramite il confronto tra `$_SESSION['last_activity']` e il timestamp corrente
-- **Upload sicuri:** verifica del MIME type reale tramite `finfo` (non il MIME dichiarato dal browser); in caso di tipo non valido, l'utente riceve un messaggio di errore esplicito
+- **Upload file:** verifica dell'estensione del file prima di salvarlo; in caso di tipo non valido, l'utente riceve un messaggio di errore esplicito
 - **Messaggi di errore generici:** in fase di login, il messaggio "Username o password non validi" non rivela quale dei due sia errato
 
 ---
@@ -849,7 +854,7 @@ Il codice SQL completo del progetto e' suddiviso nei seguenti file nella directo
 
 | File | Contenuto |
 | ------ | ----------- |
-| `sql/schema.sql` | Definizione dello schema (16 tabelle con vincoli PK, FK, UNIQUE, CHECK, ENUM) |
+| `sql/schema.sql` | Definizione dello schema (17 tabelle con vincoli PK, FK, UNIQUE, CHECK, ENUM) |
 | `sql/stored_procedures.sql` | 14 stored procedure per tutte le operazioni CRUD |
 | `sql/triggers.sql` | 4 trigger per la gestione automatica degli stati e della ridondanza |
 | `sql/views.sql` | 4 viste per le statistiche aggregate |

@@ -9,11 +9,6 @@ requireRole('responsabile');
 $username = currentUser();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verifyCsrf()) {
-        setFlash('danger', 'Richiesta non valida.');
-        header('Location: aziende.php');
-        exit;
-    }
     $nome       = trim($_POST['nome'] ?? '');
     $rag_soc    = trim($_POST['ragione_sociale'] ?? '');
     $piva       = trim($_POST['partita_iva'] ?? '');
@@ -22,11 +17,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $logo_path = null;
     if (!empty($_FILES['logo']['name'])) {
-        $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $real_mime = finfo_file($finfo, $_FILES['logo']['tmp_name']);
-        finfo_close($finfo);
-        if (in_array($real_mime, $allowed)) {
+        $allowed_ext = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        $ext = strtolower(pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION));
+        if (in_array($ext, $allowed_ext)) {
             $logo_name = uniqid('logo_') . '_' . basename($_FILES['logo']['name']);
             $dest = __DIR__ . '/../../assets/uploads/' . $logo_name;
             move_uploaded_file($_FILES['logo']['tmp_name'], $dest);
@@ -84,7 +77,6 @@ require_once __DIR__ . '/../../includes/header.php';
             <div class="card-header bg-accent text-white">Registra Nuova Azienda</div>
             <div class="card-body">
                 <form method="POST" enctype="multipart/form-data">
-                    <?php echo csrfField(); ?>
                     <div class="mb-3">
                         <label for="nome" class="form-label">Nome Azienda *</label>
                         <input type="text" class="form-control" id="nome" name="nome" required>
@@ -130,7 +122,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <div class="d-flex justify-content-between align-items-start">
                                     <div class="d-flex gap-3 align-items-start">
                                         <?php if ($a['logo']): ?>
-                                            <img src="/ESG-BALANCE/<?php echo htmlspecialchars($a['logo']); ?>"
+                                            <img src="<?php echo $base_url; ?>/<?php echo htmlspecialchars($a['logo']); ?>"
                                                 alt="Logo" class="rounded" style="width:48px;height:48px;object-fit:cover;">
                                         <?php else: ?>
                                             <span class="d-inline-block bg-accent rounded text-white text-center" style="width:48px;height:48px;line-height:48px;font-size:1.3rem;">

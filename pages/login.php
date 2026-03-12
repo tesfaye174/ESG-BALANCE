@@ -8,12 +8,12 @@ require_once __DIR__ . '/../includes/functions.php';
 // logout
 if (isset($_GET['logout'])) {
     session_destroy();
-    header('Location: /ESG-BALANCE/pages/login.php');
+    header('Location: ' . BASE_URL . '/pages/login.php');
     exit;
 }
 
 if (isLoggedIn()) {
-    header('Location: /ESG-BALANCE/pages/dashboard.php');
+    header('Location: ' . BASE_URL . '/pages/dashboard.php');
     exit;
 }
 
@@ -23,9 +23,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    if (!verifyCsrf()) {
-        $error = 'Richiesta non valida.';
-    } elseif ($username === '' || $password === '') {
+    if ($username === '' || $password === '') {
         $error = 'Compila tutti i campi.';
     } else {
         $rows = callSP('sp_login', [$username]);
@@ -41,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['ruolo']    = $user['ruolo'];
                 $_SESSION['last_activity'] = time();
                 logEvent('login', "Accesso utente: {$user['username']}");
-                header('Location: /ESG-BALANCE/pages/dashboard.php');
+                header('Location: ' . BASE_URL . '/pages/dashboard.php');
                 exit;
             } else {
                 $error = 'Username o password non validi.';
@@ -76,7 +74,6 @@ require_once __DIR__ . '/../includes/header.php';
                 <?php renderFlash(); ?>
 
                 <form method="POST" autocomplete="on">
-                    <?php echo csrfField(); ?>
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
                         <div class="input-group">

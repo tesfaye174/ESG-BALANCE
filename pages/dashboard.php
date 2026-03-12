@@ -7,27 +7,24 @@ require_once __DIR__ . '/../includes/functions.php';
 
 requireLogin();
 
+// prendo ruolo e username dalla sessione
 $ruolo = currentRole();
 $username = currentUser();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'aggiungi_email') {
-    if (!verifyCsrf()) {
-        setFlash('danger', 'Richiesta non valida.');
+    $nuova_email = trim($_POST['nuova_email'] ?? '');
+    if ($nuova_email === '' || !filter_var($nuova_email, FILTER_VALIDATE_EMAIL)) {
+        setFlash('danger', 'Inserisci un indirizzo email valido.');
     } else {
-        $nuova_email = trim($_POST['nuova_email'] ?? '');
-        if ($nuova_email === '' || !filter_var($nuova_email, FILTER_VALIDATE_EMAIL)) {
-            setFlash('danger', 'Inserisci un indirizzo email valido.');
-        } else {
-            try {
-                execSP('sp_aggiungi_email', [$username, $nuova_email]);
-                logEvent('aggiunta_email', "Email aggiunta: {$nuova_email}");
-                setFlash('success', 'Email aggiunta con successo.');
-            } catch (PDOException $e) {
-                if ($e->getCode() == 23000) {
-                    setFlash('danger', 'Questo indirizzo email e\' gia\' presente.');
-                } else {
-                    setFlash('danger', 'Errore: ' . $e->getMessage());
-                }
+        try {
+            execSP('sp_aggiungi_email', [$username, $nuova_email]);
+            logEvent('aggiunta_email', "Email aggiunta: {$nuova_email}");
+            setFlash('success', 'Email aggiunta con successo.');
+        } catch (PDOException $e) {
+            if ($e->getCode() == 23000) {
+                setFlash('danger', 'Questo indirizzo email e\' gia\' presente.');
+            } else {
+                setFlash('danger', 'Errore: ' . $e->getMessage());
             }
         }
     }
@@ -126,15 +123,7 @@ require_once __DIR__ . '/../includes/header.php';
                                         <td><?php echo htmlspecialchars($b['azienda']); ?></td>
                                         <td><?php echo $b['data_creazione']; ?></td>
                                         <td><span class="dashboard-badge badge text-uppercase px-3 py-2
-                                <?php
-                                    echo match ($b['stato']) {
-                                        'bozza' => 'bg-secondary text-dark',
-                                        'in_revisione' => 'bg-primary text-white',
-                                        'approvato' => 'bg-primary text-white',
-                                        'respinto' => 'bg-secondary text-dark border border-2 border-primary',
-                                        default => 'bg-secondary',
-                                    };
-                                ?>
+                                <?php echo statoBadgeClass($b['stato']); ?>
                                 ">
                                                 <?php echo $b['stato']; ?></span></td>
                                         <td>
@@ -254,7 +243,6 @@ require_once __DIR__ . '/../includes/header.php';
                     </ul>
                 <?php endif; ?>
                 <form method="POST" class="d-flex gap-2">
-                    <?php echo csrfField(); ?>
                     <input type="hidden" name="action" value="aggiungi_email">
                     <input type="email" class="form-control" name="nuova_email" placeholder="Nuovo indirizzo email" required>
                     <button type="submit" class="btn btn-accent btn-sm text-nowrap">

@@ -6,7 +6,7 @@ require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
 
 if (isLoggedIn()) {
-    header('Location: /ESG-BALANCE/pages/dashboard.php');
+    header('Location: ' . BASE_URL . '/pages/dashboard.php');
     exit;
 }
 
@@ -22,9 +22,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ruolo      = $_POST['ruolo'] ?? '';
     $email      = trim($_POST['email'] ?? '');
 
-    if (!verifyCsrf()) {
-        $error = 'Richiesta non valida.';
-    } elseif ($username === '' || $password === '' || $cf === '' || $data_nasc === '' || $luogo_nasc === '' || $ruolo === '' || $email === '') {
+    if ($username === '' || $password === '' || $cf === '' || $data_nasc === '' || $luogo_nasc === '' || $ruolo === '' || $email === '') {
         $error = 'Compila tutti i campi obbligatori.';
     } elseif ($password !== $confirm) {
         $error = 'Le password non coincidono.';
@@ -41,10 +39,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $cv_name = uniqid('cv_') . '_' . basename($_FILES['curriculum']['name']);
             $cv_dest = $upload_dir . $cv_name;
 
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $real_mime = finfo_file($finfo, $_FILES['curriculum']['tmp_name']);
-            finfo_close($finfo);
-            if ($real_mime === 'application/pdf') {
+            // controllo che sia un PDF
+            $ext = strtolower(pathinfo($_FILES['curriculum']['name'], PATHINFO_EXTENSION));
+            if ($ext === 'pdf') {
                 move_uploaded_file($_FILES['curriculum']['tmp_name'], $cv_dest);
                 $cv_path = 'assets/uploads/' . $cv_name;
             } else {
@@ -65,7 +62,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $cv_path
                 ]);
                 logEvent('registrazione_utente', "Nuovo utente registrato: {$username} ({$ruolo})");
-                redirectWith('/ESG-BALANCE/pages/login.php', 'success', 'Registrazione completata. Effettua il login.');
+                redirectWith(BASE_URL . '/pages/login.php', 'success', 'Registrazione completata. Effettua il login.');
             } catch (PDOException $e) {
                 // Codice 23000 = violazione di unicita', quindi username gia' preso
                 if ($e->getCode() == 23000) {
@@ -102,7 +99,6 @@ require_once __DIR__ . '/../includes/header.php';
                     <div class="alert alert-danger shadow-sm"><?php echo htmlspecialchars($error); ?></div>
                 <?php endif; ?>
                 <form method="POST" enctype="multipart/form-data" autocomplete="on">
-                    <?php echo csrfField(); ?>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="username" class="form-label">Username *</label>

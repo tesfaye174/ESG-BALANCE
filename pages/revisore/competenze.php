@@ -9,11 +9,6 @@ requireRole('revisore');
 $username = currentUser();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verifyCsrf()) {
-        setFlash('danger', 'Richiesta non valida.');
-        header('Location: competenze.php');
-        exit;
-    }
     $nome_comp = trim($_POST['nome_competenza'] ?? '');
     $livello   = (int)($_POST['livello'] ?? 0);
 
@@ -52,7 +47,6 @@ require_once __DIR__ . '/../../includes/header.php';
             <div class="card-header bg-accent text-white">Aggiungi / Aggiorna Competenza</div>
             <div class="card-body">
                 <form method="POST">
-                    <?php echo csrfField(); ?>
                     <div class="mb-3">
                         <label for="nome_competenza" class="form-label">Nome Competenza *</label>
                         <input type="text" class="form-control" id="nome_competenza" name="nome_competenza"

@@ -23,15 +23,10 @@ if ($id_bilancio > 0 && $id_azienda > 0) {
 }
 
 if (!$bilancio) {
-    redirectWith('/ESG-BALANCE/pages/responsabile/bilancio.php', 'danger', 'Bilancio non trovato.');
+    redirectWith(BASE_URL . '/pages/responsabile/bilancio.php', 'danger', 'Bilancio non trovato.');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verifyCsrf()) {
-        setFlash('danger', 'Richiesta non valida.');
-        header("Location: indicatori_bilancio.php?bilancio={$id_bilancio}&azienda={$id_azienda}");
-        exit;
-    }
     if ($bilancio['stato'] !== 'bozza') {
         setFlash('danger', 'Non puoi modificare un bilancio che non e\' piu\' in bozza.');
         header("Location: indicatori_bilancio.php?bilancio={$id_bilancio}&azienda={$id_azienda}");
@@ -92,15 +87,7 @@ require_once __DIR__ . '/../../includes/header.php';
 
 <p class="text-muted">
     <?php echo htmlspecialchars($bilancio['azienda']); ?> — <?php echo $bilancio['data_creazione']; ?>
-    <span class="badge bg-<?php
-                            echo match ($bilancio['stato']) {
-                                'bozza' => 'secondary',
-                                'in_revisione' => 'warning',
-                                'approvato' => 'success',
-                                'respinto' => 'danger',
-                                default => 'secondary',
-                            };
-                            ?>"><?php echo $bilancio['stato']; ?></span>
+    <span class="badge <?php echo statoBadgeClass($bilancio['stato']); ?>"><?php echo $bilancio['stato']; ?></span>
 </p>
 
 <a href="bilancio.php?azienda=<?php echo $id_azienda; ?>&bilancio=<?php echo $id_bilancio; ?>"
@@ -163,7 +150,6 @@ require_once __DIR__ . '/../../includes/header.php';
                     <p class="text-muted">Inserisci prima i valori delle voci contabili nel bilancio.</p>
                 <?php else: ?>
                     <form method="POST">
-                        <?php echo csrfField(); ?>
                         <div class="mb-3">
                             <label for="nome_voce" class="form-label">Voce Contabile *</label>
                             <select class="form-select" id="nome_voce" name="nome_voce" required>

@@ -118,12 +118,12 @@ CREATE TABLE valori_bilancio (
 
 -- 10. INDICATORI_ESG
 -- Tabella padre della gerarchia parziale/esclusiva.
--- tipo NULL = indicatore generico (non ambientale ne' sociale).
+-- tipo NULL = indicatore generico senza sotto-tabella dedicata.
 CREATE TABLE indicatori_esg (
     nome        VARCHAR(150)    NOT NULL,
     immagine    VARCHAR(255)    DEFAULT NULL,
     rilevanza   DECIMAL(3,1)    DEFAULT NULL,
-    tipo        ENUM('ambientale','sociale') DEFAULT NULL,
+    tipo        ENUM('ambientale','sociale','governance') DEFAULT NULL,
     PRIMARY KEY (nome),
     CONSTRAINT chk_rilevanza CHECK (rilevanza BETWEEN 0 AND 10)
 ) ENGINE=InnoDB;
@@ -203,4 +203,15 @@ CREATE TABLE giudizi (
     PRIMARY KEY (username_revisore, id_bilancio),
     FOREIGN KEY (username_revisore, id_bilancio)
         REFERENCES revisioni(username_revisore, id_bilancio) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- 17. LOG_EVENTI
+-- Tabella per il logging degli eventi significativi dell'applicazione.
+CREATE TABLE log_eventi (
+    id          INT             NOT NULL AUTO_INCREMENT,
+    evento      VARCHAR(100)    NOT NULL,
+    utente      VARCHAR(50)     DEFAULT NULL,
+    dettagli    TEXT            DEFAULT NULL,
+    timestamp   DATETIME        NOT NULL,
+    PRIMARY KEY (id)
 ) ENGINE=InnoDB;

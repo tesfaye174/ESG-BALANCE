@@ -7,6 +7,7 @@ define('DB_PASS', '');
 define('DB_CHARSET', 'utf8mb4');
 
 // singleton: cosi' non apro mille connessioni
+// (visto a lezione che e' meglio cosi')
 function getDBConnection(): PDO
 {
     static $pdo = null;

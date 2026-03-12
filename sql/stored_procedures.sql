@@ -110,6 +110,7 @@ BEGIN
     ELSEIF p_tipo = 'sociale' THEN
         INSERT INTO indicatori_sociali (nome, ambito_sociale, frequenza_rilevazione)
         VALUES (p_nome, p_ambito_sociale, p_frequenza_rilev);
+    -- governance: nessuna sotto-tabella dedicata (gerarchia parziale)
     END IF;
 
     COMMIT;

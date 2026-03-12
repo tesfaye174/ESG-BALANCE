@@ -11,11 +11,6 @@ $username = currentUser();
 $id_bilancio = (int)($_GET['id'] ?? 0);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!verifyCsrf()) {
-        setFlash('danger', 'Richiesta non valida.');
-        header("Location: giudizio.php?id=" . (int)($_POST['id_bilancio'] ?? 0));
-        exit;
-    }
     $bil_id  = (int)($_POST['id_bilancio'] ?? 0);
     $esito   = $_POST['esito'] ?? '';
     $rilievi = trim($_POST['rilievi'] ?? '');
@@ -41,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 logEvent('cambio_stato_bilancio', "Bilancio #{$bil_id}: stato cambiato a '{$bil_stato['stato']}'");
             }
 
-            redirectWith('/ESG-BALANCE/pages/revisore/revisione.php', 'success', 'Giudizio emesso con successo.');
+            redirectWith(BASE_URL . '/pages/revisore/revisione.php', 'success', 'Giudizio emesso con successo.');
         } catch (PDOException $e) {
             // 23000 = giudizio gia' emesso per questo bilancio (PK duplicata)
             if ($e->getCode() == 23000) {
@@ -104,7 +99,6 @@ require_once __DIR__ . '/../../includes/header.php';
         </div>
         <div class="card-body">
             <form method="POST">
-                <?php echo csrfField(); ?>
                 <input type="hidden" name="id_bilancio" value="<?php echo $id_bilancio; ?>">
                 <div class="mb-3">
                     <label for="esito" class="form-label">Esito *</label>
@@ -163,15 +157,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <td><?php echo htmlspecialchars($b['azienda']); ?></td>
                                 <td><?php echo $b['data_creazione']; ?></td>
                                 <td><span class="badge text-uppercase px-3 py-2
-                                <?php
-                                echo match ($b['stato']) {
-                                    'bozza' => 'bg-secondary text-dark',
-                                    'in_revisione' => 'bg-accent text-white',
-                                    'approvato' => 'bg-primary text-white',
-                                    'respinto' => 'bg-secondary text-dark border border-2 border-primary',
-                                    default => 'bg-secondary',
-                                };
-                                ?>">
+                                <?php echo statoBadgeClass($b['stato']); ?>">
                                         <?php echo $b['stato']; ?></span></td>
                                 <td>
                                     <a href="giudizio.php?id=<?php echo $b['id_bilancio']; ?>" class="btn btn-sm btn-accent">Emetti Giudizio</a>

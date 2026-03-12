@@ -6,7 +6,6 @@
 
 [![PHP Version](https://img.shields.io/badge/PHP-8.0%2B-777BB4?style=flat&logo=php&logoColor=white)](https://www.php.net/)
 [![MySQL](https://img.shields.io/badge/MySQL-8.0%2B-4479A1?style=flat&logo=mysql&logoColor=white)](https://www.mysql.com/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-5.0%2B-47A248?style=flat&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-5.0-7952B3?style=flat&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
@@ -35,7 +34,7 @@
 - 🔍 **Sistema di Revisione**: Workflow di revisione con note, giudizi e approvazioni
 - 📈 **Analytics Avanzati**: Statistiche e classifiche basate su affidabilità e compliance ESG
 - 🔒 **Sicurezza Enterprise**: Bcrypt hashing, prepared statements, protezione XSS
-- 📝 **Event Logging**: Tracciamento completo delle attività su MongoDB
+- 📝 **Event Logging**: Tracciamento completo delle attività su tabella MySQL dedicata
 - 🏗️ **Database Normalizzato**: Schema in BCNF con stored procedures e trigger
 
 ---
@@ -45,7 +44,6 @@
 ### Prerequisiti
 
 - **XAMPP** (Apache 2.4+, PHP 8.0+, MySQL 8.0+)
-- **MongoDB** 5.0+ con PHP MongoDB Extension
 - **Composer** (opzionale, per dipendenze)
 
 ```bash
@@ -64,7 +62,7 @@ mysql -u root -p < sql/views.sql
 mysql -u root -p < sql/seed.sql
 
 # 4. Configura le credenziali database
-# Modifica config/database.php e config/mongodb.php
+# Modifica config/database.php
 
 # 5. Avvia i servizi
 # Avvia Apache e MySQL tramite XAMPP Control Panel
@@ -94,7 +92,6 @@ Apri il browser e vai su: **<http://localhost/ESG-BALANCE>**
 |-----------|-----------|----------|----------|
 | **Backend** | PHP | 8.0+ | Business Logic & API |
 | **Database RDBMS** | MySQL/MariaDB | 8.0+ | Gestione dati strutturati |
-| **Database NoSQL** | MongoDB | 5.0+ | Event logging & audit trail |
 | **Frontend** | HTML5 + Bootstrap | 5.3 | UI/UX responsive |
 | **JavaScript** | Vanilla JS | ES6+ | Interattività client-side |
 | **Web Server** | Apache | 2.4+ | HTTP Server (XAMPP) |
@@ -147,7 +144,7 @@ Ogni revisore puo' inserire **note di revisione** sulle singole voci contabili d
 
 Al termine dell'analisi, ogni revisore esprime un **giudizio complessivo** sul bilancio. Il giudizio possiede un esito che puo' essere *approvazione*, *approvazione_con_rilievi* o *respingimento*, una data e un campo opzionale per i rilievi testuali. Quando tutti i revisori assegnati a un bilancio hanno emesso il proprio giudizio, il sistema determina automaticamente lo stato finale del bilancio: se almeno un giudizio e' di *respingimento*, lo stato diventa *respinto*; altrimenti diventa *approvato*.
 
-Il sistema utilizza inoltre un database **MongoDB** per il logging degli eventi significativi. Ogni evento e' registrato nella collezione *events* con un campo testuale descrittivo, il nome dell'utente che ha effettuato l'operazione, i dettagli dell'evento e un timestamp.
+Il sistema utilizza inoltre una tabella MySQL dedicata (`log_eventi`) per il logging degli eventi significativi. Ogni record contiene un campo testuale per il tipo di evento, il nome dell'utente che ha effettuato l'operazione, i dettagli dell'evento e un timestamp.
 
 ### 1.2 Glossario dei Dati
 
@@ -533,7 +530,7 @@ Di seguito lo schema relazionale completo con vincoli di chiave primaria (PK), c
 | nome | VARCHAR(150) | **PK** |
 | immagine | VARCHAR(255) | DEFAULT NULL |
 | rilevanza | DECIMAL(3,1) | DEFAULT NULL, CHECK (rilevanza BETWEEN 0 AND 10) |
-| tipo | ENUM('ambientale','sociale') | DEFAULT NULL |
+| tipo | ENUM('ambientale','sociale','governance') | DEFAULT NULL |
 
 ---
 
@@ -746,11 +743,10 @@ L'applicazione web ESG-BALANCE e' realizzata con il seguente stack tecnologico:
 
 - **Backend:** PHP 8+ con connessione a MySQL/MariaDB tramite PDO (prepared statements per prevenire SQL injection)
 - **Database relazionale:** MySQL/MariaDB, con stored procedure, trigger e viste
-- **Database documentale:** MongoDB, utilizzato per il logging degli eventi significativi nella collezione `events`
 - **Frontend:** HTML5, Bootstrap 5, CSS personalizzato, Bootstrap Icons, JavaScript
 - **Server:** XAMPP (Apache + MySQL + PHP)
 
-L'architettura dell'applicazione segue un modello **procedurale strutturato**, con separazione tra configurazione, logica di autenticazione, funzioni di utilita' e pagine. Tutte le operazioni di manipolazione dei dati avvengono esclusivamente attraverso le **stored procedure** definite nel database, garantendo che la logica di business sia centralizzata a livello DBMS.
+L'architettura dell'applicazione segue un modello **procedurale strutturato**, con separazione tra configurazione, logica di autenticazione, funzioni di utilita' e pagine. Tutte le operazioni di manipolazione dei dati avvengono esclusivamente attraverso le **stored procedure** definite nel database, garantendo che la logica di business sia centralizzata a livello DBMS. Gli eventi significativi vengono registrati nella tabella `log_eventi` per consentire la tracciabilita' delle operazioni.
 
 ### 5.2 Struttura dei File
 
@@ -758,7 +754,6 @@ L'architettura dell'applicazione segue un modello **procedurale strutturato**, c
 ESG-BALANCE/
   config/
     database.php          -- Connessione MySQL (singleton PDO)
-    mongodb.php           -- Connessione MongoDB (singleton)
   includes/
     auth.php              -- Gestione sessioni, login, controllo ruoli
     db.php                -- Funzioni wrapper: callSP(), execSP(), query(), queryOne()
@@ -835,22 +830,18 @@ ESG-BALANCE/
 
 - **Emissione giudizio** (`pages/revisore/giudizio.php`): al termine dell'analisi, il revisore esprime un giudizio complessivo scegliendo l'esito (approvazione, approvazione con rilievi, respingimento) e opzionalmente aggiungendo rilievi testuali. L'inserimento avviene tramite `sp_inserisci_giudizio`, che attiva il trigger T2. Il trigger verifica se tutti i revisori assegnati al bilancio hanno votato e, in caso affermativo, determina lo stato finale del bilancio. L'interfaccia mostra anche la lista dei bilanci in attesa di giudizio e impedisce l'emissione di un giudizio duplicato.
 
-### 5.4 Gestione degli Eventi con MongoDB
+### 5.4 Logging degli Eventi
 
-Ogni operazione significativa dell'applicazione viene registrata nella collezione MongoDB `events` del database `esg_balance`. Ogni documento contiene:
+Ogni operazione significativa dell'applicazione viene registrata nella tabella MySQL `log_eventi`. Ogni record contiene:
 
-```json
-{
-    "evento":    "nome_evento",
-    "utente":    "username",
-    "dettagli":  "descrizione testuale dell'operazione",
-    "timestamp": ISODate("...")
-}
-```
+- `evento`: tipo di evento (es. "login", "registrazione_utente", "creazione_bilancio")
+- `utente`: username dell'utente che ha eseguito l'operazione
+- `dettagli`: descrizione testuale dell'operazione
+- `timestamp`: data e ora dell'evento
 
 Gli eventi registrati includono: login, registrazione_utente, aggiunta_email, creazione_voce_contabile, creazione_indicatore, registrazione_azienda, creazione_bilancio, inserimento_valore_bilancio, collegamento_indicatore, assegnazione_revisore, cambio_stato_bilancio, inserimento_competenza, inserimento_nota, inserimento_giudizio.
 
-La funzione `logEvent()` in `includes/functions.php` gestisce la connessione al MongoDB in modo trasparente, con fallback a `error_log()` nel caso in cui il driver MongoDB non sia disponibile.
+La funzione `logEvent()` in `includes/functions.php` gestisce l'inserimento nella tabella tramite PDO, con fallback a `error_log()` nel caso in cui l'operazione di logging fallisca (per non bloccare l'applicazione).
 
 ### 5.5 Sicurezza
 
@@ -858,7 +849,7 @@ La funzione `logEvent()` in `includes/functions.php` gestisce la connessione al 
 - **Autorizzazione:** ogni pagina ristretta invoca `requireRole()` che verifica il ruolo in sessione
 - **Prevenzione SQL Injection:** tutte le query utilizzano prepared statements (parametri `?`) tramite PDO
 - **Prevenzione XSS:** tutti gli output utente sono sanitizzati con `htmlspecialchars()`
-- **Upload sicuri:** verifica del MIME type reale tramite `finfo` (non il MIME dichiarato dal browser)
+- **Upload file:** verifica dell'estensione del file prima di salvarlo
 - **Messaggi di errore generici:** in fase di login, il messaggio "Username o password non validi" non rivela quale dei due sia errato
 
 ---
@@ -869,7 +860,7 @@ Il codice SQL completo del progetto e' suddiviso nei seguenti file nella directo
 
 | File | Contenuto |
 |------|-----------|
-| `sql/schema.sql` | Definizione dello schema (16 tabelle con vincoli PK, FK, UNIQUE, CHECK, ENUM) |
+| `sql/schema.sql` | Definizione dello schema (17 tabelle con vincoli PK, FK, UNIQUE, CHECK, ENUM) |
 | `sql/stored_procedures.sql` | 14 stored procedure per tutte le operazioni CRUD |
 | `sql/triggers.sql` | 4 trigger per la gestione automatica degli stati e della ridondanza |
 | `sql/views.sql` | 4 viste per le statistiche aggregate |
@@ -935,20 +926,20 @@ Il codice SQL completo del progetto e' suddiviso nei seguenti file nella directo
 │    │  • Authentication (Bcrypt)               │         │
 │    │  • Authorization (Role-based)            │         │
 │    │  • Business Logic (Stored Procedures)    │         │
-│    │  • Event Logging (MongoDB)               │         │
+│    │  • Event Logging (MySQL log_eventi)     │         │
 │    └──────────────────────────────────────────┘         │
 └─────────────────────────────────────────────────────────┘
                             │
                             ▼
-┌──────────────────────┐         ┌──────────────────────┐
-│    DATA LAYER        │         │   LOGGING LAYER      │
-│  (MySQL/MariaDB)     │         │    (MongoDB)         │
-│  ┌────────────────┐  │         │  ┌────────────────┐  │
-│  │ 16 Tables      │  │         │  │ events         │  │
-│  │ 13 Procedures  │  │         │  │ collection     │  │
-│  │ 4 Triggers     │  │         │  └────────────────┘  │
-│  │ 4 Views        │  │         │                      │
-│  └────────────────┘  │         └──────────────────────┘
+┌──────────────────────┐
+│    DATA LAYER        │
+│  (MySQL/MariaDB)     │
+│  ┌────────────────┐  │
+│  │ 17 Tables      │  │
+│  │ 14 Procedures  │  │
+│  │ 4 Triggers     │  │
+│  │ 4 Views        │  │
+│  └────────────────┘  │
 └──────────────────────┘
 ```
 
@@ -958,7 +949,6 @@ Il codice SQL completo del progetto e' suddiviso nei seguenti file nella directo
 ESG-BALANCE/
 ├── 📁 config/              Configurazione database
 │   ├── database.php        PDO MySQL singleton
-│   └── mongodb.php         MongoDB client singleton
 ├── 📁 includes/            Core application files
 │   ├── auth.php            Authentication & session
 │   ├── db.php              Database wrapper functions
@@ -1081,7 +1071,7 @@ ESG-BALANCE/
 | **Session Security** | Secure session cookies, regeneration on auth |
 | **File Upload** | MIME validation, size limits, whitelist extensions |
 | **Authorization** | Role-based access control (RBAC) |
-| **Audit Trail** | Complete event logging su MongoDB |
+| **Audit Trail** | Complete event logging su tabella MySQL `log_eventi` |
 
 ---
 

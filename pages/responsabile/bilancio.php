@@ -20,11 +20,6 @@ if ($id_azienda > 0) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    if (!verifyCsrf()) {
-        setFlash('danger', 'Richiesta non valida.');
-        header("Location: bilancio.php?azienda={$id_azienda}");
-        exit;
-    }
     if ($_POST['action'] === 'crea_bilancio' && $azienda) {
         try {
             $result = callSP('sp_crea_bilancio', [$id_azienda]);
@@ -134,7 +129,6 @@ require_once __DIR__ . '/../../includes/header.php';
             <small class="text-muted">(<?php echo htmlspecialchars($azienda['ragione_sociale']); ?>)</small>
         </div>
         <form method="POST" class="d-inline">
-            <?php echo csrfField(); ?>
             <input type="hidden" name="action" value="crea_bilancio">
             <button type="submit" class="btn btn-accent btn-sm"><i class="bi bi-plus-circle"></i> Nuovo Bilancio</button>
         </form>
@@ -153,15 +147,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                 <a href="bilancio.php?azienda=<?php echo $id_azienda; ?>&bilancio=<?php echo $b['id']; ?>"
                                     class="list-group-item list-group-item-action <?php echo $b['id'] == $id_bilancio ? 'active' : ''; ?>">
                                     #<?php echo $b['id']; ?> — <?php echo $b['data_creazione']; ?>
-                                    <span class="badge bg-<?php
-                                                            echo match ($b['stato']) {
-                                                                'bozza' => 'secondary',
-                                                                'in_revisione' => 'warning',
-                                                                'approvato' => 'success',
-                                                                'respinto' => 'danger',
-                                                                default => 'secondary',
-                                                            };
-                                                            ?> float-end"><?php echo $b['stato']; ?></span>
+                                    <span class="badge <?php echo statoBadgeClass($b['stato']); ?> float-end"><?php echo $b['stato']; ?></span>
                                 </a>
                             <?php endforeach; ?>
                         </div>
@@ -176,15 +162,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <div class="card-header bg-accent text-white">
                         Bilancio #<?php echo $bilancio_sel['id']; ?> (<?php echo $bilancio_sel['data_creazione']; ?>)
                         <span class="badge text-uppercase px-3 py-2
-                            <?php
-                            echo match ($bilancio_sel['stato']) {
-                                'bozza' => 'bg-secondary text-dark',
-                                'in_revisione' => 'bg-accent text-white',
-                                'approvato' => 'bg-primary text-white',
-                                'respinto' => 'bg-secondary text-dark border border-2 border-primary',
-                                default => 'bg-secondary',
-                            };
-                            ?> float-end">
+                            <?php echo statoBadgeClass($bilancio_sel['stato']); ?> float-end">
                             <?php echo $bilancio_sel['stato']; ?></span>
                     </div>
                     <div class="card-body">
@@ -221,7 +199,6 @@ require_once __DIR__ . '/../../includes/header.php';
                         <div class="card-header bg-accent text-white">Inserisci Valore</div>
                         <div class="card-body">
                             <form method="POST">
-                                <?php echo csrfField(); ?>
                                 <input type="hidden" name="action" value="inserisci_valore">
                                 <input type="hidden" name="id_bilancio" value="<?php echo $bilancio_sel['id']; ?>">
                                 <div class="row">
