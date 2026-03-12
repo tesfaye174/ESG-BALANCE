@@ -1,16 +1,12 @@
--- ============================================================
 -- ESG-BALANCE: Trigger
--- ============================================================
 
 USE esg_balance;
 
 DELIMITER $$
 
--- ------------------------------------------------------------
 -- TRIGGER T1: Cambio stato bilancio a 'in_revisione'
 -- Attivato quando un revisore ESG viene assegnato a un bilancio.
 -- Se il bilancio e' ancora in stato 'bozza', diventa 'in_revisione'.
--- ------------------------------------------------------------
 CREATE TRIGGER trg_bilancio_in_revisione
 AFTER INSERT ON revisioni
 FOR EACH ROW
@@ -21,7 +17,6 @@ BEGIN
       AND stato = 'bozza';
 END$$
 
--- ------------------------------------------------------------
 -- TRIGGER T2: Cambio stato bilancio a 'approvato' o 'respinto'
 -- Attivato quando un revisore inserisce un giudizio.
 -- Se TUTTI i revisori associati al bilancio hanno inserito
@@ -30,7 +25,6 @@ END$$
 --     => stato = 'approvato'
 --   - Se almeno uno e' 'respingimento'
 --     => stato = 'respinto'
--- ------------------------------------------------------------
 CREATE TRIGGER trg_bilancio_giudizio
 AFTER INSERT ON giudizi
 FOR EACH ROW
@@ -63,14 +57,15 @@ BEGIN
             UPDATE bilanci SET stato = 'approvato'  WHERE id = NEW.id_bilancio;
         END IF;
     END IF;
+
+    -- Aggiorno l'indice di affidabilita' del revisore che ha votato
+    CALL sp_aggiorna_indice_affidabilita(NEW.username_revisore);
 END$$
 
--- ------------------------------------------------------------
 -- TRIGGER T3: Incremento ridondanza nr_bilanci
 -- Quando viene creato un nuovo bilancio per un'azienda,
 -- il contatore nr_bilanci viene incrementato di 1.
 -- (Gestione della ridondanza concettuale)
--- ------------------------------------------------------------
 CREATE TRIGGER trg_incrementa_nr_bilanci
 AFTER INSERT ON bilanci
 FOR EACH ROW
@@ -80,11 +75,9 @@ BEGIN
     WHERE id = NEW.id_azienda;
 END$$
 
--- ------------------------------------------------------------
 -- TRIGGER T4: Decremento ridondanza nr_bilanci
 -- Quando viene eliminato un bilancio, il contatore viene
 -- decrementato di 1.
--- ------------------------------------------------------------
 CREATE TRIGGER trg_decrementa_nr_bilanci
 AFTER DELETE ON bilanci
 FOR EACH ROW

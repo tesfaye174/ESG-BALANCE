@@ -78,11 +78,11 @@ Apri il browser e vai su: **<http://localhost/ESG-BALANCE>**
 
 | Username | Ruolo | Password | Descrizione |
 |----------|-------|----------|-------------|
-| `admin1` | 👨‍💼 Amministratore | `password123` | Gestione template e assegnazioni |
-| `rev_marco` | 🔍 Revisore | `password123` | Revisione bilanci Ferrari SpA |
-| `rev_laura` | 🔍 Revisore | `password123` | Revisione bilanci TechSolutions |
-| `resp_giulia` | 📊 Responsabile | `password123` | Gestisce Ferrari SpA |
-| `resp_paolo` | 📊 Responsabile | `password123` | Gestisce TechSolutions Srl |
+| `f.montanari` | 👨‍💼 Amministratore | `password123` | Gestione template e assegnazioni |
+| `m.conti` | 🔍 Revisore | `password123` | Revisione bilanci Fonderia Bertoni |
+| `s.ferrara` | 🔍 Revisore | `password123` | Revisione bilanci Cantieri Damico |
+| `a.pellegrini` | 📊 Responsabile | `password123` | Gestisce Fonderia Bertoni e Agri Valsamoggia |
+| `l.damico` | 📊 Responsabile | `password123` | Gestisce Cantieri Damico |
 
 ---
 
@@ -788,7 +788,7 @@ ESG-BALANCE/
     uploads/              -- Directory per upload (loghi, CV, immagini)
   sql/
     schema.sql            -- DDL dello schema completo
-    stored_procedures.sql -- Tutte le 13 stored procedure
+    stored_procedures.sql -- Tutte le 14 stored procedure
     triggers.sql          -- Tutti i 4 trigger
     views.sql             -- Tutte le 4 viste
     seed.sql              -- Dati di popolamento per la demo
@@ -870,7 +870,7 @@ Il codice SQL completo del progetto e' suddiviso nei seguenti file nella directo
 | File | Contenuto |
 |------|-----------|
 | `sql/schema.sql` | Definizione dello schema (16 tabelle con vincoli PK, FK, UNIQUE, CHECK, ENUM) |
-| `sql/stored_procedures.sql` | 13 stored procedure per tutte le operazioni CRUD |
+| `sql/stored_procedures.sql` | 14 stored procedure per tutte le operazioni CRUD |
 | `sql/triggers.sql` | 4 trigger per la gestione automatica degli stati e della ridondanza |
 | `sql/views.sql` | 4 viste per le statistiche aggregate |
 | `sql/seed.sql` | Dati di popolamento per la demo (5 utenti, 3 aziende, 6 bilanci, 6 indicatori ESG, valori, revisioni, note e giudizi) |
@@ -988,7 +988,7 @@ ESG-BALANCE/
 │   └── uploads/            User uploads (logos, CVs)
 ├── 📁 sql/                 Database scripts
 │   ├── schema.sql          Complete schema DDL
-│   ├── stored_procedures.sql  All 13 procedures
+│   ├── stored_procedures.sql  All 14 procedures
 │   ├── triggers.sql        All 4 triggers
 │   ├── views.sql           All 4 views
 │   └── seed.sql            Demo data
@@ -1039,7 +1039,7 @@ ESG-BALANCE/
   - `aziende`, `bilanci`, `voci_contabili`, `valori_bilancio`
   - `voci_indicatori`, `revisioni`, `note_revisione`, `giudizi`
 
-### 13 Stored Procedures
+### 14 Stored Procedures
 
 | Procedura | Descrizione |
 |-----------|-------------|
@@ -1050,6 +1050,7 @@ ESG-BALANCE/
 | `sp_collega_indicatore_voce` | Collegamento ESG a bilancio |
 | `sp_associa_revisore_bilancio` | Assegnazione revisore |
 | `sp_inserisci_giudizio` | Emissione giudizio finale |
+| `sp_aggiorna_indice_affidabilita` | Ricalcolo indice affidabilita' revisore |
 | ... | *Vedi documentazione completa* |
 
 ### 4 Trigger Automatici
@@ -1057,7 +1058,7 @@ ESG-BALANCE/
 | Trigger | Evento | Funzione |
 |---------|--------|----------|
 | `trg_bilancio_in_revisione` | INSERT revisioni | Cambio stato bilancio → "in_revisione" |
-| `trg_bilancio_giudizio` | INSERT giudizi | Determinazione stato finale (approvato/respinto) |
+| `trg_bilancio_giudizio` | INSERT giudizi | Determinazione stato finale + aggiornamento indice affidabilita' |
 | `trg_incrementa_nr_bilanci` | INSERT bilanci | Aggiornamento contatore azienda |
 | `trg_decrementa_nr_bilanci` | DELETE bilanci | Aggiornamento contatore azienda |
 

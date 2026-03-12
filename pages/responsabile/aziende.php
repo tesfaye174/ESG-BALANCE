@@ -1,9 +1,5 @@
 <?php
-/*
- * aziende.php - Gestione aziende del responsabile
- * Il responsabile vede solo le sue aziende e puo' registrarne di nuove.
- * Ogni azienda puo' avere un logo (upload immagine).
- */
+
 $page_title = 'Le mie Aziende';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/db.php';
@@ -13,17 +9,20 @@ requireRole('responsabile');
 $username = currentUser();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verifyCsrf()) {
+        setFlash('danger', 'Richiesta non valida.');
+        header('Location: aziende.php');
+        exit;
+    }
     $nome       = trim($_POST['nome'] ?? '');
     $rag_soc    = trim($_POST['ragione_sociale'] ?? '');
     $piva       = trim($_POST['partita_iva'] ?? '');
     $settore    = trim($_POST['settore'] ?? '');
     $num_dip    = (int)($_POST['num_dipendenti'] ?? 0);
 
-    // Gestisco l'upload del logo (opzionale)
     $logo_path = null;
     if (!empty($_FILES['logo']['name'])) {
         $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        // Verifico il tipo reale del file con finfo (piu' sicuro del MIME fornito dal browser)
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $real_mime = finfo_file($finfo, $_FILES['logo']['tmp_name']);
         finfo_close($finfo);
@@ -32,6 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $dest = __DIR__ . '/../../assets/uploads/' . $logo_name;
             move_uploaded_file($_FILES['logo']['tmp_name'], $dest);
             $logo_path = 'assets/uploads/' . $logo_name;
+        } else {
+            setFlash('danger', 'Formato logo non valido. Sono ammessi: JPEG, PNG, GIF, WebP.');
+            header('Location: aziende.php');
+            exit;
         }
     }
 
@@ -63,7 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// Prendo solo le aziende di questo responsabile
 $aziende = query(
     "SELECT * FROM aziende WHERE username_responsabile = ? ORDER BY nome",
     [$username]
@@ -82,6 +84,7 @@ require_once __DIR__ . '/../../includes/header.php';
             <div class="card-header bg-accent text-white">Registra Nuova Azienda</div>
             <div class="card-body">
                 <form method="POST" enctype="multipart/form-data">
+                    <?php echo csrfField(); ?>
                     <div class="mb-3">
                         <label for="nome" class="form-label">Nome Azienda *</label>
                         <input type="text" class="form-control" id="nome" name="nome" required>
@@ -115,7 +118,7 @@ require_once __DIR__ . '/../../includes/header.php';
         <div class="card">
             <div class="card-header bg-accent text-white">
                 Aziende Registrate
-                <span class="badge bg-secondary text-accent float-end"><?php echo count($aziende); ?></span>
+                <span class="badge bg-white text-accent float-end"><?php echo count($aziende); ?></span>
             </div>
             <div class="card-body">
                 <?php if (empty($aziende)): ?>
@@ -128,7 +131,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                     <div class="d-flex gap-3 align-items-start">
                                         <?php if ($a['logo']): ?>
                                             <img src="/ESG-BALANCE/<?php echo htmlspecialchars($a['logo']); ?>"
-                                                 alt="Logo" class="rounded" style="width:48px;height:48px;object-fit:cover;">
+                                                alt="Logo" class="rounded" style="width:48px;height:48px;object-fit:cover;">
                                         <?php else: ?>
                                             <span class="d-inline-block bg-accent rounded text-white text-center" style="width:48px;height:48px;line-height:48px;font-size:1.3rem;">
                                                 <i class="bi bi-building"></i>

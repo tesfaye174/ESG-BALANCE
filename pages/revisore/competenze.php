@@ -1,10 +1,5 @@
 <?php
-/*
- * competenze.php - Gestione competenze del revisore
- * Il revisore puo' aggiungere le sue competenze con un livello da 0 a 5.
- * Se la competenza esiste gia', la SP usa ON DUPLICATE KEY UPDATE
- * quindi aggiorna solo il livello senza dare errore.
- */
+
 $page_title = 'Le mie Competenze';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/db.php';
@@ -14,6 +9,11 @@ requireRole('revisore');
 $username = currentUser();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verifyCsrf()) {
+        setFlash('danger', 'Richiesta non valida.');
+        header('Location: competenze.php');
+        exit;
+    }
     $nome_comp = trim($_POST['nome_competenza'] ?? '');
     $livello   = (int)($_POST['livello'] ?? 0);
 
@@ -34,7 +34,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// Prendo le competenze attuali del revisore per mostrarle con le barre
 $competenze = query(
     "SELECT nome_competenza, livello FROM competenze_revisore WHERE username = ? ORDER BY nome_competenza",
     [$username]
@@ -53,6 +52,7 @@ require_once __DIR__ . '/../../includes/header.php';
             <div class="card-header bg-accent text-white">Aggiungi / Aggiorna Competenza</div>
             <div class="card-body">
                 <form method="POST">
+                    <?php echo csrfField(); ?>
                     <div class="mb-3">
                         <label for="nome_competenza" class="form-label">Nome Competenza *</label>
                         <input type="text" class="form-control" id="nome_competenza" name="nome_competenza"

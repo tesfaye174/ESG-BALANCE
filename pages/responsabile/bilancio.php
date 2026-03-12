@@ -1,12 +1,5 @@
 <?php
-/*
- * bilancio.php - Creazione e popolamento dei bilanci di esercizio (solo responsabile)
- * La pagina funziona su 3 livelli:
- * 1. Selezione azienda (se non ne ha selezionata una)
- * 2. Lista bilanci dell'azienda selezionata
- * 3. Dettaglio bilancio con i valori delle voci contabili
- * I valori si possono inserire solo quando il bilancio e' in stato 'bozza'.
- */
+
 $page_title = 'Bilanci di Esercizio';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/db.php';
@@ -18,7 +11,6 @@ $username = currentUser();
 $id_azienda  = (int)($_GET['azienda'] ?? 0);
 $id_bilancio = (int)($_GET['bilancio'] ?? 0);
 
-// Controllo che l'azienda sia effettivamente del responsabile loggato
 $azienda = null;
 if ($id_azienda > 0) {
     $azienda = queryOne(
@@ -27,15 +19,22 @@ if ($id_azienda > 0) {
     );
 }
 
-// Gestisco le azioni POST: creazione bilancio e inserimento valore
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
-    // Creazione di un nuovo bilancio per l'azienda
+    if (!verifyCsrf()) {
+        setFlash('danger', 'Richiesta non valida.');
+        header("Location: bilancio.php?azienda={$id_azienda}");
+        exit;
+    }
     if ($_POST['action'] === 'crea_bilancio' && $azienda) {
         try {
             $result = callSP('sp_crea_bilancio', [$id_azienda]);
             $new_id = $result[0]['id_bilancio'] ?? 0;
-            logEvent('creazione_bilancio', "Bilancio #{$new_id} creato per {$azienda['ragione_sociale']}");
-            setFlash('success', "Bilancio #{$new_id} creato.");
+            if ($new_id > 0) {
+                logEvent('creazione_bilancio', "Bilancio #{$new_id} creato per {$azienda['ragione_sociale']}");
+                setFlash('success', "Bilancio #{$new_id} creato.");
+            } else {
+                setFlash('danger', 'Errore nella creazione del bilancio.');
+            }
         } catch (PDOException $e) {
             setFlash('danger', 'Errore: ' . $e->getMessage());
         }
@@ -43,13 +42,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         exit;
     }
 
-    // Inserimento del valore di una voce contabile nel bilancio
     if ($_POST['action'] === 'inserisci_valore' && $azienda) {
         $bil_id    = (int)($_POST['id_bilancio'] ?? 0);
         $nome_voce = $_POST['nome_voce'] ?? '';
         $valore    = $_POST['valore'] ?? '';
 
-        // Verifico che il bilancio appartenga a questa azienda e sia ancora in bozza
         $bil_check = queryOne(
             "SELECT id, stato FROM bilanci WHERE id = ? AND id_azienda = ?",
             [$bil_id, $id_azienda]
@@ -75,13 +72,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     }
 }
 
-// Lista aziende del responsabile (per il selettore iniziale)
 $aziende = query(
     "SELECT id, nome, ragione_sociale FROM aziende WHERE username_responsabile = ? ORDER BY nome",
     [$username]
 );
 
-// Se ho selezionato un'azienda, prendo i suoi bilanci
 $bilanci = [];
 if ($azienda) {
     $bilanci = query(
@@ -90,7 +85,6 @@ if ($azienda) {
     );
 }
 
-// Se ho selezionato un bilancio specifico, carico i suoi valori
 $valori_bilancio = [];
 $bilancio_sel = null;
 if ($id_bilancio > 0) {
@@ -103,7 +97,6 @@ if ($id_bilancio > 0) {
     }
 }
 
-// Prendo le voci contabili disponibili per il form di inserimento
 $voci = query("SELECT nome FROM voci_contabili ORDER BY nome");
 
 require_once __DIR__ . '/../../includes/header.php';
@@ -114,7 +107,6 @@ require_once __DIR__ . '/../../includes/header.php';
 <?php renderFlash(); ?>
 
 <?php if (!$azienda): ?>
-    <!-- Primo livello: seleziona un'azienda -->
     <div class="card">
         <div class="card-header bg-accent text-white">Seleziona Azienda</div>
         <div class="card-body">
@@ -142,13 +134,13 @@ require_once __DIR__ . '/../../includes/header.php';
             <small class="text-muted">(<?php echo htmlspecialchars($azienda['ragione_sociale']); ?>)</small>
         </div>
         <form method="POST" class="d-inline">
+            <?php echo csrfField(); ?>
             <input type="hidden" name="action" value="crea_bilancio">
             <button type="submit" class="btn btn-accent btn-sm"><i class="bi bi-plus-circle"></i> Nuovo Bilancio</button>
         </form>
     </div>
 
     <div class="row g-4">
-        <!-- Secondo livello: lista bilanci dell'azienda -->
         <div class="col-md-4">
             <div class="card">
                 <div class="card-header bg-accent text-white">Bilanci</div>
@@ -178,7 +170,6 @@ require_once __DIR__ . '/../../includes/header.php';
             </div>
         </div>
 
-        <!-- Terzo livello: dettaglio del bilancio selezionato -->
         <div class="col-md-8">
             <?php if ($bilancio_sel): ?>
                 <div class="card mb-3">
@@ -193,7 +184,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                 'respinto' => 'bg-secondary text-dark border border-2 border-primary',
                                 default => 'bg-secondary',
                             };
-                            ?>" style="font-size:0.95em;letter-spacing:0.5px; float:right;">
+                            ?> float-end">
                             <?php echo $bilancio_sel['stato']; ?></span>
                     </div>
                     <div class="card-body">
@@ -218,7 +209,6 @@ require_once __DIR__ . '/../../includes/header.php';
                             </table>
                         <?php endif; ?>
 
-                        <!-- Link per gestire gli indicatori ESG collegati a questo bilancio -->
                         <a href="indicatori_bilancio.php?bilancio=<?php echo $bilancio_sel['id']; ?>&azienda=<?php echo $id_azienda; ?>"
                             class="btn btn-outline-info btn-sm">
                             <i class="bi bi-graph-up"></i> Gestisci Indicatori ESG
@@ -226,12 +216,12 @@ require_once __DIR__ . '/../../includes/header.php';
                     </div>
                 </div>
 
-                <!-- Form inserimento valore: visibile solo se il bilancio e' ancora in bozza -->
                 <?php if ($bilancio_sel['stato'] === 'bozza'): ?>
                     <div class="card">
                         <div class="card-header bg-accent text-white">Inserisci Valore</div>
                         <div class="card-body">
                             <form method="POST">
+                                <?php echo csrfField(); ?>
                                 <input type="hidden" name="action" value="inserisci_valore">
                                 <input type="hidden" name="id_bilancio" value="<?php echo $bilancio_sel['id']; ?>">
                                 <div class="row">

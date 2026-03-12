@@ -1,11 +1,10 @@
 <?php
-// register.php - Registrazione
+
 $page_title = 'Registrazione';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
 
-// Se e' gia' loggato lo mando alla dashboard
 if (isLoggedIn()) {
     header('Location: /ESG-BALANCE/pages/dashboard.php');
     exit;
@@ -23,8 +22,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ruolo      = $_POST['ruolo'] ?? '';
     $email      = trim($_POST['email'] ?? '');
 
-    // Validazione dei campi - controllo che tutto sia compilato e coerente
-    if ($username === '' || $password === '' || $cf === '' || $data_nasc === '' || $luogo_nasc === '' || $ruolo === '' || $email === '') {
+    if (!verifyCsrf()) {
+        $error = 'Richiesta non valida.';
+    } elseif ($username === '' || $password === '' || $cf === '' || $data_nasc === '' || $luogo_nasc === '' || $ruolo === '' || $email === '') {
         $error = 'Compila tutti i campi obbligatori.';
     } elseif ($password !== $confirm) {
         $error = 'Le password non coincidono.';
@@ -33,46 +33,46 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!in_array($ruolo, ['revisore', 'responsabile'])) {
         $error = 'Ruolo non valido.';
     } else {
-        // Hashing della password con bcrypt
         $hash = password_hash($password, PASSWORD_BCRYPT);
 
-        // Se il ruolo e' responsabile, gestisco l'upload del CV (opzionale)
         $cv_path = null;
         if ($ruolo === 'responsabile' && !empty($_FILES['curriculum']['name'])) {
             $upload_dir = __DIR__ . '/../assets/uploads/';
             $cv_name = uniqid('cv_') . '_' . basename($_FILES['curriculum']['name']);
             $cv_dest = $upload_dir . $cv_name;
 
-            // Accetto solo PDF per il curriculum - verifico il tipo reale con finfo
             $finfo = finfo_open(FILEINFO_MIME_TYPE);
             $real_mime = finfo_file($finfo, $_FILES['curriculum']['tmp_name']);
             finfo_close($finfo);
             if ($real_mime === 'application/pdf') {
                 move_uploaded_file($_FILES['curriculum']['tmp_name'], $cv_dest);
                 $cv_path = 'assets/uploads/' . $cv_name;
+            } else {
+                $error = 'Il curriculum deve essere in formato PDF.';
             }
         }
 
-        try {
-            // Chiamo la SP che inserisce l'utente + email + tabella di specializzazione
-            execSP('sp_registra_utente', [
-                $username,
-                $hash,
-                $cf,
-                $data_nasc,
-                $luogo_nasc,
-                $ruolo,
-                $email,
-                $cv_path
-            ]);
-            logEvent('registrazione_utente', "Nuovo utente registrato: {$username} ({$ruolo})");
-            redirectWith('/ESG-BALANCE/pages/login.php', 'success', 'Registrazione completata. Effettua il login.');
-        } catch (PDOException $e) {
-            // Codice 23000 = violazione di unicita', quindi username gia' preso
-            if ($e->getCode() == 23000) {
-                $error = 'Username gia\' in uso.';
-            } else {
-                $error = 'Errore durante la registrazione: ' . $e->getMessage();
+        if ($error === '') {
+            try {
+                execSP('sp_registra_utente', [
+                    $username,
+                    $hash,
+                    $cf,
+                    $data_nasc,
+                    $luogo_nasc,
+                    $ruolo,
+                    $email,
+                    $cv_path
+                ]);
+                logEvent('registrazione_utente', "Nuovo utente registrato: {$username} ({$ruolo})");
+                redirectWith('/ESG-BALANCE/pages/login.php', 'success', 'Registrazione completata. Effettua il login.');
+            } catch (PDOException $e) {
+                // Codice 23000 = violazione di unicita', quindi username gia' preso
+                if ($e->getCode() == 23000) {
+                    $error = 'Username gia\' in uso.';
+                } else {
+                    $error = 'Errore durante la registrazione: ' . $e->getMessage();
+                }
             }
         }
     }
@@ -102,6 +102,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <div class="alert alert-danger shadow-sm"><?php echo htmlspecialchars($error); ?></div>
                 <?php endif; ?>
                 <form method="POST" enctype="multipart/form-data" autocomplete="on">
+                    <?php echo csrfField(); ?>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="username" class="form-label">Username *</label>
@@ -172,7 +173,6 @@ require_once __DIR__ . '/../includes/header.php';
                             </select>
                         </div>
                     </div>
-                    <!-- Campo CV: lo mostro solo se il ruolo e' responsabile (via JS sotto) -->
                     <div class="mb-3" id="cv_group" style="display: none;">
                         <label for="curriculum" class="form-label">Curriculum Vitae (PDF)</label>
                         <input type="file" class="form-control" id="curriculum" name="curriculum" accept=".pdf">
@@ -187,7 +187,6 @@ require_once __DIR__ . '/../includes/header.php';
     </div>
 </section>
 <script>
-    // Mostro/nascondo il campo CV in base al ruolo selezionato
     document.getElementById('ruolo').addEventListener('change', function() {
         document.getElementById('cv_group').style.display = this.value === 'responsabile' ? 'block' : 'none';
     });

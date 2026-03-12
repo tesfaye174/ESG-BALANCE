@@ -1,10 +1,10 @@
 <?php
-// mongodb.php
 
 define('MONGO_URI', 'mongodb://localhost:27017');
 define('MONGO_DB', 'esg_balance');
 define('MONGO_COLLECTION', 'events');
 
+// singleton anche qui come per MySQL
 function getMongoCollection()
 {
     static $collection = null;

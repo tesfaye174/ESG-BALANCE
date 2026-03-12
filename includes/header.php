@@ -1,9 +1,9 @@
 <?php
-// header.php
 
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
+
 $current_user = $_SESSION['username'] ?? null;
 $current_role = $_SESSION['ruolo'] ?? null;
 $base_url = '/ESG-BALANCE';
@@ -15,6 +15,9 @@ $base_url = '/ESG-BALANCE';
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ESG-BALANCE<?php echo isset($page_title) ? ' — ' . htmlspecialchars($page_title) : ''; ?></title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="<?php echo $base_url; ?>/assets/css/style.css" rel="stylesheet">
@@ -53,7 +56,7 @@ $base_url = '/ESG-BALANCE';
                                     class="bi bi-bar-chart-line me-1"></i>Statistiche</a>
                         </li>
 
-                                                <?php if ($current_role === 'amministratore'): ?>
+                        <?php if ($current_role === 'amministratore'): ?>
                             <li class="nav-item dropdown">
                                 <a class="nav-link dropdown-toggle <?php echo nav_active('/admin/'); ?>" href="#"
                                     id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
@@ -107,8 +110,7 @@ $base_url = '/ESG-BALANCE';
                             <span class="nav-link user-select-none">
                                 <i class="bi bi-person-circle me-1"></i>
                                 <?php echo htmlspecialchars($current_user); ?>
-                                <span class="badge bg-primary ms-2 text-light text-uppercase"
-                                    style="font-size:0.85em;letter-spacing:0.5px;vertical-align:middle;">
+                                <span class="badge bg-accent ms-2 text-uppercase">
                                     <?php echo htmlspecialchars($current_role); ?>
                                 </span>
                             </span>

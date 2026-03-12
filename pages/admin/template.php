@@ -1,10 +1,5 @@
 <?php
-/*
- * template.php - Gestione delle voci contabili (solo admin)
- * Il template e' una lista di voci contabili condivise tra tutte le aziende
- * (tipo "Ricavi vendite", "Costo del personale", ecc.).
- * Da qui l'admin puo' aggiungere nuove voci e vedere quelle esistenti.
- */
+
 $page_title = 'Template Bilancio';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/db.php';
@@ -12,8 +7,12 @@ require_once __DIR__ . '/../../includes/functions.php';
 
 requireRole('amministratore');
 
-// Gestisco l'inserimento di una nuova voce contabile
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verifyCsrf()) {
+        setFlash('danger', 'Richiesta non valida.');
+        header('Location: template.php');
+        exit;
+    }
     $nome = trim($_POST['nome'] ?? '');
     $descrizione = trim($_POST['descrizione'] ?? '');
 
@@ -37,7 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// Prendo tutte le voci contabili per mostrarle nella tabella
 $voci = query("SELECT nome, descrizione FROM voci_contabili ORDER BY nome");
 
 require_once __DIR__ . '/../../includes/header.php';
@@ -45,8 +43,8 @@ require_once __DIR__ . '/../../includes/header.php';
 
 
 <div class="d-flex align-items-center mb-4 gap-2">
-    <i class="bi bi-file-earmark-text fs-2 text-primary"></i>
-    <h2 class="mb-0 fw-bold text-primary">Template Bilancio</h2>
+    <i class="bi bi-file-earmark-text fs-2 text-accent"></i>
+    <h2 class="mb-0 fw-bold">Template Bilancio</h2>
 </div>
 
 <?php renderFlash(); ?>
@@ -57,6 +55,7 @@ require_once __DIR__ . '/../../includes/header.php';
             <div class="card-header bg-primary text-white fw-bold">Nuova Voce Contabile</div>
             <div class="card-body">
                 <form method="POST">
+                    <?php echo csrfField(); ?>
                     <div class="mb-3">
                         <label for="nome" class="form-label">Nome voce *</label>
                         <input type="text" class="form-control" id="nome" name="nome" required
@@ -76,28 +75,28 @@ require_once __DIR__ . '/../../includes/header.php';
         <div class="card">
             <div class="card-header bg-accent text-white">
                 Voci Contabili Esistenti
-                <span class="badge bg-secondary text-accent float-end"><?php echo count($voci); ?></span>
+                <span class="badge bg-white text-accent float-end"><?php echo count($voci); ?></span>
             </div>
             <div class="card-body">
                 <?php if (empty($voci)): ?>
-                <p class="text-muted">Nessuna voce contabile presente.</p>
+                    <p class="text-muted">Nessuna voce contabile presente.</p>
                 <?php else: ?>
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Descrizione</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($voci as $v): ?>
-                        <tr>
-                            <td><strong><?php echo htmlspecialchars($v['nome']); ?></strong></td>
-                            <td><?php echo htmlspecialchars($v['descrizione'] ?? '—'); ?></td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Descrizione</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($voci as $v): ?>
+                                <tr>
+                                    <td><strong><?php echo htmlspecialchars($v['nome']); ?></strong></td>
+                                    <td><?php echo htmlspecialchars($v['descrizione'] ?? '—'); ?></td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 <?php endif; ?>
             </div>
         </div>

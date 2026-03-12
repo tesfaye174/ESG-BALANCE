@@ -1,19 +1,17 @@
 <?php
-// login.php - Pagina di accesso
 
 $page_title = 'Accedi';
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
 
-// Se l'utente clicca "Esci" dalla navbar, arrivo qui con ?logout=1
+// logout
 if (isset($_GET['logout'])) {
     session_destroy();
     header('Location: /ESG-BALANCE/pages/login.php');
     exit;
 }
 
-// Se e' gia' loggato non ha senso stare qui, lo mando alla dashboard
 if (isLoggedIn()) {
     header('Location: /ESG-BALANCE/pages/dashboard.php');
     exit;
@@ -25,23 +23,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $username = trim($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
-    if ($username === '' || $password === '') {
+    if (!verifyCsrf()) {
+        $error = 'Richiesta non valida.';
+    } elseif ($username === '' || $password === '') {
         $error = 'Compila tutti i campi.';
     } else {
-        // chiamo la SP che mi da username, password_hash e ruolo
         $rows = callSP('sp_login', [$username]);
 
         if (empty($rows)) {
-            // utente non trovato - messaggio generico per non dare indizi
             $error = 'Username o password non validi.';
         } else {
             $user = $rows[0];
 
-            // password_verify confronta la password in chiaro con l'hash bcrypt
             if (password_verify($password, $user['password_hash'])) {
-                // login ok! salvo username e ruolo in sessione
+                session_regenerate_id(true);
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['ruolo']    = $user['ruolo'];
+                $_SESSION['last_activity'] = time();
                 logEvent('login', "Accesso utente: {$user['username']}");
                 header('Location: /ESG-BALANCE/pages/dashboard.php');
                 exit;
@@ -55,7 +53,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 require_once __DIR__ . '/../includes/header.php';
 ?>
 
-<!-- Aggiungo la classe al body per lo sfondo gradient della pagina login -->
 <script>
     document.body.classList.add('login-bg');
 </script>
@@ -76,10 +73,10 @@ require_once __DIR__ . '/../includes/header.php';
                     <div class="alert alert-danger shadow-sm"><?php echo htmlspecialchars($error); ?></div>
                 <?php endif; ?>
 
-                <!-- Messaggi flash, tipo "Registrazione completata" dopo il redirect -->
                 <?php renderFlash(); ?>
 
                 <form method="POST" autocomplete="on">
+                    <?php echo csrfField(); ?>
                     <div class="mb-3">
                         <label for="username" class="form-label">Username</label>
                         <div class="input-group">

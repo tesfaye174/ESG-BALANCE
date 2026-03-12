@@ -51,7 +51,7 @@ Il sistema utilizza inoltre un database **MongoDB** per il logging degli eventi 
 ### 1.2 Glossario dei Dati
 
 | Termine | Descrizione | Sinonimi | Collegamenti |
-|---------|------------|----------|--------------|
+| --------- | ------------ | ---------- | -------------- |
 | Utente | Persona registrata nel sistema con credenziali di accesso | Utilizzatore, Account | Email, Revisore, Responsabile |
 | Email utente | Indirizzo di posta elettronica associato a un utente | Recapito email | Utente |
 | Revisore | Utente specializzato nella revisione dei bilanci ESG | Revisore ESG, Auditor | Utente, Competenza, Revisione, Nota, Giudizio |
@@ -72,7 +72,7 @@ Il sistema utilizza inoltre un database **MongoDB** per il logging degli eventi 
 ### 1.3 Operazioni Principali e Frequenza
 
 | # | Operazione | Tipo | Frequenza |
-|---|-----------|------|-----------|
+| --- | ----------- | ------ | ----------- |
 | Op1 | Login utente (verifica credenziali) | Interattiva (I) | 50 volte/giorno |
 | Op2 | Registrazione nuovo utente con email e sotto-tabella di ruolo | I | 2 volte/giorno |
 | Op3 | Aggiunta indirizzo email a utente esistente | I | 1 volta/giorno |
@@ -97,7 +97,7 @@ Il sistema utilizza inoltre un database **MongoDB** per il logging degli eventi 
 ### 1.4 Tavola dei Volumi
 
 | Concetto | Tipo | Volume |
-|----------|------|--------|
+| ---------- | ------ | -------- |
 | Utente | Entita' | 50 |
 | Email utente | Attributo multivalore | 60 |
 | Revisore | Entita' (sotto-tipo) | 15 |
@@ -120,9 +120,87 @@ Il sistema utilizza inoltre un database **MongoDB** per il logging degli eventi 
 
 ## 2. Progettazione Concettuale
 
-### 2.1 Schema E-R (Descrizione Testuale)
+### 2.1 Schema E-R
 
 Lo schema Entity-Relationship del sistema ESG-BALANCE e' strutturato attorno alle seguenti entita' principali e relazioni.
+
+#### Diagramma E-R (rappresentazione testuale)
+
+```text
+                            +-----------+
+                            |  UTENTE   |
+                            +-----------+
+                            | username  |---+---< EMAIL >
+                            | pwd_hash  |   | (multivalore)
+                            | CF        |
+                            | data_nasc |
+                            | luogo_nasc|
+                            | ruolo (d) |
+                            +-----+-----+
+                     _____________|____________
+                    |    (T, E)                |
+              +-----+------+           +------+--------+
+              |  REVISORE  |           | RESPONSABILE  |
+              +------------+           +---------------+
+              | nr_revisioni           | curriculum_pdf |
+              | indice_affid.          +-------+-------+
+              +------+-----+                  |
+                     |                    (1,N) GESTISCE (1,1)
+             (0,N) POSSIEDE                    |
+                     |                  +------+------+
+              +------+-------+          |   AZIENDA   |
+              | COMPETENZA   |          +-------------+
+              +-------+------+          | id          |
+              | nome_comp    |          | nome        |
+              | livello[0-5] |          | rag_soc (U) |
+              +--------------+          | partita_iva |
+                     |                  | settore     |
+            (0,N) REVISIONA (0,N)       | num_dip     |
+                     |                  | nr_bilanci* |
+                     |                  +------+------+
+               +-----+-----+                  |
+               | REVISIONE |             (0,N) APPARTIENE (1,1)
+               +-----------+                   |
+               |(user,bil) |            +------+------+
+               +-+-------+-+            |  BILANCIO   |
+                 |       |              +-------------+
+         (0,N) ANNOTA  GIUDICA (0,1)    | id          |
+                 |       |              | data_creaz.  |
+          +------+---+ +-+--------+     | stato{b,r,a,x}
+          |   NOTA   | | GIUDIZIO |     +------+------+
+          +----------+ +----------+            |
+          | id       | | esito    |    (0,N) VALORIZZA (0,N)
+          | data     | | data     |            |
+          | testo    | | rilievi  |     +------+--------+
+          +----------+ +----------+     | VALORE_BIL.  |
+                                        +--------------+
+                                        |(bil, voce)   |
+                                        | valore (EUR) |
+          +-------------------+         +------+-------+
+          |   VOCE_CONTABILE  |                |
+          +-------------------+       (0,N) COLLEGA (0,N)
+          | nome              |                |
+          | descrizione       |         +------+---------+
+          +-------------------+         | INDICATORE_ESG |
+                                        +----------------+
+                                        | nome           |
+                                        | immagine       |
+                                        | rilevanza[0-10]|
+                                        | tipo (d)       |
+                                        +-------+--------+
+                                   _____________|__________
+                                  |     (P, E)             |
+                           +------+--------+     +---------+------+
+                           | IND_AMBIENTALE|     | IND_SOCIALE    |
+                           +---------------+     +----------------+
+                           | cod_normativa |     | ambito_soc     |
+                           +---------------+     | freq_rilev     |
+                                                 +----------------+
+
+Legenda: (T,E) = Totale, Esclusiva   (P,E) = Parziale, Esclusiva
+         (d) = discriminatore         * = ridondanza (trigger T3/T4)
+         (U) = UNIQUE                 < > = attributo multivalore
+```
 
 #### Gerarchia degli Utenti (Totale, Esclusiva)
 
@@ -171,7 +249,7 @@ L'entita' **INDICATORE_ESG** e' la radice di una gerarchia **parziale ed esclusi
 ### 2.2 Dizionario delle Entita'
 
 | Entita' | Descrizione | Attributi | Identificatore |
-|---------|-------------|-----------|----------------|
+| --------- | ------------- | ----------- | ---------------- |
 | UTENTE | Persona registrata nel sistema | username, password_hash, codice_fiscale, data_nascita, luogo_nascita, ruolo | username |
 | REVISORE | Sotto-entita' di UTENTE (ruolo='revisore') | nr_revisioni, indice_affidabilita | username (ereditato) |
 | RESPONSABILE | Sotto-entita' di UTENTE (ruolo='responsabile') | curriculum_pdf | username (ereditato) |
@@ -188,7 +266,7 @@ L'entita' **INDICATORE_ESG** e' la radice di una gerarchia **parziale ed esclusi
 ### 2.3 Dizionario delle Relazioni
 
 | Relazione | Descrizione | Entita' coinvolte | Attributi di relazione | Cardinalita' |
-|-----------|-------------|-------------------|----------------------|--------------|
+| ----------- | ------------- | ------------------- | ---------------------- | -------------- |
 | GESTISCE | Responsabile gestisce aziende | RESPONSABILE -- AZIENDA | -- | (1,N) -- (1,1) |
 | APPARTIENE | Bilancio di un'azienda | AZIENDA -- BILANCIO | -- | (0,N) -- (1,1) |
 | VALORIZZA | Valore di una voce in un bilancio | BILANCIO -- VOCE_CONTABILE | valore | (0,N) -- (0,N) |
@@ -201,7 +279,7 @@ L'entita' **INDICATORE_ESG** e' la radice di una gerarchia **parziale ed esclusi
 ### 2.4 Regole di Business (Vincoli Non Esprimibili nel Diagramma E-R)
 
 | # | Regola di Business | Implementazione |
-|---|-------------------|-----------------|
+| --- | ------------------- | ----------------- |
 | RV1 | Il livello di ogni competenza del revisore deve essere compreso tra 0 e 5 (estremi inclusi). | CHECK constraint su `competenze_revisore.livello` |
 | RV2 | La rilevanza di un indicatore ESG deve essere compresa tra 0.0 e 10.0 (estremi inclusi). | CHECK constraint su `indicatori_esg.rilevanza` |
 | RV3 | La ragione sociale di un'azienda deve essere univoca nell'intero sistema. | UNIQUE constraint su `aziende.ragione_sociale` |
@@ -212,6 +290,7 @@ L'entita' **INDICATORE_ESG** e' la radice di una gerarchia **parziale ed esclusi
 | RV8 | Al momento della registrazione, un utente deve essere inserito nella tabella padre `utenti` e nella sotto-tabella corrispondente al proprio ruolo (`revisori` o `responsabili`), unitamente al primo indirizzo email. | Logica applicativa nella SP `sp_registra_utente` |
 | RV9 | Un revisore puo' emettere al piu' un giudizio per ogni bilancio a cui e' assegnato. | PRIMARY KEY composita su `giudizi(username_revisore, id_bilancio)` |
 | RV10 | La modifica dei valori delle voci contabili e il collegamento degli indicatori ESG sono consentiti solo se il bilancio si trova in stato 'bozza'. | Logica applicativa (controllo PHP prima dell'esecuzione delle SP) |
+| RV11 | Dopo ogni giudizio emesso, l'indice di affidabilita' del revisore deve essere ricalcolato come rapporto tra giudizi di approvazione e giudizi totali. | SP `sp_aggiorna_indice_affidabilita` invocata dal Trigger T2 |
 
 ---
 
@@ -258,7 +337,7 @@ L'attributo `nr_bilanci` nella tabella `aziende` e' un dato derivato: il suo val
 #### Operazioni coinvolte
 
 | Operazione | Descrizione | Tipo | Frequenza mensile |
-|-----------|-------------|------|-------------------|
+| ----------- | ------------- | ------ | ------------------- |
 | OpA | Registrazione azienda + 3 bilanci | I | 1 |
 | OpB | Conteggio bilanci per tutte le aziende | B | 3 |
 | OpC | Rimozione azienda con tutti i bilanci | B | 1 |
@@ -285,7 +364,7 @@ Con la ridondanza, l'attributo `nr_bilanci` e' mantenuto aggiornato dai trigger 
 - 5 trigger su DELETE bilanci (uno per ogni bilancio dell'azienda eliminata); tuttavia l'azienda stessa viene eliminata, quindi il trigger esegue un UPDATE su una riga che sta per essere eliminata. In pratica il costo aggiuntivo e' trascurabile, ma lo conteggiamo formalmente.
 - Costo: 1 x w_B x [ 1 x alpha + 5 x alpha ] = 1 x 0.5 x (2 + 10) = **6**
 
-**Costo totale CON ridondanza = 14 + 15 + 6 = 35**
+Costo totale CON ridondanza = 14 + 15 + 6 = **35**
 
 #### Costo SENZA ridondanza
 
@@ -309,12 +388,12 @@ Senza la ridondanza, l'attributo `nr_bilanci` non esiste e ogni volta che serve 
 - Nessun trigger
 - Costo: 1 x w_B x [ 1 x alpha + 5 x alpha ] = 1 x 0.5 x (2 + 10) = **6**
 
-**Costo totale SENZA ridondanza = 8 + 75 + 6 = 89**
+Costo totale SENZA ridondanza = 8 + 75 + 6 = **89**
 
 #### Conclusione
 
 | Scenario | Costo OpA | Costo OpB | Costo OpC | **Totale** |
-|----------|----------|----------|----------|------------|
+| ---------- | ---------- | ---------- | ---------- | ------------ |
 | CON ridondanza | 14 | 15 | 6 | **35** |
 | SENZA ridondanza | 8 | 75 | 6 | **89** |
 
@@ -328,10 +407,10 @@ Di seguito lo schema relazionale completo con vincoli di chiave primaria (PK), c
 
 ---
 
-**1. utenti**
+#### 1. utenti
 
 | Attributo | Tipo | Vincoli |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | username | VARCHAR(50) | **PK** |
 | password_hash | VARCHAR(255) | NOT NULL |
 | codice_fiscale | CHAR(16) | NOT NULL |
@@ -341,48 +420,48 @@ Di seguito lo schema relazionale completo con vincoli di chiave primaria (PK), c
 
 ---
 
-**2. email_utente**
+#### 2. email_utente
 
 | Attributo | Tipo | Vincoli |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | username | VARCHAR(50) | **PK** (composita), FK -> utenti(username) ON DELETE CASCADE |
 | email | VARCHAR(150) | **PK** (composita) |
 
 ---
 
-**3. revisori**
+#### 3. revisori
 
 | Attributo | Tipo | Vincoli |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | username | VARCHAR(50) | **PK**, FK -> utenti(username) ON DELETE CASCADE |
 | nr_revisioni | INT | DEFAULT 0 |
 | indice_affidabilita | DECIMAL(3,2) | DEFAULT 0.00 |
 
 ---
 
-**4. responsabili**
+#### 4. responsabili
 
 | Attributo | Tipo | Vincoli |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | username | VARCHAR(50) | **PK**, FK -> utenti(username) ON DELETE CASCADE |
 | curriculum_pdf | VARCHAR(255) | DEFAULT NULL |
 
 ---
 
-**5. competenze_revisore**
+#### 5. competenze_revisore
 
 | Attributo | Tipo | Vincoli |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | username | VARCHAR(50) | **PK** (composita), FK -> revisori(username) ON DELETE CASCADE |
 | nome_competenza | VARCHAR(100) | **PK** (composita) |
 | livello | TINYINT | NOT NULL, CHECK (livello BETWEEN 0 AND 5) |
 
 ---
 
-**6. aziende**
+#### 6. aziende
 
 | Attributo | Tipo | Vincoli |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | id | INT AUTO_INCREMENT | **PK** |
 | nome | VARCHAR(150) | NOT NULL |
 | ragione_sociale | VARCHAR(200) | NOT NULL, **UNIQUE** |
@@ -395,19 +474,19 @@ Di seguito lo schema relazionale completo con vincoli di chiave primaria (PK), c
 
 ---
 
-**7. voci_contabili**
+#### 7. voci_contabili
 
 | Attributo | Tipo | Vincoli |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | nome | VARCHAR(150) | **PK** |
 | descrizione | TEXT | DEFAULT NULL |
 
 ---
 
-**8. bilanci**
+#### 8. bilanci
 
 | Attributo | Tipo | Vincoli |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | id | INT AUTO_INCREMENT | **PK** |
 | id_azienda | INT | NOT NULL, FK -> aziende(id) ON DELETE CASCADE |
 | data_creazione | DATE | NOT NULL |
@@ -415,20 +494,20 @@ Di seguito lo schema relazionale completo con vincoli di chiave primaria (PK), c
 
 ---
 
-**9. valori_bilancio**
+#### 9. valori_bilancio
 
 | Attributo | Tipo | Vincoli |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | id_bilancio | INT | **PK** (composita), FK -> bilanci(id) ON DELETE CASCADE |
 | nome_voce | VARCHAR(150) | **PK** (composita), FK -> voci_contabili(nome) ON UPDATE CASCADE |
 | valore | DECIMAL(15,2) | NOT NULL |
 
 ---
 
-**10. indicatori_esg**
+#### 10. indicatori_esg
 
 | Attributo | Tipo | Vincoli |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | nome | VARCHAR(150) | **PK** |
 | immagine | VARCHAR(255) | DEFAULT NULL |
 | rilevanza | DECIMAL(3,1) | DEFAULT NULL, CHECK (rilevanza BETWEEN 0 AND 10) |
@@ -436,29 +515,29 @@ Di seguito lo schema relazionale completo con vincoli di chiave primaria (PK), c
 
 ---
 
-**11. indicatori_ambientali**
+#### 11. indicatori_ambientali
 
 | Attributo | Tipo | Vincoli |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | nome | VARCHAR(150) | **PK**, FK -> indicatori_esg(nome) ON DELETE CASCADE ON UPDATE CASCADE |
 | codice_normativa | VARCHAR(100) | NOT NULL |
 
 ---
 
-**12. indicatori_sociali**
+#### 12. indicatori_sociali
 
 | Attributo | Tipo | Vincoli |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | nome | VARCHAR(150) | **PK**, FK -> indicatori_esg(nome) ON DELETE CASCADE ON UPDATE CASCADE |
 | ambito_sociale | VARCHAR(150) | NOT NULL |
 | frequenza_rilevazione | VARCHAR(100) | NOT NULL |
 
 ---
 
-**13. voci_indicatori**
+#### 13. voci_indicatori
 
 | Attributo | Tipo | Vincoli |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | id_bilancio | INT | **PK** (composita), FK composita -> valori_bilancio(id_bilancio, nome_voce) ON DELETE CASCADE |
 | nome_voce | VARCHAR(150) | **PK** (composita) |
 | nome_indicatore | VARCHAR(150) | **PK** (composita), FK -> indicatori_esg(nome) ON UPDATE CASCADE |
@@ -468,19 +547,19 @@ Di seguito lo schema relazionale completo con vincoli di chiave primaria (PK), c
 
 ---
 
-**14. revisioni**
+#### 14. revisioni
 
 | Attributo | Tipo | Vincoli |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | username_revisore | VARCHAR(50) | **PK** (composita), FK -> revisori(username) ON DELETE CASCADE |
 | id_bilancio | INT | **PK** (composita), FK -> bilanci(id) ON DELETE CASCADE |
 
 ---
 
-**15. note_revisione**
+#### 15. note_revisione
 
 | Attributo | Tipo | Vincoli |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | id | INT AUTO_INCREMENT | **PK** |
 | username_revisore | VARCHAR(50) | NOT NULL, FK composita -> revisioni(username_revisore, id_bilancio) ON DELETE CASCADE |
 | id_bilancio | INT | NOT NULL |
@@ -490,10 +569,10 @@ Di seguito lo schema relazionale completo con vincoli di chiave primaria (PK), c
 
 ---
 
-**16. giudizi**
+#### 16. giudizi
 
 | Attributo | Tipo | Vincoli |
-|-----------|------|---------|
+| ----------- | ------ | --------- |
 | username_revisore | VARCHAR(50) | **PK** (composita), FK composita -> revisioni(username_revisore, id_bilancio) ON DELETE CASCADE |
 | id_bilancio | INT | **PK** (composita) |
 | esito | ENUM('approvazione','approvazione_con_rilievi','respingimento') | NOT NULL |
@@ -505,7 +584,7 @@ Di seguito lo schema relazionale completo con vincoli di chiave primaria (PK), c
 ### 3.4 Vincoli di Integrita' Referenziale (Inter-relazionali)
 
 | # | Tabella referenziante | Attributo/i FK | Tabella referenziata | Attributo/i PK | Politica ON DELETE | Politica ON UPDATE |
-|---|----------------------|----------------|---------------------|----------------|-------------------|-------------------|
+| --- | ---------------------- | ---------------- | --------------------- | ---------------- | ------------------- | ------------------- |
 | 1 | email_utente | username | utenti | username | CASCADE | -- |
 | 2 | revisori | username | utenti | username | CASCADE | -- |
 | 3 | responsabili | username | utenti | username | CASCADE | -- |
@@ -534,98 +613,98 @@ Si verifica che tutte le tabelle dello schema relazionale siano in **Forma Norma
 
 ### 4.1 Analisi per Tabella
 
-**utenti(username, password_hash, codice_fiscale, data_nascita, luogo_nascita, ruolo)**
+#### utenti(username, password_hash, codice_fiscale, data_nascita, luogo_nascita, ruolo)
 
 - Chiave primaria: {username}
 - Dipendenze funzionali: username -> password_hash, codice_fiscale, data_nascita, luogo_nascita, ruolo
 - Verifica BCNF: l'unico determinante e' `username`, che e' la chiave primaria. **BCNF verificata.**
 
-**email_utente(username, email)**
+#### email_utente(username, email)
 
 - Chiave primaria: {username, email}
 - Dipendenze funzionali: non vi sono dipendenze funzionali non banali in cui un sottoinsieme proprio della chiave determini altri attributi (non ci sono attributi non-chiave).
 - **BCNF verificata** (la relazione contiene soltanto attributi chiave).
 
-**revisori(username, nr_revisioni, indice_affidabilita)**
+#### revisori(username, nr_revisioni, indice_affidabilita)
 
 - Chiave primaria: {username}
 - Dipendenze funzionali: username -> nr_revisioni, indice_affidabilita
 - Verifica BCNF: il determinante `username` e' la chiave. **BCNF verificata.**
 
-**responsabili(username, curriculum_pdf)**
+#### responsabili(username, curriculum_pdf)
 
 - Chiave primaria: {username}
 - Dipendenze funzionali: username -> curriculum_pdf
 - Verifica BCNF: il determinante `username` e' la chiave. **BCNF verificata.**
 
-**competenze_revisore(username, nome_competenza, livello)**
+#### competenze_revisore(username, nome_competenza, livello)
 
 - Chiave primaria: {username, nome_competenza}
 - Dipendenze funzionali: (username, nome_competenza) -> livello
 - Verifica BCNF: l'unico determinante e' la chiave primaria. **BCNF verificata.**
 
-**aziende(id, nome, ragione_sociale, partita_iva, settore, num_dipendenti, logo, nr_bilanci, username_responsabile)**
+#### aziende(id, nome, ragione_sociale, partita_iva, settore, num_dipendenti, logo, nr_bilanci, username_responsabile)
 
 - Chiave primaria: {id}
 - Chiave candidata: {ragione_sociale} (vincolo UNIQUE)
 - Dipendenze funzionali: id -> nome, ragione_sociale, partita_iva, settore, num_dipendenti, logo, nr_bilanci, username_responsabile; ragione_sociale -> id, nome, partita_iva, settore, num_dipendenti, logo, nr_bilanci, username_responsabile
 - Verifica BCNF: i determinanti sono `id` e `ragione_sociale`, entrambi superchiavi. **BCNF verificata.**
 
-**voci_contabili(nome, descrizione)**
+#### voci_contabili(nome, descrizione)
 
 - Chiave primaria: {nome}
 - Dipendenze funzionali: nome -> descrizione
 - Verifica BCNF: il determinante `nome` e' la chiave. **BCNF verificata.**
 
-**bilanci(id, id_azienda, data_creazione, stato)**
+#### bilanci(id, id_azienda, data_creazione, stato)
 
 - Chiave primaria: {id}
 - Dipendenze funzionali: id -> id_azienda, data_creazione, stato
 - Verifica BCNF: il determinante `id` e' la chiave. **BCNF verificata.**
 
-**valori_bilancio(id_bilancio, nome_voce, valore)**
+#### valori_bilancio(id_bilancio, nome_voce, valore)
 
 - Chiave primaria: {id_bilancio, nome_voce}
 - Dipendenze funzionali: (id_bilancio, nome_voce) -> valore
 - Verifica BCNF: l'unico determinante e' la chiave primaria. **BCNF verificata.**
 
-**indicatori_esg(nome, immagine, rilevanza, tipo)**
+#### indicatori_esg(nome, immagine, rilevanza, tipo)
 
 - Chiave primaria: {nome}
 - Dipendenze funzionali: nome -> immagine, rilevanza, tipo
 - Verifica BCNF: il determinante `nome` e' la chiave. **BCNF verificata.**
 
-**indicatori_ambientali(nome, codice_normativa)**
+#### indicatori_ambientali(nome, codice_normativa)
 
 - Chiave primaria: {nome}
 - Dipendenze funzionali: nome -> codice_normativa
 - Verifica BCNF: il determinante `nome` e' la chiave. **BCNF verificata.**
 
-**indicatori_sociali(nome, ambito_sociale, frequenza_rilevazione)**
+#### indicatori_sociali(nome, ambito_sociale, frequenza_rilevazione)
 
 - Chiave primaria: {nome}
 - Dipendenze funzionali: nome -> ambito_sociale, frequenza_rilevazione
 - Verifica BCNF: il determinante `nome` e' la chiave. **BCNF verificata.**
 
-**voci_indicatori(id_bilancio, nome_voce, nome_indicatore, valore_indicatore, fonte, data_rilevazione)**
+#### voci_indicatori(id_bilancio, nome_voce, nome_indicatore, valore_indicatore, fonte, data_rilevazione)
 
 - Chiave primaria: {id_bilancio, nome_voce, nome_indicatore}
 - Dipendenze funzionali: (id_bilancio, nome_voce, nome_indicatore) -> valore_indicatore, fonte, data_rilevazione
 - Verifica BCNF: l'unico determinante e' la chiave primaria. **BCNF verificata.**
 
-**revisioni(username_revisore, id_bilancio)**
+#### revisioni(username_revisore, id_bilancio)
 
 - Chiave primaria: {username_revisore, id_bilancio}
 - Dipendenze funzionali: nessuna dipendenza funzionale non banale (tutti gli attributi sono chiave).
 - **BCNF verificata.**
 
-**note_revisione(id, username_revisore, id_bilancio, nome_voce, data_nota, testo)**
+#### note_revisione(id, username_revisore, id_bilancio, nome_voce, data_nota, testo)
 
 - Chiave primaria: {id}
 - Dipendenze funzionali: id -> username_revisore, id_bilancio, nome_voce, data_nota, testo
 - Verifica BCNF: il determinante `id` e' la chiave. **BCNF verificata.**
 
-**giudizi(username_revisore, id_bilancio, esito, data_giudizio, rilievi)**
+#### giudizi(username_revisore, id_bilancio, esito, data_giudizio, rilievi)
 
 - Chiave primaria: {username_revisore, id_bilancio}
 - Dipendenze funzionali: (username_revisore, id_bilancio) -> esito, data_giudizio, rilievi
@@ -653,7 +732,7 @@ L'architettura dell'applicazione segue un modello **procedurale strutturato**, c
 
 ### 5.2 Struttura dei File
 
-```
+```text
 ESG-BALANCE/
   config/
     database.php          -- Connessione MySQL (singleton PDO)
@@ -687,7 +766,7 @@ ESG-BALANCE/
     uploads/              -- Directory per upload (loghi, CV, immagini)
   sql/
     schema.sql            -- DDL dello schema completo
-    stored_procedures.sql -- Tutte le 13 stored procedure
+    stored_procedures.sql -- Tutte le 14 stored procedure
     triggers.sql          -- Tutti i 4 trigger
     views.sql             -- Tutte le 4 viste
     seed.sql              -- Dati di popolamento per la demo
@@ -757,7 +836,9 @@ La funzione `logEvent()` in `includes/functions.php` gestisce la connessione al 
 - **Autorizzazione:** ogni pagina ristretta invoca `requireRole()` che verifica il ruolo in sessione
 - **Prevenzione SQL Injection:** tutte le query utilizzano prepared statements (parametri `?`) tramite PDO
 - **Prevenzione XSS:** tutti gli output utente sono sanitizzati con `htmlspecialchars()`
-- **Upload sicuri:** verifica del MIME type reale tramite `finfo` (non il MIME dichiarato dal browser)
+- **Prevenzione CSRF:** ogni form include un token anti-CSRF generato con `random_bytes(32)` e verificato server-side prima di elaborare la richiesta. Le funzioni `csrfToken()`, `csrfField()` e `verifyCsrf()` in `includes/functions.php` gestiscono la generazione del token, il rendering dell'input hidden e la validazione con `hash_equals()`
+- **Timeout di sessione:** dopo 1 ora di inattivita' la sessione viene invalidata automaticamente e l'utente viene reindirizzato alla pagina di login. Il controllo avviene in `includes/auth.php` tramite il confronto tra `$_SESSION['last_activity']` e il timestamp corrente
+- **Upload sicuri:** verifica del MIME type reale tramite `finfo` (non il MIME dichiarato dal browser); in caso di tipo non valido, l'utente riceve un messaggio di errore esplicito
 - **Messaggi di errore generici:** in fase di login, il messaggio "Username o password non validi" non rivela quale dei due sia errato
 
 ---
@@ -767,9 +848,9 @@ La funzione `logEvent()` in `includes/functions.php` gestisce la connessione al 
 Il codice SQL completo del progetto e' suddiviso nei seguenti file nella directory `sql/`:
 
 | File | Contenuto |
-|------|-----------|
+| ------ | ----------- |
 | `sql/schema.sql` | Definizione dello schema (16 tabelle con vincoli PK, FK, UNIQUE, CHECK, ENUM) |
-| `sql/stored_procedures.sql` | 13 stored procedure per tutte le operazioni CRUD |
+| `sql/stored_procedures.sql` | 14 stored procedure per tutte le operazioni CRUD |
 | `sql/triggers.sql` | 4 trigger per la gestione automatica degli stati e della ridondanza |
 | `sql/views.sql` | 4 viste per le statistiche aggregate |
 | `sql/seed.sql` | Dati di popolamento per la demo (5 utenti, 3 aziende, 6 bilanci, 6 indicatori ESG, valori, revisioni, note e giudizi) |
@@ -777,7 +858,7 @@ Il codice SQL completo del progetto e' suddiviso nei seguenti file nella directo
 ### 6.1 Riepilogo Stored Procedure
 
 | # | Nome | Descrizione |
-|---|------|-------------|
+| --- | ------ | ------------- |
 | SP1 | `sp_login` | Restituisce username, hash password e ruolo per la verifica delle credenziali |
 | SP2 | `sp_registra_utente` | Inserisce utente, email e sotto-tabella di ruolo in un'unica operazione |
 | SP3 | `sp_aggiungi_email` | Aggiunge un indirizzo email a un utente esistente |
@@ -791,20 +872,21 @@ Il codice SQL completo del progetto e' suddiviso nei seguenti file nella directo
 | SP11 | `sp_inserisci_competenza` | Inserisce o aggiorna una competenza del revisore |
 | SP12 | `sp_inserisci_nota` | Inserisce una nota del revisore su una voce contabile di un bilancio |
 | SP13 | `sp_inserisci_giudizio` | Registra il giudizio complessivo del revisore su un bilancio |
+| SP14 | `sp_aggiorna_indice_affidabilita` | Ricalcola l'indice di affidabilita' di un revisore come rapporto tra giudizi positivi e totali |
 
 ### 6.2 Riepilogo Trigger
 
 | # | Nome | Evento | Descrizione |
-|---|------|--------|-------------|
+| --- | ------ | -------- | ------------- |
 | T1 | `trg_bilancio_in_revisione` | AFTER INSERT su `revisioni` | Cambia lo stato del bilancio da 'bozza' a 'in_revisione' quando viene assegnato il primo revisore |
-| T2 | `trg_bilancio_giudizio` | AFTER INSERT su `giudizi` | Quando tutti i revisori assegnati hanno votato, determina lo stato finale: 'respinto' se almeno un respingimento, altrimenti 'approvato' |
+| T2 | `trg_bilancio_giudizio` | AFTER INSERT su `giudizi` | Quando tutti i revisori assegnati hanno votato, determina lo stato finale: 'respinto' se almeno un respingimento, altrimenti 'approvato'. Aggiorna inoltre l'indice di affidabilita' del revisore tramite `sp_aggiorna_indice_affidabilita` |
 | T3 | `trg_incrementa_nr_bilanci` | AFTER INSERT su `bilanci` | Incrementa di 1 il contatore `nr_bilanci` dell'azienda corrispondente |
 | T4 | `trg_decrementa_nr_bilanci` | AFTER DELETE su `bilanci` | Decrementa di 1 il contatore `nr_bilanci` dell'azienda corrispondente |
 
 ### 6.3 Riepilogo Viste
 
 | # | Nome | Descrizione |
-|---|------|-------------|
+| --- | ------ | ------------- |
 | V1 | `v_num_aziende` | Restituisce il numero totale di aziende registrate in piattaforma |
 | V2 | `v_num_revisori` | Restituisce il numero totale di revisori ESG registrati |
 | V3 | `v_affidabilita_aziende` | Classifica le aziende per percentuale di bilanci approvati "puri" (tutti i giudizi con esito 'approvazione', senza rilievi ne' respingimenti) sul totale dei bilanci giudicati |
@@ -812,4 +894,4 @@ Il codice SQL completo del progetto e' suddiviso nei seguenti file nella directo
 
 ---
 
-*Progetto ESG-BALANCE -- Basi di Dati, A.A. 2025/2026 -- Universita' di Bologna*
+Progetto ESG-BALANCE -- Basi di Dati, A.A. 2025/2026 -- Universita' di Bologna

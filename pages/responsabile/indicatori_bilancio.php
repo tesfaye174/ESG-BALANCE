@@ -1,10 +1,5 @@
 <?php
-/*
- * indicatori_bilancio.php - Collegamento indicatori ESG alle voci di bilancio
- * Per ogni coppia (voce contabile, indicatore ESG) salvo il valore misurato,
- * la fonte da cui proviene il dato e la data di rilevazione.
- * Prima di tutto verifico che il bilancio appartenga al responsabile loggato.
- */
+
 $page_title = 'Indicatori ESG Bilancio';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/db.php';
@@ -16,7 +11,6 @@ $username = currentUser();
 $id_bilancio = (int)($_GET['bilancio'] ?? 0);
 $id_azienda  = (int)($_GET['azienda'] ?? 0);
 
-// Controllo che il bilancio esista e appartenga a un'azienda di questo responsabile
 $bilancio = null;
 if ($id_bilancio > 0 && $id_azienda > 0) {
     $bilancio = queryOne(
@@ -32,9 +26,12 @@ if (!$bilancio) {
     redirectWith('/ESG-BALANCE/pages/responsabile/bilancio.php', 'danger', 'Bilancio non trovato.');
 }
 
-// Gestisco l'inserimento di un nuovo collegamento indicatore-voce
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Non posso collegare indicatori se il bilancio non e' piu' in bozza
+    if (!verifyCsrf()) {
+        setFlash('danger', 'Richiesta non valida.');
+        header("Location: indicatori_bilancio.php?bilancio={$id_bilancio}&azienda={$id_azienda}");
+        exit;
+    }
     if ($bilancio['stato'] !== 'bozza') {
         setFlash('danger', 'Non puoi modificare un bilancio che non e\' piu\' in bozza.');
         header("Location: indicatori_bilancio.php?bilancio={$id_bilancio}&azienda={$id_azienda}");
@@ -72,13 +69,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// Voci contabili gia' valorizzate in questo bilancio (servono per il form)
 $valori = query(
     "SELECT nome_voce, valore FROM valori_bilancio WHERE id_bilancio = ? ORDER BY nome_voce",
     [$id_bilancio]
 );
 
-// Indicatori gia' collegati a questo bilancio
 $collegati = query(
     "SELECT vi.*, ie.tipo
      FROM voci_indicatori vi
@@ -88,7 +83,6 @@ $collegati = query(
     [$id_bilancio]
 );
 
-// Tutti gli indicatori disponibili per il select del form
 $indicatori = query("SELECT nome, tipo, rilevanza FROM indicatori_esg ORDER BY nome");
 
 require_once __DIR__ . '/../../includes/header.php';
@@ -115,12 +109,11 @@ require_once __DIR__ . '/../../includes/header.php';
 <?php renderFlash(); ?>
 
 <div class="row g-4">
-    <!-- Tabella con gli indicatori gia' collegati -->
     <div class="col-md-7">
         <div class="card">
             <div class="card-header bg-accent text-white">
                 Indicatori Collegati
-                <span class="badge bg-secondary text-accent float-end"><?php echo count($collegati); ?></span>
+                <span class="badge bg-white text-accent float-end"><?php echo count($collegati); ?></span>
             </div>
             <div class="card-body">
                 <?php if (empty($collegati)): ?>
@@ -160,7 +153,6 @@ require_once __DIR__ . '/../../includes/header.php';
         </div>
     </div>
 
-    <!-- Form di collegamento: visibile solo se il bilancio e' in bozza -->
     <div class="col-md-5">
         <div class="card">
             <div class="card-header bg-accent text-white">Collega Indicatore ESG</div>
@@ -171,6 +163,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <p class="text-muted">Inserisci prima i valori delle voci contabili nel bilancio.</p>
                 <?php else: ?>
                     <form method="POST">
+                        <?php echo csrfField(); ?>
                         <div class="mb-3">
                             <label for="nome_voce" class="form-label">Voce Contabile *</label>
                             <select class="form-select" id="nome_voce" name="nome_voce" required>

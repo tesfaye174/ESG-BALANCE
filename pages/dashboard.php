@@ -1,5 +1,4 @@
 <?php
-// dashboard.php - Pagina dopo il login
 
 $page_title = 'Dashboard';
 require_once __DIR__ . '/../includes/auth.php';
@@ -11,21 +10,24 @@ requireLogin();
 $ruolo = currentRole();
 $username = currentUser();
 
-// Gestisco l'aggiunta di un nuovo indirizzo email (funzionalita' disponibile a tutti i ruoli)
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'aggiungi_email') {
-    $nuova_email = trim($_POST['nuova_email'] ?? '');
-    if ($nuova_email === '' || !filter_var($nuova_email, FILTER_VALIDATE_EMAIL)) {
-        setFlash('danger', 'Inserisci un indirizzo email valido.');
+    if (!verifyCsrf()) {
+        setFlash('danger', 'Richiesta non valida.');
     } else {
-        try {
-            execSP('sp_aggiungi_email', [$username, $nuova_email]);
-            logEvent('aggiunta_email', "Email aggiunta: {$nuova_email}");
-            setFlash('success', 'Email aggiunta con successo.');
-        } catch (PDOException $e) {
-            if ($e->getCode() == 23000) {
-                setFlash('danger', 'Questo indirizzo email e\' gia\' presente.');
-            } else {
-                setFlash('danger', 'Errore: ' . $e->getMessage());
+        $nuova_email = trim($_POST['nuova_email'] ?? '');
+        if ($nuova_email === '' || !filter_var($nuova_email, FILTER_VALIDATE_EMAIL)) {
+            setFlash('danger', 'Inserisci un indirizzo email valido.');
+        } else {
+            try {
+                execSP('sp_aggiungi_email', [$username, $nuova_email]);
+                logEvent('aggiunta_email', "Email aggiunta: {$nuova_email}");
+                setFlash('success', 'Email aggiunta con successo.');
+            } catch (PDOException $e) {
+                if ($e->getCode() == 23000) {
+                    setFlash('danger', 'Questo indirizzo email e\' gia\' presente.');
+                } else {
+                    setFlash('danger', 'Errore: ' . $e->getMessage());
+                }
             }
         }
     }
@@ -33,7 +35,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     exit;
 }
 
-// Prendo le email dell'utente per mostrarle nella sezione profilo
 $emails = query("SELECT email FROM email_utente WHERE username = ? ORDER BY email", [$username]);
 
 require_once __DIR__ . '/../includes/header.php';
@@ -47,11 +48,9 @@ require_once __DIR__ . '/../includes/header.php';
         <span class="dashboard-icon"><i class="bi bi-speedometer2"></i></span>
         <h2 class="mb-0">Dashboard</h2>
     </div>
-    <span class="fw-bold" style="color:#222;">Benvenuto, <span
-            style="color:#0d6efd;"><strong><?php echo htmlspecialchars($username); ?></strong></span></span>
+    <span class="fw-bold">Benvenuto, <strong class="text-accent"><?php echo htmlspecialchars($username); ?></strong></span>
 </div>
 
-<!-- Sezione admin: le tre card per gestire template, indicatori e revisori -->
 <?php if ($ruolo === 'amministratore'): ?>
 
     <div class="row g-4">
@@ -86,12 +85,9 @@ require_once __DIR__ . '/../includes/header.php';
             </div>
         </div>
     </div>
-
-    <!-- Sezione revisore: i bilanci che deve revisionare e le sue competenze -->
 <?php elseif ($ruolo === 'revisore'): ?>
 
     <?php
-    // Prendo i bilanci assegnati a questo revisore con le info dell'azienda
     $bilanci_assegnati = query(
         "SELECT r.id_bilancio, b.data_creazione, b.stato, a.nome AS azienda
          FROM revisioni r
@@ -101,7 +97,6 @@ require_once __DIR__ . '/../includes/header.php';
          ORDER BY b.data_creazione DESC",
         [$username]
     );
-    // Prendo le competenze del revisore per mostrarle con le barre di progresso
     $competenze = query(
         "SELECT nome_competenza, livello FROM competenze_revisore WHERE username = ?",
         [$username]
@@ -165,9 +160,9 @@ require_once __DIR__ . '/../includes/header.php';
                         <?php foreach ($competenze as $c): ?>
                             <div class="mb-2">
                                 <strong><?php echo htmlspecialchars($c['nome_competenza']); ?></strong>
-                                <div class="progress" style="height: 20px;">
-                                    <div class="progress-bar bg-primary" style="width: <?php echo ($c['livello'] / 5) * 100; ?>%">
-                                        <span style="color:#fff;font-weight:600;"><?php echo $c['livello']; ?>/5</span>
+                                <div class="progress" style="height:20px;">
+                                    <div class="progress-bar bg-accent" style="width:<?php echo ($c['livello'] / 5) * 100; ?>%">
+                                        <?php echo $c['livello']; ?>/5
                                     </div>
                                 </div>
                             </div>
@@ -178,7 +173,6 @@ require_once __DIR__ . '/../includes/header.php';
         </div>
     </div>
 
-    <!-- Sezione responsabile: le aziende che gestisce e link alle statistiche -->
 <?php elseif ($ruolo === 'responsabile'): ?>
 
     <?php
@@ -242,7 +236,6 @@ require_once __DIR__ . '/../includes/header.php';
 
 <?php endif; ?>
 
-<!-- Sezione email: visibile a tutti i ruoli per aggiungere indirizzi email -->
 <div class="row g-4 mt-4">
     <div class="col-md-6">
         <div class="dashboard-card card">
@@ -254,13 +247,14 @@ require_once __DIR__ . '/../includes/header.php';
                     <ul class="list-group list-group-flush mb-3">
                         <?php foreach ($emails as $e): ?>
                             <li class="list-group-item d-flex align-items-center gap-2">
-                                <i class="bi bi-envelope-fill text-primary"></i>
+                                <i class="bi bi-envelope-fill text-accent"></i>
                                 <?php echo htmlspecialchars($e['email']); ?>
                             </li>
                         <?php endforeach; ?>
                     </ul>
                 <?php endif; ?>
                 <form method="POST" class="d-flex gap-2">
+                    <?php echo csrfField(); ?>
                     <input type="hidden" name="action" value="aggiungi_email">
                     <input type="email" class="form-control" name="nuova_email" placeholder="Nuovo indirizzo email" required>
                     <button type="submit" class="btn btn-accent btn-sm text-nowrap">

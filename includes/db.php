@@ -1,6 +1,7 @@
 <?php
-// db.php
+
 require_once __DIR__ . '/../config/database.php';
+
 function callSP(string $sp_name, array $params = []): array
 {
     $pdo = getDBConnection();
@@ -9,9 +10,10 @@ function callSP(string $sp_name, array $params = []): array
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $results = $stmt->fetchAll();
-    $stmt->closeCursor();
+    $stmt->closeCursor(); // serve dopo CALL senno' da errore alla query dopo
     return $results;
 }
+
 function execSP(string $sp_name, array $params = []): void
 {
     $pdo = getDBConnection();
@@ -21,6 +23,7 @@ function execSP(string $sp_name, array $params = []): void
     $stmt->execute($params);
     $stmt->closeCursor();
 }
+
 function query(string $sql, array $params = []): array
 {
     $pdo = getDBConnection();

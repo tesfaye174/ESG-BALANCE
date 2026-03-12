@@ -1,16 +1,12 @@
--- ============================================================
 -- ESG-BALANCE: Stored Procedures
 -- Tutte le operazioni sui dati sono implementate tramite SP
--- ============================================================
 
 USE esg_balance;
 
 DELIMITER $$
 
--- ------------------------------------------------------------
 -- SP 1: Login utente
 -- Restituisce username, hash password e ruolo per la verifica.
--- ------------------------------------------------------------
 CREATE PROCEDURE sp_login(
     IN p_username VARCHAR(50)
 )
@@ -20,12 +16,10 @@ BEGIN
     WHERE username = p_username;
 END$$
 
--- ------------------------------------------------------------
 -- SP 2: Registrazione utente
 -- Inserisce l'utente nella tabella padre e nella sotto-tabella
 -- corrispondente al ruolo (revisori o responsabili).
 -- Inserisce anche il primo indirizzo email.
--- ------------------------------------------------------------
 CREATE PROCEDURE sp_registra_utente(
     IN p_username       VARCHAR(50),
     IN p_password_hash  VARCHAR(255),
@@ -37,6 +31,16 @@ CREATE PROCEDURE sp_registra_utente(
     IN p_curriculum_pdf VARCHAR(255)
 )
 BEGIN
+    -- Uso una transazione per garantire atomicita': se un INSERT
+    -- fallisce, le righe gia' inserite vengono annullate con ROLLBACK.
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     -- Inserimento nella tabella padre
     INSERT INTO utenti (username, password_hash, codice_fiscale, data_nascita, luogo_nascita, ruolo)
     VALUES (p_username, p_password_hash, p_codice_fiscale, p_data_nascita, p_luogo_nascita, p_ruolo);
@@ -51,12 +55,12 @@ BEGIN
     ELSEIF p_ruolo = 'responsabile' THEN
         INSERT INTO responsabili (username, curriculum_pdf) VALUES (p_username, p_curriculum_pdf);
     END IF;
+
+    COMMIT;
 END$$
 
--- ------------------------------------------------------------
 -- SP 3: Aggiunta indirizzo email
 -- Un utente puo' avere piu' email: questa SP ne aggiunge una.
--- ------------------------------------------------------------
 CREATE PROCEDURE sp_aggiungi_email(
     IN p_username   VARCHAR(50),
     IN p_email      VARCHAR(150)
@@ -65,10 +69,8 @@ BEGIN
     INSERT INTO email_utente (username, email) VALUES (p_username, p_email);
 END$$
 
--- ------------------------------------------------------------
 -- SP 4: Creazione voce contabile (template bilancio)
 -- Solo gli amministratori possono popolare il template.
--- ------------------------------------------------------------
 CREATE PROCEDURE sp_crea_voce_contabile(
     IN p_nome        VARCHAR(150),
     IN p_descrizione TEXT
@@ -77,11 +79,9 @@ BEGIN
     INSERT INTO voci_contabili (nome, descrizione) VALUES (p_nome, p_descrizione);
 END$$
 
--- ------------------------------------------------------------
 -- SP 5: Inserimento indicatore ESG
 -- Gestisce la gerarchia: inserisce nella tabella padre e,
 -- se il tipo e' ambientale o sociale, anche nella sotto-tabella.
--- ------------------------------------------------------------
 CREATE PROCEDURE sp_inserisci_indicatore_esg(
     IN p_nome               VARCHAR(150),
     IN p_immagine           VARCHAR(255),
@@ -92,6 +92,15 @@ CREATE PROCEDURE sp_inserisci_indicatore_esg(
     IN p_frequenza_rilev    VARCHAR(100)
 )
 BEGIN
+    -- Transazione per atomicita' (tabella padre + sotto-tabella)
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     INSERT INTO indicatori_esg (nome, immagine, rilevanza, tipo)
     VALUES (p_nome, p_immagine, p_rilevanza, IF(p_tipo = '', NULL, p_tipo));
 
@@ -102,12 +111,12 @@ BEGIN
         INSERT INTO indicatori_sociali (nome, ambito_sociale, frequenza_rilevazione)
         VALUES (p_nome, p_ambito_sociale, p_frequenza_rilev);
     END IF;
+
+    COMMIT;
 END$$
 
--- ------------------------------------------------------------
 -- SP 6: Registrazione azienda
 -- Associa l'azienda al responsabile loggato.
--- ------------------------------------------------------------
 CREATE PROCEDURE sp_registra_azienda(
     IN p_nome               VARCHAR(150),
     IN p_ragione_sociale    VARCHAR(200),
@@ -122,12 +131,10 @@ BEGIN
     VALUES (p_nome, p_ragione_sociale, p_partita_iva, p_settore, p_num_dipendenti, p_logo, p_username_resp);
 END$$
 
--- ------------------------------------------------------------
 -- SP 7: Creazione bilancio di esercizio
 -- All'atto di creazione lo stato e' 'bozza'.
 -- Il trigger trg_incrementa_nr_bilanci aggiorna nr_bilanci.
 -- Restituisce l'ID del bilancio appena creato.
--- ------------------------------------------------------------
 CREATE PROCEDURE sp_crea_bilancio(
     IN p_id_azienda INT
 )
@@ -138,10 +145,8 @@ BEGIN
     SELECT LAST_INSERT_ID() AS id_bilancio;
 END$$
 
--- ------------------------------------------------------------
 -- SP 8: Inserimento valore voce contabile in un bilancio
 -- Usa ON DUPLICATE KEY UPDATE per aggiornare se gia' presente.
--- ------------------------------------------------------------
 CREATE PROCEDURE sp_inserisci_valore_bilancio(
     IN p_id_bilancio    INT,
     IN p_nome_voce      VARCHAR(150),
@@ -153,10 +158,8 @@ BEGIN
     ON DUPLICATE KEY UPDATE valore = p_valore;
 END$$
 
--- ------------------------------------------------------------
 -- SP 9: Collegamento indicatore ESG a voce di bilancio
 -- Per ogni coppia <voce, indicatore> memorizza valore, fonte, data.
--- ------------------------------------------------------------
 CREATE PROCEDURE sp_collega_indicatore_voce(
     IN p_id_bilancio        INT,
     IN p_nome_voce          VARCHAR(150),
@@ -174,12 +177,10 @@ BEGIN
         data_rilevazione = p_data_rilevazione;
 END$$
 
--- ------------------------------------------------------------
 -- SP 10: Associazione revisore a bilancio
 -- Quando si inserisce una riga in revisioni, il trigger
 -- trg_bilancio_in_revisione cambia lo stato a 'in_revisione'.
 -- Incrementa anche il contatore nr_revisioni del revisore.
--- ------------------------------------------------------------
 CREATE PROCEDURE sp_associa_revisore_bilancio(
     IN p_username_revisore  VARCHAR(50),
     IN p_id_bilancio        INT
@@ -194,10 +195,8 @@ BEGIN
     WHERE username = p_username_revisore;
 END$$
 
--- ------------------------------------------------------------
 -- SP 11: Inserimento competenza del revisore
 -- Usa ON DUPLICATE KEY UPDATE per aggiornare il livello.
--- ------------------------------------------------------------
 CREATE PROCEDURE sp_inserisci_competenza(
     IN p_username       VARCHAR(50),
     IN p_nome_comp      VARCHAR(100),
@@ -209,10 +208,8 @@ BEGIN
     ON DUPLICATE KEY UPDATE livello = p_livello;
 END$$
 
--- ------------------------------------------------------------
 -- SP 12: Inserimento nota su una voce di bilancio
 -- Il revisore aggiunge una nota testuale con data corrente.
--- ------------------------------------------------------------
 CREATE PROCEDURE sp_inserisci_nota(
     IN p_username_rev   VARCHAR(50),
     IN p_id_bilancio    INT,
@@ -224,12 +221,10 @@ BEGIN
     VALUES (p_username_rev, p_id_bilancio, p_nome_voce, CURDATE(), p_testo);
 END$$
 
--- ------------------------------------------------------------
 -- SP 13: Inserimento giudizio complessivo su un bilancio
 -- Quando si inserisce un giudizio, il trigger
 -- trg_bilancio_giudizio verifica se tutti i revisori hanno
 -- votato e aggiorna lo stato del bilancio.
--- ------------------------------------------------------------
 CREATE PROCEDURE sp_inserisci_giudizio(
     IN p_username_rev   VARCHAR(50),
     IN p_id_bilancio    INT,
@@ -239,6 +234,40 @@ CREATE PROCEDURE sp_inserisci_giudizio(
 BEGIN
     INSERT INTO giudizi (username_revisore, id_bilancio, esito, data_giudizio, rilievi)
     VALUES (p_username_rev, p_id_bilancio, p_esito, CURDATE(), p_rilievi);
+END$$
+
+-- SP 14: Aggiornamento indice di affidabilita' del revisore
+-- L'indice e' calcolato come la percentuale di giudizi emessi
+-- dal revisore con esito 'approvazione' (approvazione pura)
+-- rispetto al totale dei giudizi emessi, normalizzata tra 0 e 1.
+-- Viene richiamata dal trigger T2 dopo la chiusura del bilancio.
+CREATE PROCEDURE sp_aggiorna_indice_affidabilita(
+    IN p_username VARCHAR(50)
+)
+BEGIN
+    DECLARE v_totale INT DEFAULT 0;
+    DECLARE v_positivi INT DEFAULT 0;
+    DECLARE v_indice DECIMAL(3,2) DEFAULT 0.00;
+
+    -- Conto i giudizi totali emessi dal revisore
+    SELECT COUNT(*) INTO v_totale
+    FROM giudizi
+    WHERE username_revisore = p_username;
+
+    -- Conto i giudizi con esito 'approvazione' (senza rilievi)
+    SELECT COUNT(*) INTO v_positivi
+    FROM giudizi
+    WHERE username_revisore = p_username
+      AND esito = 'approvazione';
+
+    -- Calcolo l'indice (se ha emesso almeno un giudizio)
+    IF v_totale > 0 THEN
+        SET v_indice = ROUND(v_positivi / v_totale, 2);
+    END IF;
+
+    UPDATE revisori
+    SET indice_affidabilita = v_indice
+    WHERE username = p_username;
 END$$
 
 DELIMITER ;

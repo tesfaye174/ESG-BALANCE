@@ -1,10 +1,5 @@
 <?php
-/*
- * giudizio.php - Emissione del giudizio complessivo su un bilancio (solo revisore)
- * Quando il revisore emette il giudizio, l'INSERT nella tabella giudizi scatena
- * il trigger T2 che controlla se tutti i revisori hanno votato.
- * Se si', il bilancio diventa 'approvato' o 'respinto' in base ai giudizi.
- */
+
 $page_title = 'Emetti Giudizio';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/db.php';
@@ -15,8 +10,12 @@ $username = currentUser();
 
 $id_bilancio = (int)($_GET['id'] ?? 0);
 
-// Gestisco l'invio del giudizio
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verifyCsrf()) {
+        setFlash('danger', 'Richiesta non valida.');
+        header("Location: giudizio.php?id=" . (int)($_POST['id_bilancio'] ?? 0));
+        exit;
+    }
     $bil_id  = (int)($_POST['id_bilancio'] ?? 0);
     $esito   = $_POST['esito'] ?? '';
     $rilievi = trim($_POST['rilievi'] ?? '');
@@ -37,7 +36,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
             logEvent('inserimento_giudizio', "Giudizio emesso su bilancio #{$bil_id}: {$esito}");
 
-            // Verifico se il trigger T2 ha cambiato lo stato del bilancio
             $bil_stato = queryOne("SELECT stato FROM bilanci WHERE id = ?", [$bil_id]);
             if ($bil_stato && in_array($bil_stato['stato'], ['approvato', 'respinto'])) {
                 logEvent('cambio_stato_bilancio', "Bilancio #{$bil_id}: stato cambiato a '{$bil_stato['stato']}'");
@@ -57,7 +55,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-// Verifico che il revisore sia assegnato a questo bilancio
 $bilancio = null;
 $giudizio_esistente = null;
 
@@ -71,14 +68,12 @@ if ($id_bilancio > 0) {
         [$id_bilancio, $username]
     );
 
-    // Controllo se ho gia' emesso un giudizio su questo bilancio
     $giudizio_esistente = queryOne(
         "SELECT * FROM giudizi WHERE username_revisore = ? AND id_bilancio = ?",
         [$username, $id_bilancio]
     );
 }
 
-// Lista dei bilanci su cui devo ancora esprimere il giudizio
 $bilanci_da_giudicare = query(
     "SELECT r.id_bilancio, b.data_creazione, b.stato, a.nome AS azienda
      FROM revisioni r
@@ -99,7 +94,6 @@ require_once __DIR__ . '/../../includes/header.php';
 
 <?php if ($bilancio && !$giudizio_esistente): ?>
 
-    <!-- Form per emettere il giudizio su un bilancio specifico -->
     <a href="giudizio.php" class="btn btn-outline-secondary mb-3"><i class="bi bi-arrow-left"></i> Torna alla lista</a>
 
     <div class="card">
@@ -110,6 +104,7 @@ require_once __DIR__ . '/../../includes/header.php';
         </div>
         <div class="card-body">
             <form method="POST">
+                <?php echo csrfField(); ?>
                 <input type="hidden" name="id_bilancio" value="<?php echo $id_bilancio; ?>">
                 <div class="mb-3">
                     <label for="esito" class="form-label">Esito *</label>
@@ -133,7 +128,6 @@ require_once __DIR__ . '/../../includes/header.php';
 
 <?php elseif ($bilancio && $giudizio_esistente): ?>
 
-    <!-- Messaggio se ho gia' emesso il giudizio -->
     <div class="alert alert-info">
         Hai gia' emesso un giudizio per questo bilancio:
         <strong><?php echo str_replace('_', ' ', $giudizio_esistente['esito']); ?></strong>
@@ -146,7 +140,6 @@ require_once __DIR__ . '/../../includes/header.php';
 
 <?php else: ?>
 
-    <!-- Lista dei bilanci in attesa del mio giudizio -->
     <div class="card">
         <div class="card-header bg-accent text-white">Bilanci da Giudicare</div>
         <div class="card-body">
@@ -178,7 +171,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                     'respinto' => 'bg-secondary text-dark border border-2 border-primary',
                                     default => 'bg-secondary',
                                 };
-                                ?>" style="font-size:0.95em;letter-spacing:0.5px;">
+                                ?>">
                                         <?php echo $b['stato']; ?></span></td>
                                 <td>
                                     <a href="giudizio.php?id=<?php echo $b['id_bilancio']; ?>" class="btn btn-sm btn-accent">Emetti Giudizio</a>

@@ -1,11 +1,5 @@
 <?php
-/*
- * indicatori.php - Gestione indicatori ESG (solo admin)
- * Qui l'admin puo' aggiungere nuovi indicatori scegliendo il tipo:
- * ambientale, sociale o generico (NULL). In base al tipo selezionato,
- * tramite JS vengono mostrati i campi specifici (codice normativa per
- * gli ambientali, ambito e frequenza per i sociali).
- */
+
 $page_title = 'Indicatori ESG';
 require_once __DIR__ . '/../../includes/auth.php';
 require_once __DIR__ . '/../../includes/db.php';
@@ -14,6 +8,11 @@ require_once __DIR__ . '/../../includes/functions.php';
 requireRole('amministratore');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verifyCsrf()) {
+        setFlash('danger', 'Richiesta non valida.');
+        header('Location: indicatori.php');
+        exit;
+    }
     $nome       = trim($_POST['nome'] ?? '');
     $rilevanza  = $_POST['rilevanza'] ?? '';
     $tipo       = $_POST['tipo'] ?? '';
@@ -21,11 +20,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ambito     = trim($_POST['ambito_sociale'] ?? '');
     $frequenza  = trim($_POST['frequenza_rilevazione'] ?? '');
 
-    // Gestisco l'upload dell'immagine (opzionale)
     $img_path = null;
     if (!empty($_FILES['immagine']['name'])) {
         $allowed = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        // Verifico il tipo reale del file con finfo (piu' sicuro del MIME fornito dal browser)
         $finfo = finfo_open(FILEINFO_MIME_TYPE);
         $real_mime = finfo_file($finfo, $_FILES['immagine']['tmp_name']);
         finfo_close($finfo);
@@ -34,6 +31,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $dest = __DIR__ . '/../../assets/uploads/' . $img_name;
             move_uploaded_file($_FILES['immagine']['tmp_name'], $dest);
             $img_path = 'assets/uploads/' . $img_name;
+        } else {
+            setFlash('danger', 'Formato immagine non valido. Sono ammessi: JPEG, PNG, GIF, WebP.');
+            header('Location: indicatori.php');
+            exit;
         }
     }
 
@@ -45,7 +46,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         setFlash('danger', 'Ambito sociale e frequenza di rilevazione sono obbligatori per gli indicatori sociali.');
     } else {
         try {
-            // La SP gestisce l'inserimento nella tabella base + eventuale sottotabella
             execSP('sp_inserisci_indicatore_esg', [
                 $nome,
                 $img_path,
@@ -69,7 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-// Prendo tutti gli indicatori con le info delle sottotabelle (LEFT JOIN per prendere anche i generici)
 $indicatori = query(
     "SELECT i.nome, i.rilevanza, i.tipo, i.immagine,
             ia.codice_normativa,
@@ -93,6 +92,7 @@ require_once __DIR__ . '/../../includes/header.php';
             <div class="card-header bg-accent text-white">Nuovo Indicatore</div>
             <div class="card-body">
                 <form method="POST" enctype="multipart/form-data">
+                    <?php echo csrfField(); ?>
                     <div class="mb-3">
                         <label for="nome" class="form-label">Nome *</label>
                         <input type="text" class="form-control" id="nome" name="nome" required>
@@ -115,7 +115,6 @@ require_once __DIR__ . '/../../includes/header.php';
                         <input type="file" class="form-control" id="immagine" name="immagine" accept="image/*">
                     </div>
 
-                    <!-- Campi specifici per tipo ambientale (nascosti di default) -->
                     <div id="campi_ambientale" style="display:none;">
                         <div class="mb-3">
                             <label for="codice_normativa" class="form-label">Codice Normativa</label>
@@ -123,7 +122,6 @@ require_once __DIR__ . '/../../includes/header.php';
                         </div>
                     </div>
 
-                    <!-- Campi specifici per tipo sociale (nascosti di default) -->
                     <div id="campi_sociale" style="display:none;">
                         <div class="mb-3">
                             <label for="ambito_sociale" class="form-label">Ambito Sociale</label>
@@ -145,49 +143,49 @@ require_once __DIR__ . '/../../includes/header.php';
         <div class="card">
             <div class="card-header bg-accent text-white">
                 Indicatori ESG
-                <span class="badge bg-secondary text-accent float-end"><?php echo count($indicatori); ?></span>
+                <span class="badge bg-white text-accent float-end"><?php echo count($indicatori); ?></span>
             </div>
             <div class="card-body">
                 <?php if (empty($indicatori)): ?>
-                <p class="text-muted">Nessun indicatore presente.</p>
+                    <p class="text-muted">Nessun indicatore presente.</p>
                 <?php else: ?>
-                <table class="table table-hover">
-                    <thead>
-                        <tr>
-                            <th>Nome</th>
-                            <th>Tipo</th>
-                            <th>Rilevanza</th>
-                            <th>Dettagli</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($indicatori as $ind): ?>
-                        <tr>
-                            <td><strong><?php echo htmlspecialchars($ind['nome']); ?></strong></td>
-                            <td>
-                                <?php if ($ind['tipo'] === 'ambientale'): ?>
-                                <span class="badge bg-accent">Ambientale</span>
-                                <?php elseif ($ind['tipo'] === 'sociale'): ?>
-                                <span class="badge bg-primary">Sociale</span>
-                                <?php else: ?>
-                                <span class="badge bg-secondary">Generico</span>
-                                <?php endif; ?>
-                            </td>
-                            <td><?php echo $ind['rilevanza'] ?? '—'; ?></td>
-                            <td>
-                                <?php if ($ind['codice_normativa']): ?>
-                                Normativa: <?php echo htmlspecialchars($ind['codice_normativa']); ?>
-                                <?php elseif ($ind['ambito_sociale']): ?>
-                                <?php echo htmlspecialchars($ind['ambito_sociale']); ?>
-                                (<?php echo htmlspecialchars($ind['frequenza_rilevazione']); ?>)
-                                <?php else: ?>
-                                —
-                                <?php endif; ?>
-                            </td>
-                        </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Tipo</th>
+                                <th>Rilevanza</th>
+                                <th>Dettagli</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($indicatori as $ind): ?>
+                                <tr>
+                                    <td><strong><?php echo htmlspecialchars($ind['nome']); ?></strong></td>
+                                    <td>
+                                        <?php if ($ind['tipo'] === 'ambientale'): ?>
+                                            <span class="badge bg-accent">Ambientale</span>
+                                        <?php elseif ($ind['tipo'] === 'sociale'): ?>
+                                            <span class="badge bg-primary">Sociale</span>
+                                        <?php else: ?>
+                                            <span class="badge bg-secondary">Generico</span>
+                                        <?php endif; ?>
+                                    </td>
+                                    <td><?php echo $ind['rilevanza'] ?? '—'; ?></td>
+                                    <td>
+                                        <?php if ($ind['codice_normativa']): ?>
+                                            Normativa: <?php echo htmlspecialchars($ind['codice_normativa']); ?>
+                                        <?php elseif ($ind['ambito_sociale']): ?>
+                                            <?php echo htmlspecialchars($ind['ambito_sociale']); ?>
+                                            (<?php echo htmlspecialchars($ind['frequenza_rilevazione']); ?>)
+                                        <?php else: ?>
+                                            —
+                                        <?php endif; ?>
+                                    </td>
+                                </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
                 <?php endif; ?>
             </div>
         </div>
@@ -195,11 +193,10 @@ require_once __DIR__ . '/../../includes/header.php';
 </div>
 
 <script>
-// Mostro/nascondo i campi specifici in base al tipo selezionato
-document.getElementById('tipo').addEventListener('change', function() {
-    document.getElementById('campi_ambientale').style.display = this.value === 'ambientale' ? 'block' : 'none';
-    document.getElementById('campi_sociale').style.display = this.value === 'sociale' ? 'block' : 'none';
-});
+    document.getElementById('tipo').addEventListener('change', function() {
+        document.getElementById('campi_ambientale').style.display = this.value === 'ambientale' ? 'block' : 'none';
+        document.getElementById('campi_sociale').style.display = this.value === 'sociale' ? 'block' : 'none';
+    });
 </script>
 
 <?php require_once __DIR__ . '/../../includes/footer.php'; ?>
