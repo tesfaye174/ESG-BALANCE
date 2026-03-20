@@ -148,7 +148,8 @@ BEGIN
 END$$
 
 -- SP 8: Inserimento valore voce contabile in un bilancio
--- Usa ON DUPLICATE KEY UPDATE per aggiornare se gia' presente.
+-- ON DUPLICATE KEY UPDATE: se la voce e' gia' presente nel bilancio sovrascrive il valore
+-- invece di sollevare un errore (l'utente puo' correggere i valori finche' e' in bozza)
 CREATE PROCEDURE sp_inserisci_valore_bilancio(
     IN p_id_bilancio    INT,
     IN p_nome_voce      VARCHAR(150),
@@ -180,9 +181,10 @@ BEGIN
 END$$
 
 -- SP 10: Associazione revisore a bilancio
--- Quando si inserisce una riga in revisioni, il trigger
--- trg_bilancio_in_revisione cambia lo stato a 'in_revisione'.
--- Incrementa anche il contatore nr_revisioni del revisore.
+-- L'INSERT su revisioni attiva il trigger trg_bilancio_in_revisione
+-- che cambia lo stato del bilancio da 'bozza' a 'in_revisione'.
+-- Il contatore nr_revisioni viene aggiornato qui (non tramite trigger)
+-- perche' conta le assegnazioni, non le revisioni completate.
 CREATE PROCEDURE sp_associa_revisore_bilancio(
     IN p_username_revisore  VARCHAR(50),
     IN p_id_bilancio        INT
@@ -191,7 +193,7 @@ BEGIN
     INSERT INTO revisioni (username_revisore, id_bilancio)
     VALUES (p_username_revisore, p_id_bilancio);
 
-    -- Aggiorna il contatore di revisioni del revisore
+    -- aggiorno il contatore di revisioni del revisore
     UPDATE revisori
     SET nr_revisioni = nr_revisioni + 1
     WHERE username = p_username_revisore;
@@ -237,7 +239,8 @@ BEGIN
 END$$
 
 -- SP 14: Ricalcola l'indice di affidabilita' del revisore
--- (% approvazioni pure sul totale dei giudizi emessi)
+-- viene chiamata dal trigger T2 ogni volta che un revisore emette un giudizio
+-- indice = approvazioni semplici / totale giudizi emessi (da 0 a 1)
 CREATE PROCEDURE sp_aggiorna_indice_affidabilita(
     IN p_username VARCHAR(50)
 )

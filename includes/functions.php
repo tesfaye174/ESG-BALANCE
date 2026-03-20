@@ -3,13 +3,17 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/mongodb.php';
 
+// logEvent: salva un evento nel log. Prova prima MongoDB, poi cade su MySQL.
+// In questo modo il progetto dimostra l'uso di due DBMS diversi come richiesto.
 function logEvent(string $evento, string $dettagli, ?string $utente = null): void
 {
+    // se non viene passato l'utente, lo prendo dalla sessione
     $utente = $utente ?? ($_SESSION['username'] ?? 'sistema');
 
     try {
         $mongo = getMongoCollection();
         if ($mongo !== null) {
+            // UTCDateTime è il tipo data nativo di MongoDB
             $ts = class_exists('MongoDB\BSON\UTCDateTime') ? new MongoDB\BSON\UTCDateTime() : time();
             $mongo->insertOne([
                 'evento'    => $evento,
@@ -17,13 +21,14 @@ function logEvent(string $evento, string $dettagli, ?string $utente = null): voi
                 'dettagli'  => $dettagli,
                 'timestamp' => $ts,
             ]);
-            return;
+            return; // se MongoDB ha funzionato non scrivo su MySQL
         }
     } catch (Throwable $e) {
+        // MongoDB disponibile ma scrittura fallita (es. permessi, rete)
         error_log('MongoDB log fallito: ' . $e->getMessage());
     }
 
-    // se MongoDB non funziona, salva su MySQL
+    // fallback su MySQL: stessa struttura, usa la tabella log_eventi
     try {
         $pdo = getDBConnection();
         $stmt = $pdo->prepare("INSERT INTO log_eventi (evento, utente, dettagli, timestamp) VALUES (?, ?, ?, NOW())");
@@ -38,7 +43,7 @@ function setFlash(string $type, string $message): void
     $_SESSION['flash'] = ['type' => $type, 'message' => $message];
 }
 
-// Legge il messaggio e lo cancella dalla sessione (così appare una sola volta)
+// legge il flash message e lo cancella dalla sessione: così appare solo una volta
 function getFlash(): ?array
 {
     if (isset($_SESSION['flash'])) {
@@ -70,6 +75,7 @@ function redirectWith(string $url, string $type, string $message): void
     exit;
 }
 
+// restituisce la classe CSS del badge Bootstrap in base allo stato del bilancio
 function statoBadgeClass(string $stato): string
 {
     return match ($stato) {

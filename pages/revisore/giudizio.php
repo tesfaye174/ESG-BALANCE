@@ -20,6 +20,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $esito   = $_POST['esito'] ?? '';
     $rilievi = trim($_POST['rilievi'] ?? '');
 
+    // controllo manuale degli esiti validi invece di fidarmi solo del SELECT HTML
+    // un utente potrebbe modificare il valore con inspect element o con una richiesta diretta
     $esiti_validi = ['approvazione', 'approvazione_con_rilievi', 'respingimento'];
 
     if (!in_array($esito, $esiti_validi)) {
@@ -36,6 +38,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
             logEvent('inserimento_giudizio', "Giudizio emesso su bilancio #{$bil_id}: {$esito}");
 
+            // controllo se il bilancio ha cambiato stato dopo il giudizio
+            // la SP aggiorna lo stato solo quando tutti i revisori hanno giudicato
             $bil_stato = queryOne("SELECT stato FROM bilanci WHERE id = ?", [$bil_id]);
             if ($bil_stato && in_array($bil_stato['stato'], ['approvato', 'respinto'])) {
                 logEvent('cambio_stato_bilancio', "Bilancio #{$bil_id}: stato cambiato a '{$bil_stato['stato']}'");
@@ -75,6 +79,8 @@ if ($id_bilancio > 0) {
     );
 }
 
+// LEFT JOIN con giudizi: se g.esito IS NULL il revisore non ha ancora giudicato quel bilancio
+// (se avesse già giudicato la JOIN troverebbe la riga e il WHERE la escluderebbe)
 $bilanci_da_giudicare = query(
     "SELECT r.id_bilancio, b.data_creazione, b.stato, a.nome AS azienda
      FROM revisioni r

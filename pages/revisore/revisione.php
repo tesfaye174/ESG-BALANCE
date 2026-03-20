@@ -52,6 +52,8 @@ $note = [];
 $indicatori_voci = [];
 
 if ($id_bilancio > 0) {
+    // la JOIN con revisioni serve a verificare che il revisore sia assegnato a questo bilancio
+    // (non basta che il bilancio esista, deve essere assegnato a lui)
     $bilancio_detail = queryOne(
         "SELECT b.*, a.nome AS azienda, a.ragione_sociale
          FROM bilanci b
@@ -158,6 +160,8 @@ require_once __DIR__ . '/../../includes/header.php';
                             <td class="text-end">&euro; <?php echo number_format($v['valore'], 2, ',', '.'); ?></td>
                             <td>
                                 <?php
+                                // filtro gli indicatori ESG collegati a questa specifica voce
+                                // fn() è la sintassi short di arrow function (PHP 7.4+)
                                 $ind_voce = array_filter($indicatori_voci, fn($i) => $i['nome_voce'] === $v['nome_voce']);
                                 if (empty($ind_voce)): ?>
                                     <span class="text-muted">—</span>

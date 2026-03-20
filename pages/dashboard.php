@@ -39,7 +39,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 $emails = query("SELECT email FROM email_utente WHERE username = ? ORDER BY email", [$username]);
 
-// ── Query e dati per i grafici (per ruolo) ────────────────────────────────────
+// preparo i dati per i grafici Chart.js prima di includere l'header HTML
+// (non posso fare query dopo aver iniziato l'output)
 $bilanci_assegnati = [];
 $competenze        = [];
 $aziende           = [];
@@ -52,6 +53,7 @@ $_compLbls  = []; $_compData  = [];
 $_azLbls    = []; $_azData    = [];
 $_respStLbls= []; $_respStData= []; $_respStClrs= [];
 
+// colori degli stati dei bilanci, coerenti con i badge CSS
 $_STATI_COLORS = [
     'bozza'        => '#6c757d',
     'in_revisione' => '#f59e0b',
@@ -138,7 +140,7 @@ if ($ruolo === 'amministratore') {
         $_azData[] = (int)$a['nr_bilanci'];
     }
 }
-// ── Fine preparazione dati ────────────────────────────────────────────────────
+// fine preparazione dati per i grafici
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -430,7 +432,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <?php if ($ruolo === 'amministratore'): ?>
 
-    // Stato bilanci — donut
+    // ogni grafico è in una IIFE (funzione auto-invocante) per isolare le variabili
+
+    // stato bilanci — donut
     (function () {
         const data = <?= json_encode($_statiData) ?>;
         const el   = document.getElementById('chartStati');
@@ -449,7 +453,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     })();
 
-    // Indicatori per tipo — donut
+    // indicatori per tipo — donut
     (function () {
         const data = <?= json_encode($_tipiData) ?>;
         const el   = document.getElementById('chartTipi');
@@ -468,7 +472,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     })();
 
-    // Revisori — barre raggruppate (nr_revisioni + affidabilità%)
+    // revisori — barre raggruppate (nr_revisioni + affidabilità%)
     (function () {
         const labels = <?= json_encode($_revLbls) ?>;
         const el     = document.getElementById('chartRevisori');
@@ -507,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <?php elseif ($ruolo === 'revisore'): ?>
 
-    // Bilanci per stato — donut
+    // bilanci assegnati per stato — donut
     (function () {
         const data = <?= json_encode($_revStData) ?>;
         const el   = document.getElementById('chartRevStati');
@@ -526,7 +530,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     })();
 
-    // Competenze — barre orizzontali
+    // competenze — barre orizzontali (indexAxis: 'y')
     (function () {
         const labels = <?= json_encode($_compLbls) ?>;
         const el     = document.getElementById('chartComp');
@@ -557,7 +561,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <?php elseif ($ruolo === 'responsabile'): ?>
 
-    // Bilanci per azienda — barre verticali
+    // bilanci per azienda — barre verticali
     (function () {
         const labels = <?= json_encode($_azLbls) ?>;
         const el     = document.getElementById('chartAziende');
@@ -585,7 +589,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     })();
 
-    // Stato bilanci — donut
+    // stato bilanci — donut
     (function () {
         const data = <?= json_encode($_respStData) ?>;
         const el   = document.getElementById('chartRespStati');

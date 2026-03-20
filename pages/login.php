@@ -5,6 +5,7 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
 
+// gestione logout: il pulsante logout invia un POST con il campo 'logout'
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
     if (verifyCsrf()) {
         session_unset();
@@ -14,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
     exit;
 }
 
+// se già loggato non ha senso stare qui
 if (isLoggedIn()) {
     header('Location: ' . BASE_URL . '/pages/dashboard.php');
     exit;
@@ -30,15 +32,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($username === '' || $password === '') {
         $error = 'Compila tutti i campi.';
     } else {
+        // sp_login restituisce i dati dell'utente se esiste (senza controllare la password)
         $rows = callSP('sp_login', [$username]);
 
         if (empty($rows)) {
+            // messaggio generico intenzionale: non diciamo se è sbagliato username o password
+            // altrimenti un attaccante può capire quali username esistono (user enumeration)
             $error = 'Username o password non validi.';
         } else {
             $user = $rows[0];
 
             if (password_verify($password, $user['password_hash'])) {
-                // Rigeneramo il session ID per evitare session fixation attack
+                // rigenerare il session ID dopo il login previene il session fixation attack
                 session_regenerate_id(true);
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['ruolo']    = $user['ruolo'];

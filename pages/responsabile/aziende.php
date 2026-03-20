@@ -22,6 +22,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $logo_path = null;
     if (!empty($_FILES['logo']['name'])) {
+        // controllo sia l'estensione che il MIME type reale del file
+        // un attaccante potrebbe caricare un file PHP rinominandolo .jpg
         $allowed_ext = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
         $allowed_mime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
         $ext = strtolower(pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION));
@@ -29,9 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $mime = $finfo->file($_FILES['logo']['tmp_name']);
         if (in_array($ext, $allowed_ext) && in_array($mime, $allowed_mime)) {
             $upload_dir = realpath(__DIR__ . '/../../assets/uploads') . DIRECTORY_SEPARATOR;
-            $logo_name = bin2hex(random_bytes(16)) . '.' . $ext;
+            $logo_name = bin2hex(random_bytes(16)) . '.' . $ext; // nome casuale per evitare sovrascritture
             $dest = $upload_dir . $logo_name;
-            // Verifica che il path di destinazione sia dentro la directory di upload
+            // protezione path traversal: il file deve finire dentro assets/uploads
             if (strpos(realpath(dirname($dest)) . DIRECTORY_SEPARATOR, $upload_dir) !== 0) {
                 setFlash('danger', 'Percorso di upload non valido.');
                 header('Location: aziende.php');

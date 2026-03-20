@@ -13,6 +13,7 @@ $id_bilancio = (int)($_GET['bilancio'] ?? 0);
 
 $azienda = null;
 if ($id_azienda > 0) {
+    // verifico che l'azienda appartenga davvero a questo utente (non mi fido del GET)
     $azienda = queryOne(
         "SELECT * FROM aziende WHERE id = ? AND username_responsabile = ?",
         [$id_azienda, $username]
@@ -24,6 +25,9 @@ if ($id_azienda > 0) {
     }
 }
 
+// questo file gestisce due azioni POST diverse tramite il campo 'action':
+// - crea_bilancio: crea un nuovo bilancio per l'anno specificato
+// - inserisci_valore: aggiunge il valore di una voce contabile a un bilancio esistente
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if (!verifyCsrf()) {
         setFlash('danger', 'Token di sicurezza non valido.');
@@ -36,6 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
             setFlash('danger', 'Anno non valido.');
         } else {
             try {
+                // sp_crea_bilancio restituisce l'id del bilancio appena creato
                 $result = callSP('sp_crea_bilancio', [$id_azienda, $anno]);
                 $new_id = $result[0]['id_bilancio'] ?? 0;
                 if ($new_id > 0) {
@@ -70,6 +75,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         if (!$bil_check) {
             setFlash('danger', 'Bilancio non trovato.');
         } elseif ($bil_check['stato'] !== 'bozza') {
+            // non si possono modificare i valori una volta che il bilancio è in revisione o approvato
             setFlash('danger', 'Non puoi modificare un bilancio che non e\' piu\' in bozza.');
         } elseif ($nome_voce === '' || $valore === '') {
             setFlash('danger', 'Seleziona una voce e inserisci un valore.');

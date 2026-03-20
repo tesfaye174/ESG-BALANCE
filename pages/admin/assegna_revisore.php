@@ -23,6 +23,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             execSP('sp_associa_revisore_bilancio', [$revisore, $bilancio]);
             logEvent('assegnazione_revisore', "Revisore {$revisore} assegnato al bilancio #{$bilancio}");
 
+            // la SP cambia automaticamente lo stato a 'in_revisione' se è il primo revisore assegnato
+            // rileggo lo stato per loggare il cambio se è avvenuto
             $bil_stato = queryOne("SELECT stato FROM bilanci WHERE id = ?", [$bilancio]);
             if ($bil_stato && $bil_stato['stato'] === 'in_revisione') {
                 logEvent('cambio_stato_bilancio', "Bilancio #{$bilancio}: stato cambiato a 'in_revisione'");

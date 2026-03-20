@@ -13,6 +13,7 @@ if (isLoggedIn()) {
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // CF in maiuscolo per uniformità con come viene salvato nel DB
     $username   = trim($_POST['username'] ?? '');
     $password   = $_POST['password'] ?? '';
     $confirm    = $_POST['password_confirm'] ?? '';
@@ -35,19 +36,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (strlen($cf) !== 16) {
         $error = 'Il codice fiscale deve essere di 16 caratteri.';
     } elseif (!in_array($ruolo, ['revisore', 'responsabile'])) {
+        // l'amministratore non si registra da qui, viene creato direttamente nel DB
         $error = 'Ruolo non valido.';
     } else {
+        // bcrypt con cost=12: sicuro senza essere troppo lento per un server locale
+        // cost più alto = più sicuro ma più lento; 12 è il valore consigliato
         $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
 
         $cv_path = null;
         if ($ruolo === 'responsabile' && !empty($_FILES['curriculum']['name'])) {
-            // Validiamo il PDF: controllo estensione + MIME type
+            // validazione upload: controllo sia l'estensione che il MIME type reale del file
+            // solo l'estensione non basta perché si può rinominare un file malevolo in .pdf
             $upload_dir = realpath(__DIR__ . '/../assets/uploads') . DIRECTORY_SEPARATOR;
             $ext = strtolower(pathinfo($_FILES['curriculum']['name'], PATHINFO_EXTENSION));
-            $cv_name = bin2hex(random_bytes(16)) . '.' . $ext;
+            $cv_name = bin2hex(random_bytes(16)) . '.' . $ext; // nome casuale per evitare collisioni
             $cv_dest = $upload_dir . $cv_name;
 
-            // Verifica che il path di destinazione sia dentro la directory di upload
+            // protezione path traversal: il path finale deve stare dentro assets/uploads
             if (strpos(realpath(dirname($cv_dest)) . DIRECTORY_SEPARATOR, $upload_dir) !== 0) {
                 $error = 'Percorso di upload non valido.';
             } else {
@@ -77,7 +82,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 logEvent('registrazione_utente', "Nuovo utente registrato: {$username} ({$ruolo})");
                 redirectWith(BASE_URL . '/pages/login.php', 'success', 'Registrazione completata. Effettua il login.');
             } catch (PDOException $e) {
-                // Errore 23000 = violazione vincolo UNIQUE (username duplicato)
+                // 23000 = violazione vincolo UNIQUE: username o codice fiscale già in uso
                 if ($e->getCode() == 23000) {
                     $error = 'Username gia\' in uso.';
                 } else {

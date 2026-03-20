@@ -76,8 +76,8 @@ BEGIN
 END$$
 
 -- TRIGGER T4: Decremento ridondanza nr_bilanci
--- Quando viene eliminato un bilancio, il contatore viene
--- decrementato di 1.
+-- Quando viene eliminato un bilancio, decremento il contatore.
+-- GREATEST(..., 0) serve a non andare sotto zero in caso di dati inconsistenti.
 CREATE TRIGGER trg_decrementa_nr_bilanci
 AFTER DELETE ON bilanci
 FOR EACH ROW
