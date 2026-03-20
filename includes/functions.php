@@ -1,28 +1,44 @@
 <?php
 
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/mongodb.php';
 
-// salva un evento nel log (tabella log_eventi)
 function logEvent(string $evento, string $dettagli, ?string $utente = null): void
 {
+    $utente = $utente ?? ($_SESSION['username'] ?? 'sistema');
+
+    try {
+        $mongo = getMongoCollection();
+        if ($mongo !== null) {
+            $ts = class_exists('MongoDB\BSON\UTCDateTime') ? new MongoDB\BSON\UTCDateTime() : time();
+            $mongo->insertOne([
+                'evento'    => $evento,
+                'utente'    => $utente,
+                'dettagli'  => $dettagli,
+                'timestamp' => $ts,
+            ]);
+            return;
+        }
+    } catch (Throwable $e) {
+        error_log('MongoDB log fallito: ' . $e->getMessage());
+    }
+
+    // se MongoDB non funziona, salva su MySQL
     try {
         $pdo = getDBConnection();
         $stmt = $pdo->prepare("INSERT INTO log_eventi (evento, utente, dettagli, timestamp) VALUES (?, ?, ?, NOW())");
-        $stmt->execute([
-            $evento,
-            $utente ?? ($_SESSION['username'] ?? 'sistema'),
-            $dettagli,
-        ]);
-    } catch (\Throwable $e) {
-        // se il log fallisce non blocco l'applicazione
-        error_log('[ESG-BALANCE] Log evento fallito: ' . $e->getMessage());
+        $stmt->execute([$evento, $utente, $dettagli]);
+    } catch (Throwable $e) {
+        error_log('Log evento fallito: ' . $e->getMessage());
     }
 }
+
 function setFlash(string $type, string $message): void
 {
     $_SESSION['flash'] = ['type' => $type, 'message' => $message];
 }
 
+// Legge il messaggio e lo cancella dalla sessione (così appare una sola volta)
 function getFlash(): ?array
 {
     if (isset($_SESSION['flash'])) {
@@ -37,7 +53,8 @@ function renderFlash(): void
 {
     $flash = getFlash();
     if ($flash) {
-        $type = htmlspecialchars($flash['type']);
+        $allowed_types = ['success', 'danger', 'warning', 'info'];
+        $type = in_array($flash['type'], $allowed_types, true) ? $flash['type'] : 'info';
         $msg  = htmlspecialchars($flash['message']);
         echo "<div class=\"alert alert-{$type} alert-dismissible fade show\" role=\"alert\">";
         echo $msg;
@@ -53,14 +70,13 @@ function redirectWith(string $url, string $type, string $message): void
     exit;
 }
 
-// Badge stato bilancio (usato in piu' pagine)
 function statoBadgeClass(string $stato): string
 {
     return match ($stato) {
-        'bozza' => 'bg-secondary text-dark',
+        'bozza'        => 'bg-secondary text-white',
         'in_revisione' => 'bg-accent text-white',
-        'approvato' => 'bg-primary text-white',
-        'respinto' => 'bg-secondary text-dark border border-2 border-primary',
-        default => 'bg-secondary',
+        'approvato'    => 'bg-success text-white',
+        'respinto'     => 'bg-danger text-white',
+        default        => 'bg-secondary text-white',
     };
 }

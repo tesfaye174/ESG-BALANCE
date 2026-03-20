@@ -7,6 +7,12 @@ if (session_status() === PHP_SESSION_NONE) {
 $current_user = $_SESSION['username'] ?? null;
 $current_role = $_SESSION['ruolo'] ?? null;
 $base_url = defined('BASE_URL') ? BASE_URL : '/ESG-BALANCE';
+
+function nav_active($path)
+{
+    $req = $_SERVER['REQUEST_URI'] ?? '';
+    return (strpos($req, $path) !== false) ? 'active' : '';
+}
 ?>
 <!DOCTYPE html>
 <html lang="it">
@@ -26,13 +32,6 @@ $base_url = defined('BASE_URL') ? BASE_URL : '/ESG-BALANCE';
 <body>
 
 
-    <?php
-    function nav_active($path)
-    {
-        $req = $_SERVER['REQUEST_URI'] ?? '';
-        return (strpos($req, $path) !== false) ? 'active' : '';
-    }
-    ?>
     <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="<?php echo $base_url; ?>/">
@@ -96,7 +95,7 @@ $base_url = defined('BASE_URL') ? BASE_URL : '/ESG-BALANCE';
                                     href="<?php echo $base_url; ?>/pages/responsabile/bilancio.php"><i
                                         class="bi bi-journal-text me-2"></i>Bilanci</a></li>
                             <li><a class="dropdown-item"
-                                    href="<?php echo $base_url; ?>/pages/responsabile/indicatori_bilancio.php"><i
+                                    href="<?php echo $base_url; ?>/pages/responsabile/bilancio.php"><i
                                         class="bi bi-graph-up-arrow me-2"></i>Indicatori Bilancio</a></li>
                         </ul>
                     </li>
@@ -116,9 +115,13 @@ $base_url = defined('BASE_URL') ? BASE_URL : '/ESG-BALANCE';
                         </span>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link text-danger" href="<?php echo $base_url; ?>/pages/login.php?logout=1">
-                            <i class="bi bi-box-arrow-right"></i> Esci
-                        </a>
+                        <form method="POST" action="<?php echo $base_url; ?>/pages/login.php" class="d-inline">
+                            <input type="hidden" name="logout" value="1">
+                            <input type="hidden" name="csrf_token" value="<?php echo csrfToken(); ?>">
+                            <button type="submit" class="nav-link text-danger btn btn-link p-0 border-0 align-baseline">
+                                <i class="bi bi-box-arrow-right"></i> Esci
+                            </button>
+                        </form>
                     </li>
                     <?php else: ?>
                     <li class="nav-item">

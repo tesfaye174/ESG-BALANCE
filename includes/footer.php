@@ -1,6 +1,5 @@
 </main>
 
-
 <footer>
     <div class="container">
         <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">

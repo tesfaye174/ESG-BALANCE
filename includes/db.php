@@ -9,8 +9,15 @@ function callSP(string $sp_name, array $params = []): array
     $sql = "CALL {$sp_name}({$placeholders})";
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
+
+    // Le SP con INSERT + SELECT restituiscono più resultset:
+    // il primo può essere vuoto (dall'INSERT), il secondo ha i dati.
+    // Scorriamo finché troviamo un resultset non vuoto.
     $results = $stmt->fetchAll();
-    $stmt->closeCursor(); // senza questo da errore "Cannot execute queries while other unbuffered queries are active"
+    while (empty($results) && $stmt->nextRowset()) {
+        $results = $stmt->fetchAll();
+    }
+    $stmt->closeCursor();
     return $results;
 }
 
