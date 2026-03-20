@@ -1,12 +1,27 @@
 {
   "permissions": {
     "allow": [
-      "Bash(powershell -Command:*)",
-      "Bash(wc:*)",
-      "WebFetch(domain:localhost)",
-      "Bash(curl:*)",
-      "Bash(dir:*)",
-      "Bash(findstr:*)"
+      "Bash(composer install:*)",
+      "Bash(\"/c/xampp/php/php.exe\" -v)",
+      "Bash(php -l /c/xampp/htdocs/ESG-BALANCE/index.php)",
+      "Bash(grep -n \"TODO\\\\|FIXME\\\\|HACK\\\\|BUG\\\\|ERROR\" /c/xampp/htdocs/ESG-BALANCE/includes/*.php)",
+      "Bash(grep -r \"include\\\\|require\" /c/xampp/htdocs/ESG-BALANCE/pages/admin/*.php)",
+      "Bash(for f:*)",
+      "Bash(do /c/xampp/php/php.exe -l \"$f\")",
+      "Bash(done)",
+      "Bash(/c/xampp/php/php.exe -v)",
+      "Bash(/c/xampp/php/php.exe -r \"echo password_verify\\(''Admin123!'', ''$2y$12$2LQoeETcxUY1gK0m5K1YE.QQRyUMKYD6LR6buQAR6ha4AhIntw0mO''\\) ? ''MATCH'' : ''NO MATCH'';\")",
+      "Bash(/c/xampp/php/php.exe -r \"echo password_verify\\(''admin123'', ''$2y$12$2LQoeETcxUY1gK0m5K1YE.QQRyUMKYD6LR6buQAR6ha4AhIntw0mO''\\) ? ''MATCH'' : ''NO MATCH'';\")",
+      "Bash(/c/xampp/php/php.exe -r \"echo password_verify\\(''password'', ''$2y$12$2LQoeETcxUY1gK0m5K1YE.QQRyUMKYD6LR6buQAR6ha4AhIntw0mO''\\) ? ''MATCH'' : ''NO MATCH'';\")",
+      "Bash(/c/xampp/php/php.exe -r \"echo password_verify\\(''Admin1234!'', ''$2y$12$2LQoeETcxUY1gK0m5K1YE.QQRyUMKYD6LR6buQAR6ha4AhIntw0mO''\\) ? ''MATCH'' : ''NO MATCH'';\")",
+      "Read(//c/xampp/**)",
+      "Bash(./mysql/bin/mysql.exe -u root -e \"USE esg_balance; SELECT table_name, table_rows FROM information_schema.tables WHERE table_schema=''esg_balance'' ORDER BY table_name;\")",
+      "Bash(./mysql/bin/mysql.exe -u root -e \"USE esg_balance; SELECT username, ruolo FROM utenti; SELECT nome FROM voci_contabili; SELECT nome, tipo FROM indicatori_esg;\")",
+      "Bash(./mysql/bin/mysql.exe -u root -e \"USE esg_balance; SELECT id, nome, ragione_sociale FROM aziende ORDER BY id;\")",
+      "Bash(./mysql/bin/mysql.exe -u root esg_balance 2)",
+      "Bash(1:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }
