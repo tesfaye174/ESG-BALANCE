@@ -1,13 +1,12 @@
 <?php
 
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'esg_balance');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_CHARSET', 'utf8mb4');
+define('DB_HOST',    getenv('DB_HOST')    ?: 'localhost');
+define('DB_NAME',    getenv('DB_NAME')    ?: 'esg_balance');
+define('DB_USER',    getenv('DB_USER')    ?: 'root');
+define('DB_PASS',    getenv('DB_PASS') ?: '');
+define('DB_CHARSET', getenv('DB_CHARSET') ?: 'utf8mb4');
 
-// singleton: cosi' non apro mille connessioni
-// (visto a lezione che e' meglio cosi')
+// uso una variabile statica così non riapro la connessione ogni volta
 function getDBConnection(): PDO
 {
     static $pdo = null;

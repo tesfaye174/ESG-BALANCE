@@ -2,7 +2,9 @@
     "name": "esg-balance/esg-balance",
     "description": "Piattaforma web per la gestione dei bilanci aziendali e degli indicatori ESG - Progetto Basi di Dati, A.A. 2025/2026",
     "type": "project",
-    "require": {},
+    "require": {
+        "mongodb/mongodb": "^1.19"
+    },
     "autoload": {
         "files": []
     }
