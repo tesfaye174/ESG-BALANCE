@@ -91,19 +91,19 @@ INSERT INTO indicatori_esg (nome, immagine, rilevanza, tipo) VALUES
 -- Il trigger T3 aggiorna automaticamente nr_bilanci nelle aziende.
 
 -- Fonderia Bertoni: 3 bilanci (2023, 2024, 2025)
-INSERT INTO bilanci (id_azienda, data_creazione, stato) VALUES
-(1, '2023-04-28', 'bozza'),
-(1, '2024-04-14', 'bozza'),
-(1, '2025-03-31', 'bozza');
+INSERT INTO bilanci (id_azienda, anno, data_creazione, stato) VALUES
+(1, 2023, '2023-04-28', 'bozza'),
+(1, 2024, '2024-04-14', 'bozza'),
+(1, 2025, '2025-03-31', 'bozza');
 
 -- Cantieri Damico: 2 bilanci (2023, 2024)
-INSERT INTO bilanci (id_azienda, data_creazione, stato) VALUES
-(2, '2023-06-03', 'bozza'),
-(2, '2024-05-22', 'bozza');
+INSERT INTO bilanci (id_azienda, anno, data_creazione, stato) VALUES
+(2, 2023, '2023-06-03', 'bozza'),
+(2, 2024, '2024-05-22', 'bozza');
 
 -- Agri Valsamoggia: 1 bilancio (2024)
-INSERT INTO bilanci (id_azienda, data_creazione, stato) VALUES
-(3, '2024-07-11', 'bozza');
+INSERT INTO bilanci (id_azienda, anno, data_creazione, stato) VALUES
+(3, 2024, '2024-07-11', 'bozza');
 
 -- VALORI BILANCIO (voci contabili valorizzate)
 -- Importi espressi in euro.

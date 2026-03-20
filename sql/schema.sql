@@ -99,9 +99,11 @@ CREATE TABLE voci_contabili (
 CREATE TABLE bilanci (
     id              INT     NOT NULL AUTO_INCREMENT,
     id_azienda      INT     NOT NULL,
+    anno            YEAR    NOT NULL,
     data_creazione  DATE    NOT NULL,
     stato           ENUM('bozza','in_revisione','approvato','respinto') DEFAULT 'bozza',
     PRIMARY KEY (id),
+    UNIQUE KEY (id_azienda, anno),
     FOREIGN KEY (id_azienda) REFERENCES aziende(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
@@ -188,7 +190,8 @@ CREATE TABLE note_revisione (
     PRIMARY KEY (id),
     FOREIGN KEY (username_revisore, id_bilancio)
         REFERENCES revisioni(username_revisore, id_bilancio) ON DELETE CASCADE,
-    FOREIGN KEY (nome_voce) REFERENCES voci_contabili(nome) ON UPDATE CASCADE
+    FOREIGN KEY (id_bilancio, nome_voce)
+        REFERENCES valori_bilancio(id_bilancio, nome_voce) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
 -- 16. GIUDIZI
@@ -215,3 +218,10 @@ CREATE TABLE log_eventi (
     timestamp   DATETIME        NOT NULL,
     PRIMARY KEY (id)
 ) ENGINE=InnoDB;
+
+-- INDICI SU FOREIGN KEY (migliorano le performance delle JOIN e delle query filtrate)
+CREATE INDEX idx_email_utente_username       ON email_utente(username);
+CREATE INDEX idx_valori_bilancio_bilancio    ON valori_bilancio(id_bilancio);
+CREATE INDEX idx_voci_indicatori_bilancio    ON voci_indicatori(id_bilancio);
+CREATE INDEX idx_revisioni_revisore          ON revisioni(username_revisore);
+CREATE INDEX idx_note_revisione_bilancio     ON note_revisione(id_bilancio);

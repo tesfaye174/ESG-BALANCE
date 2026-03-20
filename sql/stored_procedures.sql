@@ -137,11 +137,12 @@ END$$
 -- Il trigger trg_incrementa_nr_bilanci aggiorna nr_bilanci.
 -- Restituisce l'ID del bilancio appena creato.
 CREATE PROCEDURE sp_crea_bilancio(
-    IN p_id_azienda INT
+    IN p_id_azienda INT,
+    IN p_anno       YEAR
 )
 BEGIN
-    INSERT INTO bilanci (id_azienda, data_creazione, stato)
-    VALUES (p_id_azienda, CURDATE(), 'bozza');
+    INSERT INTO bilanci (id_azienda, anno, data_creazione, stato)
+    VALUES (p_id_azienda, p_anno, CURDATE(), 'bozza');
 
     SELECT LAST_INSERT_ID() AS id_bilancio;
 END$$
@@ -196,8 +197,7 @@ BEGIN
     WHERE username = p_username_revisore;
 END$$
 
--- SP 11: Inserimento competenza del revisore
--- Usa ON DUPLICATE KEY UPDATE per aggiornare il livello.
+-- SP 11: Competenze revisore (aggiorna il livello se gia' esiste)
 CREATE PROCEDURE sp_inserisci_competenza(
     IN p_username       VARCHAR(50),
     IN p_nome_comp      VARCHAR(100),
@@ -209,8 +209,7 @@ BEGIN
     ON DUPLICATE KEY UPDATE livello = p_livello;
 END$$
 
--- SP 12: Inserimento nota su una voce di bilancio
--- Il revisore aggiunge una nota testuale con data corrente.
+-- SP 12: Nota su una voce di bilancio
 CREATE PROCEDURE sp_inserisci_nota(
     IN p_username_rev   VARCHAR(50),
     IN p_id_bilancio    INT,
@@ -237,11 +236,8 @@ BEGIN
     VALUES (p_username_rev, p_id_bilancio, p_esito, CURDATE(), p_rilievi);
 END$$
 
--- SP 14: Aggiornamento indice di affidabilita' del revisore
--- L'indice e' calcolato come la percentuale di giudizi emessi
--- dal revisore con esito 'approvazione' (approvazione pura)
--- rispetto al totale dei giudizi emessi, normalizzata tra 0 e 1.
--- Viene richiamata dal trigger T2 dopo la chiusura del bilancio.
+-- SP 14: Ricalcola l'indice di affidabilita' del revisore
+-- (% approvazioni pure sul totale dei giudizi emessi)
 CREATE PROCEDURE sp_aggiorna_indice_affidabilita(
     IN p_username VARCHAR(50)
 )
@@ -250,18 +246,15 @@ BEGIN
     DECLARE v_positivi INT DEFAULT 0;
     DECLARE v_indice DECIMAL(3,2) DEFAULT 0.00;
 
-    -- Conto i giudizi totali emessi dal revisore
     SELECT COUNT(*) INTO v_totale
     FROM giudizi
     WHERE username_revisore = p_username;
 
-    -- Conto i giudizi con esito 'approvazione' (senza rilievi)
     SELECT COUNT(*) INTO v_positivi
     FROM giudizi
     WHERE username_revisore = p_username
       AND esito = 'approvazione';
 
-    -- Calcolo l'indice (se ha emesso almeno un giudizio)
     IF v_totale > 0 THEN
         SET v_indice = ROUND(v_positivi / v_totale, 2);
     END IF;

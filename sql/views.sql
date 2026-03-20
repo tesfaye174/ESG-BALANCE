@@ -14,13 +14,9 @@ SELECT COUNT(*) AS totale_revisori
 FROM revisori;
 
 -- VISTA V3: Classifica affidabilita' aziende
--- L'affidabilita' e' definita come la percentuale di bilanci
--- approvati dai revisori SENZA rilievi (esito = 'approvazione').
--- Un bilancio e' "approvato puro" se TUTTI i suoi giudizi
--- hanno esito 'approvazione' (nessun 'approvazione_con_rilievi'
--- e nessun 'respingimento').
--- N.B.: si usa COUNT(DISTINCT ... CASE) per evitare che la JOIN
--- con giudizi (che produce piu' righe per bilancio) falsi il conteggio.
+-- Percentuale di bilanci approvati senza rilievi su totale giudicati.
+-- COUNT(DISTINCT ... CASE) serve perche' la JOIN con giudizi
+-- produce piu' righe per bilancio e falsificherebbe il conteggio.
 CREATE OR REPLACE VIEW v_affidabilita_aziende AS
 SELECT
     a.id AS id_azienda,
@@ -65,11 +61,12 @@ SELECT
     b.id AS id_bilancio,
     a.nome AS azienda,
     a.ragione_sociale,
+    b.anno,
     b.data_creazione,
     b.stato,
     COUNT(vi.nome_indicatore) AS num_indicatori_esg
 FROM bilanci b
 JOIN aziende a ON a.id = b.id_azienda
 LEFT JOIN voci_indicatori vi ON vi.id_bilancio = b.id
-GROUP BY b.id, a.nome, a.ragione_sociale, b.data_creazione, b.stato
+GROUP BY b.id, a.nome, a.ragione_sociale, b.anno, b.data_creazione, b.stato
 ORDER BY num_indicatori_esg DESC;

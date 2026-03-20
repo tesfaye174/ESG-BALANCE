@@ -83,7 +83,7 @@ AFTER DELETE ON bilanci
 FOR EACH ROW
 BEGIN
     UPDATE aziende
-    SET nr_bilanci = nr_bilanci - 1
+    SET nr_bilanci = GREATEST(nr_bilanci - 1, 0)
     WHERE id = OLD.id_azienda;
 END$$
 
