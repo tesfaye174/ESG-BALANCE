@@ -9,6 +9,11 @@ requireRole('responsabile');
 $username = currentUser();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verifyCsrf()) {
+        setFlash('danger', 'Token di sicurezza non valido.');
+        header('Location: aziende.php');
+        exit;
+    }
     $nome       = trim($_POST['nome'] ?? '');
     $rag_soc    = trim($_POST['ragione_sociale'] ?? '');
     $piva       = trim($_POST['partita_iva'] ?? '');
@@ -18,10 +23,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $logo_path = null;
     if (!empty($_FILES['logo']['name'])) {
         $allowed_ext = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        $allowed_mime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
         $ext = strtolower(pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION));
-        if (in_array($ext, $allowed_ext)) {
-            $logo_name = uniqid('logo_') . '_' . basename($_FILES['logo']['name']);
-            $dest = __DIR__ . '/../../assets/uploads/' . $logo_name;
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($_FILES['logo']['tmp_name']);
+        if (in_array($ext, $allowed_ext) && in_array($mime, $allowed_mime)) {
+            $upload_dir = realpath(__DIR__ . '/../../assets/uploads') . DIRECTORY_SEPARATOR;
+            $logo_name = bin2hex(random_bytes(16)) . '.' . $ext;
+            $dest = $upload_dir . $logo_name;
+            // Verifica che il path di destinazione sia dentro la directory di upload
+            if (strpos(realpath(dirname($dest)) . DIRECTORY_SEPARATOR, $upload_dir) !== 0) {
+                setFlash('danger', 'Percorso di upload non valido.');
+                header('Location: aziende.php');
+                exit;
+            }
             move_uploaded_file($_FILES['logo']['tmp_name'], $dest);
             $logo_path = 'assets/uploads/' . $logo_name;
         } else {
@@ -51,7 +66,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($e->getCode() == 23000) {
                 setFlash('danger', 'Ragione sociale gia\' presente nel sistema.');
             } else {
-                setFlash('danger', 'Errore: ' . $e->getMessage());
+                error_log('ESG-BALANCE Error: ' . $e->getMessage());
+                setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
             }
         }
     }
@@ -77,6 +93,7 @@ require_once __DIR__ . '/../../includes/header.php';
             <div class="card-header bg-accent text-white">Registra Nuova Azienda</div>
             <div class="card-body">
                 <form method="POST" enctype="multipart/form-data">
+                    <?php csrfField(); ?>
                     <div class="mb-3">
                         <label for="nome" class="form-label">Nome Azienda *</label>
                         <input type="text" class="form-control" id="nome" name="nome" required>

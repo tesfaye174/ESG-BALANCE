@@ -11,6 +11,11 @@ $username = currentUser();
 $id_bilancio = (int)($_GET['id'] ?? 0);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'nota') {
+    if (!verifyCsrf()) {
+        setFlash('danger', 'Token di sicurezza non valido.');
+        header('Location: revisione.php');
+        exit;
+    }
     $bil_id   = (int)($_POST['id_bilancio'] ?? 0);
     $voce     = $_POST['nome_voce'] ?? '';
     $testo    = trim($_POST['testo'] ?? '');
@@ -23,7 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             logEvent('inserimento_nota', "Nota inserita su bilancio #{$bil_id}, voce: {$voce}");
             setFlash('success', 'Nota aggiunta.');
         } catch (PDOException $e) {
-            setFlash('danger', 'Errore: ' . $e->getMessage());
+            error_log('ESG-BALANCE Error: ' . $e->getMessage());
+            setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
         }
     }
     header("Location: revisione.php?id={$bil_id}");
@@ -188,6 +194,7 @@ require_once __DIR__ . '/../../includes/header.php';
         <div class="card-header bg-accent text-white">Aggiungi Nota</div>
         <div class="card-body">
             <form method="POST">
+                <?php csrfField(); ?>
                 <input type="hidden" name="action" value="nota">
                 <input type="hidden" name="id_bilancio" value="<?php echo $id_bilancio; ?>">
                 <div class="row">

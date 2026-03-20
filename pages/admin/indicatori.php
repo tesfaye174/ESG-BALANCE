@@ -8,6 +8,11 @@ require_once __DIR__ . '/../../includes/functions.php';
 requireRole('amministratore');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verifyCsrf()) {
+        setFlash('danger', 'Token di sicurezza non valido.');
+        header('Location: indicatori.php');
+        exit;
+    }
     $nome       = trim($_POST['nome'] ?? '');
     $rilevanza  = $_POST['rilevanza'] ?? '';
     $tipo       = $_POST['tipo'] ?? '';
@@ -18,10 +23,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $img_path = null;
     if (!empty($_FILES['immagine']['name'])) {
         $allowed_ext = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+        $allowed_mime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
         $ext = strtolower(pathinfo($_FILES['immagine']['name'], PATHINFO_EXTENSION));
-        if (in_array($ext, $allowed_ext)) {
-            $img_name = uniqid('esg_') . '_' . basename($_FILES['immagine']['name']);
-            $dest = __DIR__ . '/../../assets/uploads/' . $img_name;
+        $finfo = new finfo(FILEINFO_MIME_TYPE);
+        $mime = $finfo->file($_FILES['immagine']['tmp_name']);
+        if (in_array($ext, $allowed_ext) && in_array($mime, $allowed_mime)) {
+            $upload_dir = realpath(__DIR__ . '/../../assets/uploads') . DIRECTORY_SEPARATOR;
+            $img_name = bin2hex(random_bytes(16)) . '.' . $ext;
+            $dest = $upload_dir . $img_name;
+            // Verifica che il path di destinazione sia dentro la directory di upload
+            if (strpos(realpath(dirname($dest)) . DIRECTORY_SEPARATOR, $upload_dir) !== 0) {
+                setFlash('danger', 'Percorso di upload non valido.');
+                header('Location: indicatori.php');
+                exit;
+            }
             move_uploaded_file($_FILES['immagine']['tmp_name'], $dest);
             $img_path = 'assets/uploads/' . $img_name;
         } else {
@@ -33,6 +48,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($nome === '') {
         setFlash('danger', 'Il nome dell\'indicatore e\' obbligatorio.');
+    } elseif ($rilevanza !== '' && (!is_numeric($rilevanza) || (float)$rilevanza < 0 || (float)$rilevanza > 10)) {
+        setFlash('danger', 'La rilevanza deve essere un numero tra 0 e 10.');
     } elseif ($tipo === 'ambientale' && $cod_norm === '') {
         setFlash('danger', 'Il codice normativa e\' obbligatorio per gli indicatori ambientali.');
     } elseif ($tipo === 'sociale' && ($ambito === '' || $frequenza === '')) {
@@ -54,7 +71,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($e->getCode() == 23000) {
                 setFlash('danger', 'Indicatore gia\' esistente.');
             } else {
-                setFlash('danger', 'Errore: ' . $e->getMessage());
+                error_log('ESG-BALANCE Error: ' . $e->getMessage());
+                setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
             }
         }
     }
@@ -85,6 +103,7 @@ require_once __DIR__ . '/../../includes/header.php';
             <div class="card-header bg-accent text-white">Nuovo Indicatore</div>
             <div class="card-body">
                 <form method="POST" enctype="multipart/form-data">
+                    <?php csrfField(); ?>
                     <div class="mb-3">
                         <label for="nome" class="form-label">Nome *</label>
                         <input type="text" class="form-control" id="nome" name="nome" required>
@@ -157,13 +176,13 @@ require_once __DIR__ . '/../../includes/header.php';
                                     <td><strong><?php echo htmlspecialchars($ind['nome']); ?></strong></td>
                                     <td>
                                         <?php if ($ind['tipo'] === 'ambientale'): ?>
-                                            <span class="badge bg-accent">Ambientale</span>
+                                            <span class="badge bg-success text-white">Ambientale</span>
                                         <?php elseif ($ind['tipo'] === 'sociale'): ?>
-                                            <span class="badge bg-primary">Sociale</span>
+                                            <span class="badge bg-accent text-white">Sociale</span>
                                         <?php elseif ($ind['tipo'] === 'governance'): ?>
-                                            <span class="badge bg-dark">Governance</span>
+                                            <span class="badge bg-dark text-white">Governance</span>
                                         <?php else: ?>
-                                            <span class="badge bg-secondary">Generico</span>
+                                            <span class="badge bg-secondary text-white">Generico</span>
                                         <?php endif; ?>
                                     </td>
                                     <td><?php echo $ind['rilevanza'] ?? '—'; ?></td>

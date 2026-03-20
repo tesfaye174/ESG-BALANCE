@@ -22,30 +22,43 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $ruolo      = $_POST['ruolo'] ?? '';
     $email      = trim($_POST['email'] ?? '');
 
-    if ($username === '' || $password === '' || $cf === '' || $data_nasc === '' || $luogo_nasc === '' || $ruolo === '' || $email === '') {
+    if (!verifyCsrf()) {
+        $error = 'Token di sicurezza non valido. Riprova.';
+    } elseif ($username === '' || $password === '' || $cf === '' || $data_nasc === '' || $luogo_nasc === '' || $ruolo === '' || $email === '') {
         $error = 'Compila tutti i campi obbligatori.';
     } elseif ($password !== $confirm) {
         $error = 'Le password non coincidono.';
     } elseif (strlen($password) < 6) {
         $error = 'La password deve avere almeno 6 caratteri.';
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = 'Indirizzo email non valido.';
+    } elseif (strlen($cf) !== 16) {
+        $error = 'Il codice fiscale deve essere di 16 caratteri.';
     } elseif (!in_array($ruolo, ['revisore', 'responsabile'])) {
         $error = 'Ruolo non valido.';
     } else {
-        $hash = password_hash($password, PASSWORD_BCRYPT);
+        $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
 
         $cv_path = null;
         if ($ruolo === 'responsabile' && !empty($_FILES['curriculum']['name'])) {
-            $upload_dir = __DIR__ . '/../assets/uploads/';
-            $cv_name = uniqid('cv_') . '_' . basename($_FILES['curriculum']['name']);
+            // Validiamo il PDF: controllo estensione + MIME type
+            $upload_dir = realpath(__DIR__ . '/../assets/uploads') . DIRECTORY_SEPARATOR;
+            $ext = strtolower(pathinfo($_FILES['curriculum']['name'], PATHINFO_EXTENSION));
+            $cv_name = bin2hex(random_bytes(16)) . '.' . $ext;
             $cv_dest = $upload_dir . $cv_name;
 
-            // controllo che sia un PDF
-            $ext = strtolower(pathinfo($_FILES['curriculum']['name'], PATHINFO_EXTENSION));
-            if ($ext === 'pdf') {
-                move_uploaded_file($_FILES['curriculum']['tmp_name'], $cv_dest);
-                $cv_path = 'assets/uploads/' . $cv_name;
+            // Verifica che il path di destinazione sia dentro la directory di upload
+            if (strpos(realpath(dirname($cv_dest)) . DIRECTORY_SEPARATOR, $upload_dir) !== 0) {
+                $error = 'Percorso di upload non valido.';
             } else {
-                $error = 'Il curriculum deve essere in formato PDF.';
+                $finfo = new finfo(FILEINFO_MIME_TYPE);
+                $mime = $finfo->file($_FILES['curriculum']['tmp_name']);
+                if ($ext === 'pdf' && $mime === 'application/pdf') {
+                    move_uploaded_file($_FILES['curriculum']['tmp_name'], $cv_dest);
+                    $cv_path = 'assets/uploads/' . $cv_name;
+                } else {
+                    $error = 'Il curriculum deve essere in formato PDF.';
+                }
             }
         }
 
@@ -64,11 +77,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 logEvent('registrazione_utente', "Nuovo utente registrato: {$username} ({$ruolo})");
                 redirectWith(BASE_URL . '/pages/login.php', 'success', 'Registrazione completata. Effettua il login.');
             } catch (PDOException $e) {
-                // Codice 23000 = violazione di unicita', quindi username gia' preso
+                // Errore 23000 = violazione vincolo UNIQUE (username duplicato)
                 if ($e->getCode() == 23000) {
                     $error = 'Username gia\' in uso.';
                 } else {
-                    $error = 'Errore durante la registrazione: ' . $e->getMessage();
+                    error_log('ESG-BALANCE Error: ' . $e->getMessage());
+                    $error = 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.';
                 }
             }
         }
@@ -99,6 +113,7 @@ require_once __DIR__ . '/../includes/header.php';
                     <div class="alert alert-danger shadow-sm"><?php echo htmlspecialchars($error); ?></div>
                 <?php endif; ?>
                 <form method="POST" enctype="multipart/form-data" autocomplete="on">
+                    <?php csrfField(); ?>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="username" class="form-label">Username *</label>

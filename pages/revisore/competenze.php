@@ -9,12 +9,18 @@ requireRole('revisore');
 $username = currentUser();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nome_comp = trim($_POST['nome_competenza'] ?? '');
-    $livello   = (int)($_POST['livello'] ?? 0);
+    if (!verifyCsrf()) {
+        setFlash('danger', 'Token di sicurezza non valido.');
+        header('Location: competenze.php');
+        exit;
+    }
+    $nome_comp    = trim($_POST['nome_competenza'] ?? '');
+    $livello_raw  = $_POST['livello'] ?? '';
+    $livello      = (int)$livello_raw;
 
     if ($nome_comp === '') {
         setFlash('danger', 'Il nome della competenza e\' obbligatorio.');
-    } elseif ($livello < 0 || $livello > 5) {
+    } elseif (!is_numeric($livello_raw) || $livello < 0 || $livello > 5) {
         setFlash('danger', 'Il livello deve essere tra 0 e 5.');
     } else {
         try {
@@ -22,7 +28,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             logEvent('inserimento_competenza', "Competenza aggiunta: {$nome_comp} (livello {$livello})");
             setFlash('success', 'Competenza aggiornata.');
         } catch (PDOException $e) {
-            setFlash('danger', 'Errore: ' . $e->getMessage());
+            error_log('ESG-BALANCE Error: ' . $e->getMessage());
+            setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
         }
     }
     header('Location: competenze.php');
@@ -47,6 +54,7 @@ require_once __DIR__ . '/../../includes/header.php';
             <div class="card-header bg-accent text-white">Aggiungi / Aggiorna Competenza</div>
             <div class="card-body">
                 <form method="POST">
+                    <?php csrfField(); ?>
                     <div class="mb-3">
                         <label for="nome_competenza" class="form-label">Nome Competenza *</label>
                         <input type="text" class="form-control" id="nome_competenza" name="nome_competenza"

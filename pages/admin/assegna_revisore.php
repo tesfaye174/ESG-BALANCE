@@ -8,6 +8,11 @@ require_once __DIR__ . '/../../includes/functions.php';
 requireRole('amministratore');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verifyCsrf()) {
+        setFlash('danger', 'Token di sicurezza non valido.');
+        header('Location: assegna_revisore.php');
+        exit;
+    }
     $revisore   = $_POST['revisore'] ?? '';
     $bilancio   = (int)($_POST['bilancio'] ?? 0);
 
@@ -29,7 +34,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($e->getCode() == 23000) {
                 setFlash('danger', 'Questo revisore e\' gia\' assegnato a questo bilancio.');
             } else {
-                setFlash('danger', 'Errore: ' . $e->getMessage());
+                error_log('ESG-BALANCE Error: ' . $e->getMessage());
+                setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
             }
         }
     }
@@ -66,6 +72,7 @@ require_once __DIR__ . '/../../includes/header.php';
             <div class="card-header bg-accent text-white">Nuova Assegnazione</div>
             <div class="card-body">
                 <form method="POST">
+                    <?php csrfField(); ?>
                     <div class="mb-3">
                         <label for="revisore" class="form-label">Revisore ESG *</label>
                         <select class="form-select" id="revisore" name="revisore" required>

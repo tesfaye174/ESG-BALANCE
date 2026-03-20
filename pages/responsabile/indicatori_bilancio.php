@@ -27,6 +27,11 @@ if (!$bilancio) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verifyCsrf()) {
+        setFlash('danger', 'Token di sicurezza non valido.');
+        header("Location: indicatori_bilancio.php?bilancio={$id_bilancio}&azienda={$id_azienda}");
+        exit;
+    }
     if ($bilancio['stato'] !== 'bozza') {
         setFlash('danger', 'Non puoi modificare un bilancio che non e\' piu\' in bozza.');
         header("Location: indicatori_bilancio.php?bilancio={$id_bilancio}&azienda={$id_azienda}");
@@ -41,6 +46,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     if ($nome_voce === '' || $nome_indicatore === '' || $valore_ind === '' || $fonte === '' || $data_rilev === '') {
         setFlash('danger', 'Compila tutti i campi.');
+    } elseif (!is_numeric($valore_ind)) {
+        setFlash('danger', 'Il valore indicatore deve essere un numero valido.');
     } else {
         try {
             execSP('sp_collega_indicatore_voce', [
@@ -57,7 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             );
             setFlash('success', 'Indicatore ESG collegato alla voce contabile.');
         } catch (PDOException $e) {
-            setFlash('danger', 'Errore: ' . $e->getMessage());
+            error_log('ESG-BALANCE Error: ' . $e->getMessage());
+            setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
         }
     }
     header("Location: indicatori_bilancio.php?bilancio={$id_bilancio}&azienda={$id_azienda}");
@@ -123,9 +131,9 @@ require_once __DIR__ . '/../../includes/header.php';
                                     <td>
                                         <?php echo htmlspecialchars($c['nome_indicatore']); ?>
                                         <?php if ($c['tipo'] === 'ambientale'): ?>
-                                            <span class="badge bg-accent">Amb</span>
+                                            <span class="badge bg-success text-white">Amb</span>
                                         <?php elseif ($c['tipo'] === 'sociale'): ?>
-                                            <span class="badge bg-primary">Soc</span>
+                                            <span class="badge bg-accent text-white">Soc</span>
                                         <?php endif; ?>
                                     </td>
                                     <td><?php echo number_format($c['valore_indicatore'], 2, ',', '.'); ?></td>
@@ -150,6 +158,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <p class="text-muted">Inserisci prima i valori delle voci contabili nel bilancio.</p>
                 <?php else: ?>
                     <form method="POST">
+                        <?php csrfField(); ?>
                         <div class="mb-3">
                             <label for="nome_voce" class="form-label">Voce Contabile *</label>
                             <select class="form-select" id="nome_voce" name="nome_voce" required>

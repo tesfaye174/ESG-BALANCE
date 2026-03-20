@@ -8,6 +8,11 @@ require_once __DIR__ . '/../../includes/functions.php';
 requireRole('amministratore');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!verifyCsrf()) {
+        setFlash('danger', 'Token di sicurezza non valido.');
+        header('Location: template.php');
+        exit;
+    }
     $nome = trim($_POST['nome'] ?? '');
     $descrizione = trim($_POST['descrizione'] ?? '');
 
@@ -19,11 +24,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             logEvent('creazione_voce_contabile', "Voce contabile creata: {$nome}");
             setFlash('success', 'Voce contabile aggiunta.');
         } catch (PDOException $e) {
-            // 23000 = voce gia' esistente (PK duplicata)
+            // Errore 23000 = violazione della PRIMARY KEY (nome gia' presente)
             if ($e->getCode() == 23000) {
                 setFlash('danger', 'Voce contabile gia\' esistente.');
             } else {
-                setFlash('danger', 'Errore: ' . $e->getMessage());
+                error_log('ESG-BALANCE Error: ' . $e->getMessage());
+                setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
             }
         }
     }
@@ -47,9 +53,10 @@ require_once __DIR__ . '/../../includes/header.php';
 <div class="row g-4">
     <div class="col-md-5">
         <div class="card">
-            <div class="card-header bg-primary text-white fw-bold">Nuova Voce Contabile</div>
+            <div class="card-header bg-accent text-white">Nuova Voce Contabile</div>
             <div class="card-body">
                 <form method="POST">
+                    <?php csrfField(); ?>
                     <div class="mb-3">
                         <label for="nome" class="form-label">Nome voce *</label>
                         <input type="text" class="form-control" id="nome" name="nome" required
@@ -60,7 +67,7 @@ require_once __DIR__ . '/../../includes/header.php';
                         <textarea class="form-control" id="descrizione" name="descrizione" rows="3"
                             placeholder="Descrizione della voce contabile"></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100">Aggiungi</button>
+                    <button type="submit" class="btn btn-accent w-100">Aggiungi</button>
                 </form>
             </div>
         </div>
