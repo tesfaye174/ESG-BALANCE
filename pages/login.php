@@ -5,17 +5,18 @@ require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
 
-// gestione logout: il pulsante logout invia un POST con il campo 'logout'
+// gestisco il logout qui invece che in una pagina separata
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['logout'])) {
     if (verifyCsrf()) {
         session_unset();
         session_destroy();
+    } else {
+        setFlash('warning', 'Token di sicurezza non valido. Riprova.');
     }
     header('Location: ' . BASE_URL . '/pages/login.php');
     exit;
 }
 
-// se già loggato non ha senso stare qui
 if (isLoggedIn()) {
     header('Location: ' . BASE_URL . '/pages/dashboard.php');
     exit;
@@ -32,19 +33,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif ($username === '' || $password === '') {
         $error = 'Compila tutti i campi.';
     } else {
-        // sp_login restituisce i dati dell'utente se esiste (senza controllare la password)
-        $rows = callSP('sp_login', [$username]);
+        try {
+            $rows = callSP('sp_login', [$username]);
+        } catch (PDOException $e) {
+            error_log('ESG-BALANCE Error: ' . $e->getMessage());
+            $error = 'Errore durante l\'accesso. Riprova più tardi.';
+            $rows  = [];
+        }
 
         if (empty($rows)) {
-            // messaggio generico intenzionale: non diciamo se è sbagliato username o password
-            // altrimenti un attaccante può capire quali username esistono (user enumeration)
-            $error = 'Username o password non validi.';
+            $error = 'Credenziali non valide.';
         } else {
             $user = $rows[0];
 
+            // verifico la password con bcrypt — non confronto in chiaro
             if (password_verify($password, $user['password_hash'])) {
-                // rigenerare il session ID dopo il login previene il session fixation attack
+                // rigenerare il session ID dopo login previene session fixation
                 session_regenerate_id(true);
+                unset($_SESSION['csrf_token']); // forzo la generazione di un nuovo token CSRF
                 $_SESSION['username'] = $user['username'];
                 $_SESSION['ruolo']    = $user['ruolo'];
                 $_SESSION['last_activity'] = time();
@@ -52,7 +58,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 header('Location: ' . BASE_URL . '/pages/dashboard.php');
                 exit;
             } else {
-                $error = 'Username o password non validi.';
+                $error = 'Credenziali non valide.';
             }
         }
     }
@@ -86,12 +92,12 @@ require_once __DIR__ . '/../includes/header.php';
                 <form method="POST" autocomplete="on">
                     <?php csrfField(); ?>
                     <div class="mb-3">
-                        <label for="username" class="form-label">Username</label>
+                        <label for="username" class="form-label">Nome utente</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="bi bi-person"></i></span>
                             <input type="text" class="form-control" id="username" name="username"
                                 value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>"
-                                required autofocus placeholder="Inserisci username">
+                                required autofocus placeholder="Inserisci il nome utente">
                         </div>
                     </div>
                     <div class="mb-3">

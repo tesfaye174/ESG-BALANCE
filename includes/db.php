@@ -2,29 +2,26 @@
 
 require_once __DIR__ . '/../config/database.php';
 
-// callSP: chiama una stored procedure e restituisce il risultato
-// da usare quando la SP fa una SELECT alla fine (es. sp_login, sp_crea_bilancio)
+// chiama una stored procedure e restituisce i risultati come array associativo
+// uso nextRowset perché MySQL può restituire più result set da una singola SP
 function callSP(string $sp_name, array $params = []): array
 {
     $pdo = getDBConnection();
-    // costruisco i placeholder '?,?,?' in base al numero di parametri
     $placeholders = implode(',', array_fill(0, count($params), '?'));
     $sql = "CALL {$sp_name}({$placeholders})";
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
 
-    // alcune SP con INSERT + SELECT restituiscono più resultset:
-    // il primo è vuoto (viene dall'INSERT), il secondo contiene i dati veri.
-    // scorro con nextRowset() finché trovo un resultset non vuoto.
     $results = $stmt->fetchAll();
+    // alcune SP restituiscono prima un result set vuoto (es. OK packet), scorro finché non trovo righe
     while (empty($results) && $stmt->nextRowset()) {
         $results = $stmt->fetchAll();
     }
-    $stmt->closeCursor();
+    $stmt->closeCursor(); // chiudo il cursore per liberare la connessione prima di altre query
     return $results;
 }
 
-// execSP: versione semplificata per SP che non restituiscono dati (INSERT/UPDATE/DELETE puri)
+// versione senza risultati — per SP che fanno solo INSERT/UPDATE/DELETE
 function execSP(string $sp_name, array $params = []): void
 {
     $pdo = getDBConnection();
@@ -35,7 +32,7 @@ function execSP(string $sp_name, array $params = []): void
     $stmt->closeCursor();
 }
 
-// query() e queryOne() sono wrapper corti per le query dirette (senza SP)
+// SELECT generica con prepared statement — uso quando non ho una SP apposita
 function query(string $sql, array $params = []): array
 {
     $pdo = getDBConnection();
@@ -44,7 +41,7 @@ function query(string $sql, array $params = []): array
     return $stmt->fetchAll();
 }
 
-// restituisce solo la prima riga oppure null se non trovato
+// come query() ma restituisce solo la prima riga — utile per lookup per ID o username
 function queryOne(string $sql, array $params = []): ?array
 {
     $rows = query($sql, $params);

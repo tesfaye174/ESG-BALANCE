@@ -1,22 +1,16 @@
--- ESG-BALANCE: Viste per le statistiche
--- Le statistiche sono implementate interamente tramite viste.
+-- Viste ESG-BALANCE
 
 USE esg_balance;
 
--- VISTA V1: Numero di aziende registrate in piattaforma
 CREATE OR REPLACE VIEW v_num_aziende AS
 SELECT COUNT(*) AS totale_aziende
 FROM aziende;
 
--- VISTA V2: Numero di revisori ESG registrati in piattaforma
 CREATE OR REPLACE VIEW v_num_revisori AS
 SELECT COUNT(*) AS totale_revisori
 FROM revisori;
 
--- VISTA V3: Classifica affidabilita' aziende
--- Percentuale di bilanci approvati senza rilievi su totale giudicati.
--- COUNT(DISTINCT ... CASE) serve perche' la JOIN con giudizi
--- produce piu' righe per bilancio e falsificherebbe il conteggio.
+-- classifica aziende per affidabilita'
 CREATE OR REPLACE VIEW v_affidabilita_aziende AS
 SELECT
     a.id AS id_azienda,
@@ -54,8 +48,7 @@ JOIN giudizi g ON g.id_bilancio = b.id
 GROUP BY a.id, a.nome, a.ragione_sociale
 ORDER BY percentuale_affidabilita DESC;
 
--- VISTA V4: Classifica bilanci aziendali per numero di
--- indicatori ESG connessi alle singole voci contabili.
+-- classifica bilanci per numero indicatori ESG collegati
 CREATE OR REPLACE VIEW v_classifica_bilanci_esg AS
 SELECT
     b.id AS id_bilancio,

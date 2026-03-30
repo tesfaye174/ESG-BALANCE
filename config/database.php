@@ -1,8 +1,6 @@
 <?php
 
-// leggo i parametri da variabili d'ambiente se disponibili, altrimenti uso i default
-// così in locale funziona senza configurare nulla, ma su un server si possono
-// sovrascrivere senza toccare il codice
+// i parametri si possono sovrascrivere via variabili d'ambiente, così non tocco il codice in produzione
 define('DB_HOST',    getenv('DB_HOST')    ?: 'localhost');
 define('DB_NAME',    getenv('DB_NAME')    ?: 'esg_balance');
 define('DB_USER',    getenv('DB_USER')    ?: 'root');
@@ -10,7 +8,7 @@ define('DB_PASS',    getenv('DB_PASS') ?: '');
 define('DB_CHARSET', getenv('DB_CHARSET') ?: 'utf8mb4');
 
 // uso una variabile statica così non riapro la connessione ogni volta
-// (pattern singleton: la connessione viene creata solo al primo utilizzo)
+
 function getDBConnection(): PDO
 {
     static $pdo = null;

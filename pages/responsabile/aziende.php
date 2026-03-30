@@ -14,42 +14,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: aziende.php');
         exit;
     }
-    $nome       = trim($_POST['nome'] ?? '');
-    $rag_soc    = trim($_POST['ragione_sociale'] ?? '');
-    $piva       = trim($_POST['partita_iva'] ?? '');
-    $settore    = trim($_POST['settore'] ?? '');
-    $num_dip    = (int)($_POST['num_dipendenti'] ?? 0);
+    $nome    = trim($_POST['nome'] ?? '');
+    $rag_soc = trim($_POST['ragione_sociale'] ?? '');
+    $piva    = trim($_POST['partita_iva'] ?? '');
+    $settore = trim($_POST['settore'] ?? '');
+    $num_dip = (int)($_POST['num_dipendenti'] ?? 0);
 
-    $logo_path = null;
-    if (!empty($_FILES['logo']['name'])) {
-        // controllo sia l'estensione che il MIME type reale del file
-        // un attaccante potrebbe caricare un file PHP rinominandolo .jpg
-        $allowed_ext = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-        $allowed_mime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $ext = strtolower(pathinfo($_FILES['logo']['name'], PATHINFO_EXTENSION));
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $mime = $finfo->file($_FILES['logo']['tmp_name']);
-        if (in_array($ext, $allowed_ext) && in_array($mime, $allowed_mime)) {
-            $upload_dir = realpath(__DIR__ . '/../../assets/uploads') . DIRECTORY_SEPARATOR;
-            $logo_name = bin2hex(random_bytes(16)) . '.' . $ext; // nome casuale per evitare sovrascritture
-            $dest = $upload_dir . $logo_name;
-            // protezione path traversal: il file deve finire dentro assets/uploads
-            if (strpos(realpath(dirname($dest)) . DIRECTORY_SEPARATOR, $upload_dir) !== 0) {
-                setFlash('danger', 'Percorso di upload non valido.');
-                header('Location: aziende.php');
-                exit;
-            }
-            move_uploaded_file($_FILES['logo']['tmp_name'], $dest);
-            $logo_path = 'assets/uploads/' . $logo_name;
-        } else {
-            setFlash('danger', 'Formato logo non valido. Sono ammessi: JPEG, PNG, GIF, WebP.');
-            header('Location: aziende.php');
-            exit;
-        }
-    }
+    // il logo è opzionale — se non viene caricato uploadImmagine restituisce null
+    $logo_path = uploadImmagine('logo', 'aziende.php');
 
     if ($nome === '' || $rag_soc === '' || $piva === '') {
         setFlash('danger', 'Nome, ragione sociale e partita IVA sono obbligatori.');
+    } elseif (!preg_match('/^\d{11}$/', $piva)) {
+        // la partita IVA italiana è esattamente 11 cifre numeriche
+        setFlash('danger', 'La Partita IVA deve essere composta da esattamente 11 cifre numeriche.');
     } else {
         try {
             execSP('sp_registra_azienda', [
@@ -64,12 +42,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             logEvent('registrazione_azienda', "Nuova azienda: {$rag_soc}");
             setFlash('success', 'Azienda registrata con successo.');
         } catch (PDOException $e) {
-            // 23000 = ragione sociale gia' presente (vincolo UNIQUE)
+            // 23000 = violazione UNIQUE — ragione sociale o P.IVA duplicati
             if ($e->getCode() == 23000) {
-                setFlash('danger', 'Ragione sociale gia\' presente nel sistema.');
+                setFlash('danger', 'Ragione sociale o partita IVA già presenti nel sistema.');
             } else {
                 error_log('ESG-BALANCE Error: ' . $e->getMessage());
-                setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
+                setFlash('danger', 'Si è verificato un errore. Riprova.');
             }
         }
     }
@@ -154,7 +132,7 @@ require_once __DIR__ . '/../../includes/header.php';
                                             <small>
                                                 P.IVA: <?php echo htmlspecialchars($a['partita_iva']); ?>
                                                 <?php if ($a['settore']): ?> | Settore: <?php echo htmlspecialchars($a['settore']); ?><?php endif; ?>
-                                                    <?php if ($a['num_dipendenti']): ?> | Dipendenti: <?php echo $a['num_dipendenti']; ?><?php endif; ?>
+                                                <?php if ($a['num_dipendenti']): ?> | Dipendenti: <?php echo $a['num_dipendenti']; ?><?php endif; ?>
                                             </small>
                                         </div>
                                     </div>

@@ -3,32 +3,28 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/mongodb.php';
 
-// logEvent: salva un evento nel log. Prova prima MongoDB, poi cade su MySQL.
-// In questo modo il progetto dimostra l'uso di due DBMS diversi come richiesto.
+// log evento: prima MongoDB, poi MySQL se MongoDB non c'è
 function logEvent(string $evento, string $dettagli, ?string $utente = null): void
 {
-    // se non viene passato l'utente, lo prendo dalla sessione
     $utente = $utente ?? ($_SESSION['username'] ?? 'sistema');
 
     try {
         $mongo = getMongoCollection();
         if ($mongo !== null) {
-            // UTCDateTime è il tipo data nativo di MongoDB
-            $ts = class_exists('MongoDB\BSON\UTCDateTime') ? new MongoDB\BSON\UTCDateTime() : time();
+            $ts = new MongoDB\BSON\UTCDateTime();
             $mongo->insertOne([
                 'evento'    => $evento,
                 'utente'    => $utente,
                 'dettagli'  => $dettagli,
                 'timestamp' => $ts,
             ]);
-            return; // se MongoDB ha funzionato non scrivo su MySQL
+            return;
         }
     } catch (Throwable $e) {
-        // MongoDB disponibile ma scrittura fallita (es. permessi, rete)
         error_log('MongoDB log fallito: ' . $e->getMessage());
     }
 
-    // fallback su MySQL: stessa struttura, usa la tabella log_eventi
+    // fallback mysql
     try {
         $pdo = getDBConnection();
         $stmt = $pdo->prepare("INSERT INTO log_eventi (evento, utente, dettagli, timestamp) VALUES (?, ?, ?, NOW())");
@@ -38,12 +34,12 @@ function logEvent(string $evento, string $dettagli, ?string $utente = null): voi
     }
 }
 
+// flash messages — messaggi da mostrare una volta sola dopo un redirect
 function setFlash(string $type, string $message): void
 {
     $_SESSION['flash'] = ['type' => $type, 'message' => $message];
 }
 
-// legge il flash message e lo cancella dalla sessione: così appare solo una volta
 function getFlash(): ?array
 {
     if (isset($_SESSION['flash'])) {
@@ -54,6 +50,7 @@ function getFlash(): ?array
     return null;
 }
 
+// stampa il messaggio flash come alert Bootstrap
 function renderFlash(): void
 {
     $flash = getFlash();
@@ -68,6 +65,7 @@ function renderFlash(): void
     }
 }
 
+// flash + redirect combinati, utile dopo i POST
 function redirectWith(string $url, string $type, string $message): void
 {
     setFlash($type, $message);
@@ -75,7 +73,7 @@ function redirectWith(string $url, string $type, string $message): void
     exit;
 }
 
-// restituisce la classe CSS del badge Bootstrap in base allo stato del bilancio
+// mappa lo stato del bilancio alla classe CSS Bootstrap del badge corrispondente
 function statoBadgeClass(string $stato): string
 {
     return match ($stato) {
@@ -85,4 +83,43 @@ function statoBadgeClass(string $stato): string
         'respinto'     => 'bg-danger text-white',
         default        => 'bg-secondary text-white',
     };
+}
+
+// upload immagine con controllo estensione + MIME, nome randomizzato
+function uploadImmagine(string $field, string $redirect_url): ?string
+{
+    if (empty($_FILES[$field]['name'])) {
+        return null;
+    }
+
+    $allowed_ext  = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+    $allowed_mime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    $ext   = strtolower(pathinfo($_FILES[$field]['name'], PATHINFO_EXTENSION));
+    // finfo legge il MIME dal contenuto reale, non dall'estensione
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mime  = $finfo->file($_FILES[$field]['tmp_name']);
+
+    if (!in_array($ext, $allowed_ext) || !in_array($mime, $allowed_mime)) {
+        setFlash('danger', 'Formato immagine non valido. Sono ammessi: JPEG, PNG, GIF, WebP.');
+        header('Location: ' . $redirect_url);
+        exit;
+    }
+
+    $upload_dir = realpath(__DIR__ . '/../assets/uploads') . DIRECTORY_SEPARATOR;
+    $img_name   = bin2hex(random_bytes(16)) . '.' . $ext;
+    $dest       = $upload_dir . $img_name;
+
+    // sicurezza: verifico che il file finisca davvero dentro uploads
+    if (strpos(realpath(dirname($dest)) . DIRECTORY_SEPARATOR, $upload_dir) !== 0) {
+        setFlash('danger', 'Percorso di upload non valido.');
+        header('Location: ' . $redirect_url);
+        exit;
+    }
+
+    if (!move_uploaded_file($_FILES[$field]['tmp_name'], $dest)) {
+        setFlash('danger', 'Errore durante il salvataggio del file.');
+        header('Location: ' . $redirect_url);
+        exit;
+    }
+    return 'assets/uploads/' . $img_name;
 }

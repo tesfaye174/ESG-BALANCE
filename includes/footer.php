@@ -1,11 +1,12 @@
 </main>
 
+<?php // footer con copyright e link al progetto — Bootstrap JS e app.js caricati qui per non bloccare il rendering ?>
 <footer>
     <div class="container">
         <div class="d-flex flex-column flex-md-row align-items-center justify-content-between gap-2">
             <div class="d-flex align-items-center gap-2">
-                <i class="bi bi-globe-americas text-primary"></i>
-                <span class="fw-bold text-primary">ESG-BALANCE</span>
+                <i class="bi bi-globe-americas text-accent"></i>
+                <span class="fw-bold text-accent">ESG-BALANCE</span>
                 <span class="text-muted">&copy; <?php echo date('Y'); ?> Tesfaye Venieri</span>
             </div>
             <div class="text-muted small">

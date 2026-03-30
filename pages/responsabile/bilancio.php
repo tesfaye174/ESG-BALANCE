@@ -11,9 +11,9 @@ $username = currentUser();
 $id_azienda  = (int)($_GET['azienda'] ?? 0);
 $id_bilancio = (int)($_GET['bilancio'] ?? 0);
 
+// verifico che l'azienda appartenga davvero al responsabile loggato
 $azienda = null;
 if ($id_azienda > 0) {
-    // verifico che l'azienda appartenga davvero a questo utente (non mi fido del GET)
     $azienda = queryOne(
         "SELECT * FROM aziende WHERE id = ? AND username_responsabile = ?",
         [$id_azienda, $username]
@@ -25,22 +25,20 @@ if ($id_azienda > 0) {
     }
 }
 
-// questo file gestisce due azioni POST diverse tramite il campo 'action':
-// - crea_bilancio: crea un nuovo bilancio per l'anno specificato
-// - inserisci_valore: aggiunge il valore di una voce contabile a un bilancio esistente
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     if (!verifyCsrf()) {
         setFlash('danger', 'Token di sicurezza non valido.');
         header("Location: bilancio.php?azienda={$id_azienda}");
         exit;
     }
+
     if ($_POST['action'] === 'crea_bilancio' && $azienda) {
         $anno = (int)($_POST['anno'] ?? 0);
         if ($anno < 2000 || $anno > 2099) {
             setFlash('danger', 'Anno non valido.');
         } else {
             try {
-                // sp_crea_bilancio restituisce l'id del bilancio appena creato
+                // la SP restituisce l'id del bilancio appena creato
                 $result = callSP('sp_crea_bilancio', [$id_azienda, $anno]);
                 $new_id = $result[0]['id_bilancio'] ?? 0;
                 if ($new_id > 0) {
@@ -51,10 +49,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 }
             } catch (PDOException $e) {
                 if ($e->getCode() == 23000) {
-                    setFlash('danger', "Esiste gia' un bilancio per l'anno {$anno}.");
+                    setFlash('danger', "Esiste già un bilancio per l'anno {$anno}.");
                 } else {
                     error_log('ESG-BALANCE Error: ' . $e->getMessage());
-                    setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
+                    setFlash('danger', 'Errore durante il salvataggio.');
                 }
             }
         }
@@ -75,11 +73,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         if (!$bil_check) {
             setFlash('danger', 'Bilancio non trovato.');
         } elseif ($bil_check['stato'] !== 'bozza') {
-            // non si possono modificare i valori una volta che il bilancio è in revisione o approvato
-            setFlash('danger', 'Non puoi modificare un bilancio che non e\' piu\' in bozza.');
+            // una volta assegnato a un revisore il bilancio passa in in_revisione e non si può più modificare
+            setFlash('danger', 'Non puoi modificare un bilancio che non è più in bozza.');
         } elseif ($nome_voce === '' || $valore === '') {
             setFlash('danger', 'Seleziona una voce e inserisci un valore.');
-        } elseif (!is_numeric($valore)) {
+        } elseif (!is_numeric($valore) || !is_finite((float)$valore)) {
             setFlash('danger', 'Il valore deve essere un numero valido.');
         } else {
             try {
@@ -88,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
                 setFlash('success', 'Valore inserito.');
             } catch (PDOException $e) {
                 error_log('ESG-BALANCE Error: ' . $e->getMessage());
-                setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
+                setFlash('danger', 'Errore durante il salvataggio.');
             }
         }
         header("Location: bilancio.php?azienda={$id_azienda}&bilancio={$bil_id}");

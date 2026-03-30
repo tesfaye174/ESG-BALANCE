@@ -14,28 +14,29 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: competenze.php');
         exit;
     }
-    $nome_comp    = trim($_POST['nome_competenza'] ?? '');
-    $livello_raw  = $_POST['livello'] ?? '';
-    $livello      = (int)$livello_raw;
+    $nome_comp = trim($_POST['nome_competenza'] ?? '');
+    $livello   = (int)($_POST['livello'] ?? -1);
 
     if ($nome_comp === '') {
-        setFlash('danger', 'Il nome della competenza e\' obbligatorio.');
-    } elseif (!is_numeric($livello_raw) || $livello < 0 || $livello > 5) {
+        setFlash('danger', 'Il nome della competenza è obbligatorio.');
+    } elseif ($livello < 0 || $livello > 5) {
         setFlash('danger', 'Il livello deve essere tra 0 e 5.');
     } else {
         try {
+            // salvo competenza
             execSP('sp_inserisci_competenza', [$username, $nome_comp, $livello]);
             logEvent('inserimento_competenza', "Competenza aggiunta: {$nome_comp} (livello {$livello})");
-            setFlash('success', 'Competenza aggiornata.');
+            setFlash('success', 'Competenza salvata con successo.');
         } catch (PDOException $e) {
             error_log('ESG-BALANCE Error: ' . $e->getMessage());
-            setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
+            setFlash('danger', 'Errore nel salvataggio della competenza.');
         }
     }
     header('Location: competenze.php');
     exit;
 }
 
+// carico le competenze del revisore loggato, ordinate alfabeticamente
 $competenze = query(
     "SELECT nome_competenza, livello FROM competenze_revisore WHERE username = ? ORDER BY nome_competenza",
     [$username]
@@ -58,7 +59,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <div class="mb-3">
                         <label for="nome_competenza" class="form-label">Nome Competenza *</label>
                         <input type="text" class="form-control" id="nome_competenza" name="nome_competenza"
-                            required placeholder="Es. Risk Assessment">
+                            required placeholder="Ad es. Valutazione del rischio">
                     </div>
                     <div class="mb-3">
                         <label for="livello" class="form-label">Livello (0-5) *</label>

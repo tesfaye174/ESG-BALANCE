@@ -14,22 +14,21 @@
             padding: 20px 16px;
         }
 
-        /* ── Slide shell ─────────────────────────────────────────── */
         .slide {
             width: 100%;
             max-width: 1000px;
-            min-height: 620px;
+            min-height: 562px;
             margin: 24px auto;
             background: #fff;
             border: 1px solid #aaa;
-            overflow: hidden;
+            overflow: visible;
             position: relative;
             display: flex;
             flex-direction: column;
             page-break-after: always;
         }
 
-        /* ── Slide header bar ────────────────────────────────────── */
+        /* header */
         .slide-header {
             background: #e8e8e8;
             color: #000;
@@ -45,19 +44,17 @@
             margin: 0;
             color: #000;
         }
-        /* ── Slide body ──────────────────────────────────────────── */
         .slide-body {
-            padding: 24px 30px 44px;
+            padding: 20px 30px 28px;
             flex: 1;
         }
 
-        /* ── Title slide ─────────────────────────────────────────── */
+        /* titolo */
         .title-slide {
             background: #fff;
             justify-content: center;
             align-items: center;
             text-align: center;
-            min-height: 620px;
             border: 2px solid #000;
         }
         .title-slide .slide-body {
@@ -133,7 +130,6 @@
             padding: 3px 10px;
         }
 
-        /* ── Typography ──────────────────────────────────────────── */
         h3 {
             font-size: 13px;
             font-weight: bold;
@@ -153,11 +149,10 @@
         li { margin-bottom: 5px; }
         strong { font-weight: bold; color: #000; }
 
-        /* ── Layout helpers ──────────────────────────────────────── */
+        /* layout */
         .two-col   { display: grid; grid-template-columns: 1fr 1fr;     gap: 22px; }
         .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
 
-        /* ── Cards ───────────────────────────────────────────────── */
         .card {
             background: #fafafa;
             border: 1px solid #ccc;
@@ -200,11 +195,8 @@
             background: #f0f0f0;
             border: 1px solid #ccc;
         }
-        .icon-admin { background: #f0f0f0; }
-        .icon-revisore { background: #f0f0f0; }
-        .icon-responsabile { background: #f0f0f0; }
+        .icon-admin, .icon-revisore, .icon-responsabile { background: #f0f0f0; }
 
-        /* ── Callout boxes ───────────────────────────────────────── */
         .callout {
             padding: 10px 14px;
             margin: 12px 0;
@@ -214,12 +206,10 @@
             background: #f5f5f5;
             border-left: 3px solid #555;
         }
-        .callout-info  { background: #f5f5f5; border-left: 3px solid #555; }
-        .callout-success { background: #f5f5f5; border-left: 3px solid #555; }
+        .callout-info, .callout-success { background: #f5f5f5; border-left: 3px solid #555; }
         .callout p { font-size: 12.5px; margin: 0; color: #000; }
         .callout-icon { font-size: 14px; margin-top: 1px; flex-shrink: 0; }
 
-        /* ── Badges ──────────────────────────────────────────────── */
         .badge {
             display: inline-block;
             padding: 1px 7px;
@@ -230,12 +220,7 @@
             background: #f0f0f0;
             color: #000;
         }
-        .badge-blue   { background: #f0f0f0; color: #000; }
-        .badge-green  { background: #f0f0f0; color: #000; }
-        .badge-amber  { background: #f0f0f0; color: #000; }
-        .badge-gray   { background: #f0f0f0; color: #000; }
 
-        /* ── Stat numbers ────────────────────────────────────────── */
         .stat-row {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -265,7 +250,7 @@
             display: block;
         }
 
-        /* ── Tables ──────────────────────────────────────────────── */
+        /* tabelle */
         .tbl {
             width: 100%;
             border-collapse: collapse;
@@ -291,10 +276,9 @@
         }
         .tbl tbody tr:nth-child(even) td { background: #fafafa; }
 
-        /* ── Code blocks ─────────────────────────────────────────── */
         .code-wrap {
             background: #f5f5f5;
-            overflow: hidden;
+            overflow-x: auto;
             margin: 10px 0;
             border: 1px solid #bbb;
         }
@@ -314,15 +298,14 @@
             color: #000;
             padding: 10px 14px;
             font-family: 'Courier New', Consolas, monospace;
-            font-size: 10.5px;
-            overflow-x: auto;
+            font-size: 9.5px;
+            overflow-x: visible;
             line-height: 1.5;
             white-space: pre;
         }
         .kw  { font-weight: bold; }
         .cmt { color: #666; font-style: italic; }
 
-        /* ── Workflow arrows ─────────────────────────────────────── */
         .workflow {
             display: flex;
             align-items: center;
@@ -365,7 +348,6 @@
         .wf-step.wf-approvato    { border-top-color: #000; }
         .wf-step.wf-respinto     { border-top-color: #000; }
 
-        /* ── Section divider ─────────────────────────────────────── */
         .section-divider {
             display: flex;
             align-items: center;
@@ -387,22 +369,32 @@
             background: #ccc;
         }
 
-        /* ── Print ───────────────────────────────────────────────── */
         @media print {
             body { background: white; padding: 0; }
-            .slide { border: none; margin: 0; }
+            .slide {
+                border: none;
+                margin: 0;
+                min-height: unset;
+                height: 100vh;
+                max-width: 100%;
+                overflow: hidden;
+                page-break-after: always;
+                page-break-inside: avoid;
+            }
+            .code-block { overflow: visible; white-space: pre-wrap; }
+            a[href]::after, a[href]::before { content: none !important; }
         }
     </style>
 </head>
 
 <body>
 
-<!-- SLIDE 1 — TITOLO -->
+<!-- slide 1 -->
 <div class="slide title-slide">
     <div class="slide-body">
         <div class="title-badge">&#9679; Progetto Universitario &nbsp;·&nbsp; A.A. 2025/2026</div>
         <h1>ESG<span>-</span>BALANCE</h1>
-        <p class="subtitle">Gestione integrata di bilanci aziendali e indicatori ESG<br>con architettura multi-ruolo e workflow completo</p>
+        <p class="subtitle">Piattaforma per la gestione di bilanci aziendali e indicatori ESG</p>
         <div class="title-divider"></div>
         <div class="title-meta">
             <span class="course">Corso di Basi di Dati — Informatica per il Management</span>
@@ -422,17 +414,17 @@
 </div>
 
 
-<!-- SLIDE 2 — PANORAMICA -->
+<!-- panoramica -->
 <div class="slide">
     <div class="slide-header">
-<h2>Panoramica del Progetto</h2>
+        <h2>Panoramica del Progetto</h2>
     </div>
     <div class="slide-body">
 
         <p style="margin-bottom:20px;">
-            <strong>ESG-BALANCE</strong> è un'applicazione web per la gestione dei <strong>bilanci di esercizio</strong>
-            aziendali e dei relativi <strong>indicatori ESG</strong> (Environmental, Social, Governance),
-            con un sistema di revisione multi-ruolo e workflow approvativo completo.
+            <strong>ESG-BALANCE</strong> è un'applicazione web che permette di gestire i <strong>bilanci aziendali</strong>
+            e collegarli agli <strong>indicatori ESG</strong> (Environmental, Social, Governance).
+            Prevede tre ruoli utente e un processo di revisione con approvazione o respingimento.
         </p>
 
         <div class="three-col" style="margin-bottom:20px;">
@@ -499,10 +491,10 @@
 </div>
 
 
-<!-- SLIDE 3 — SCHEMA E-R -->
+<!-- slide 3 -->
 <div class="slide">
     <div class="slide-header">
-<h2>Schema Entity-Relationship</h2>
+        <h2>Schema Entity-Relationship</h2>
     </div>
     <div class="slide-body">
         <div class="two-col">
@@ -553,10 +545,10 @@
 </div>
 
 
-<!-- SLIDE 4 — ANALISI RIDONDANZA -->
+<!-- ridondanza -->
 <div class="slide">
     <div class="slide-header">
-<h2>Analisi della Ridondanza — <code style="font-size:14px;">nr_bilanci</code></h2>
+        <h2>Analisi della Ridondanza — <code style="font-size:14px;">nr_bilanci</code></h2>
     </div>
     <div class="slide-body">
 
@@ -567,7 +559,7 @@
                     <thead><tr><th>Concetto</th><th>Tipo</th><th>Volume</th></tr></thead>
                     <tbody>
                         <tr><td><strong>aziende</strong></td><td>Entità</td><td>10</td></tr>
-                        <tr><td><strong>bilanci</strong></td><td>Entità</td><td>50 <small class="text-muted">(5 per azienda)</small></td></tr>
+                        <tr><td><strong>bilanci</strong></td><td>Entità</td><td>50 <small style="color:#888;">(5 per azienda)</small></td></tr>
                     </tbody>
                 </table>
 
@@ -638,7 +630,6 @@
                 </table>
 
                 <div class="callout callout-success" style="margin-top:14px;">
-                    <span class="callout-icon">&#10003;</span>
                     <p><strong>Decisione: si mantiene la ridondanza</strong> (40.5 &lt; 104.5).<br>
                     Il risparmio su OP2 (lettura batch 3×/mese) è determinante: la JOIN completa su 50 bilanci
                     costa 6× di più rispetto alla semplice lettura del campo <code>nr_bilanci</code>.
@@ -652,10 +643,10 @@
 </div>
 
 
-<!-- SLIDE 5 — DDL -->
+<!-- ddl -->
 <div class="slide">
     <div class="slide-header">
-<h2>DDL — Creazione Tabelle (estratto)</h2>
+        <h2>DDL — Creazione Tabelle (estratto)</h2>
     </div>
     <div class="slide-body">
         <div class="two-col">
@@ -714,10 +705,10 @@
 </div>
 
 
-<!-- SLIDE 6 — TRIGGER -->
+<!-- trigger -->
 <div class="slide">
     <div class="slide-header">
-<h2>Trigger — 4 totali</h2>
+        <h2>Trigger — 4 totali</h2>
     </div>
     <div class="slide-body">
         <div class="two-col">
@@ -740,12 +731,21 @@
                 <div class="code-wrap">
                     <div class="code-lang">SQL</div>
                     <div class="code-block"><span class="cmt">-- T3: AFTER INSERT ON bilanci</span>
-<span class="kw">UPDATE</span> aziende <span class="kw">SET</span> nr_bilanci <span class="op">=</span> nr_bilanci <span class="op">+</span> <span class="num">1</span>
-<span class="kw">WHERE</span> id <span class="op">=</span> NEW.id_azienda;
+<span class="kw">CREATE TRIGGER</span> <span class="fn">trg_incrementa_nr_bilanci</span>
+<span class="kw">AFTER INSERT ON</span> <span class="typ">bilanci</span> <span class="kw">FOR EACH ROW</span>
+<span class="kw">BEGIN</span>
+  <span class="kw">UPDATE</span> aziende <span class="kw">SET</span> nr_bilanci <span class="op">=</span> nr_bilanci <span class="op">+</span> <span class="num">1</span>
+  <span class="kw">WHERE</span> id <span class="op">=</span> NEW.id_azienda;
+<span class="kw">END</span>;
 
 <span class="cmt">-- T4: AFTER DELETE ON bilanci</span>
-<span class="kw">UPDATE</span> aziende <span class="kw">SET</span> nr_bilanci <span class="op">=</span> nr_bilanci <span class="op">-</span> <span class="num">1</span>
-<span class="kw">WHERE</span> id <span class="op">=</span> OLD.id_azienda;</div>
+<span class="kw">CREATE TRIGGER</span> <span class="fn">trg_decrementa_nr_bilanci</span>
+<span class="kw">AFTER DELETE ON</span> <span class="typ">bilanci</span> <span class="kw">FOR EACH ROW</span>
+<span class="kw">BEGIN</span>
+  <span class="kw">UPDATE</span> aziende <span class="kw">SET</span> nr_bilanci <span class="op">=</span>
+    <span class="fn">GREATEST</span>(nr_bilanci <span class="op">-</span> <span class="num">1</span>, <span class="num">0</span>)
+  <span class="kw">WHERE</span> id <span class="op">=</span> OLD.id_azienda;
+<span class="kw">END</span>;</div>
                 </div>
             </div>
             <div>
@@ -795,10 +795,10 @@
 </div>
 
 
-<!-- SLIDE 7 — STORED PROCEDURES -->
+<!-- stored procedures -->
 <div class="slide">
     <div class="slide-header">
-<h2>Stored Procedures — 14 totali</h2>
+        <h2>Stored Procedures — 14 totali</h2>
     </div>
     <div class="slide-body">
 
@@ -872,10 +872,10 @@
 </div>
 
 
-<!-- SLIDE 8 — QUERY -->
+<!-- query -->
 <div class="slide">
     <div class="slide-header">
-<h2>Query di Interrogazione</h2>
+        <h2>Query di Interrogazione</h2>
     </div>
     <div class="slide-body">
         <div class="two-col">
@@ -934,10 +934,10 @@
 </div>
 
 
-<!-- SLIDE 9 — VISTE -->
+<!-- viste -->
 <div class="slide">
     <div class="slide-header">
-<h2>Viste — 4 totali</h2>
+        <h2>Viste — 4 totali</h2>
     </div>
     <div class="slide-body">
 
@@ -1006,10 +1006,10 @@
 </div>
 
 
-<!-- SLIDE 10 — SICUREZZA E APPLICAZIONE -->
+<!-- slide 10 -->
 <div class="slide">
     <div class="slide-header">
-<h2>Sicurezza e Applicazione Web</h2>
+        <h2>Sicurezza e Applicazione Web</h2>
     </div>
     <div class="slide-body">
         <div class="two-col">
@@ -1094,10 +1094,10 @@
 </div>
 
 
-<!-- SLIDE 11 — CONCLUSIONI -->
+<!-- conclusioni -->
 <div class="slide">
     <div class="slide-header">
-<h2>Conclusioni</h2>
+        <h2>Conclusioni</h2>
     </div>
     <div class="slide-body">
 
@@ -1122,7 +1122,7 @@
 
         <div class="three-col">
             <div class="card card-accent">
-                <h3 style="color:var(--accent-dark);">Database</h3>
+                <h3>Database</h3>
                 <ul>
                     <li>17 tabelle relazionali in BCNF</li>
                     <li>14 stored procedures con transazioni</li>
@@ -1157,8 +1157,7 @@
         </div>
 
         <div class="callout callout-success" style="margin-top:20px;">
-            <span class="callout-icon">&#10003;</span>
-            <p style="color:var(--green);font-weight:500;">
+            <p style="font-weight:500;">
                 Progetto realizzato per l'esame di <strong>Basi di Dati</strong> —
                 Corso di Informatica per il Management · Università di Bologna · A.A. 2025/2026 ·
                 <strong>Tesfaye Venieri</strong> — Matricola 0000990286

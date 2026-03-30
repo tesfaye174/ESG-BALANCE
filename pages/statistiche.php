@@ -1,16 +1,17 @@
 <?php
-
 $page_title = 'Statistiche';
+
 require_once __DIR__ . '/../includes/auth.php';
 require_once __DIR__ . '/../includes/db.php';
 require_once __DIR__ . '/../includes/functions.php';
 
 requireLogin();
 
+// tutte le statistiche vengono dalle viste SQL definite in views.sql
 $num_aziende = queryOne("SELECT * FROM v_num_aziende");
 $num_revisori = queryOne("SELECT * FROM v_num_revisori");
-$affidabilita = query("SELECT * FROM v_affidabilita_aziende");
-$classifica_esg = query("SELECT * FROM v_classifica_bilanci_esg");
+$affidabilita = query("SELECT * FROM v_affidabilita_aziende");       // ordinata per percentuale decrescente
+$classifica_esg = query("SELECT * FROM v_classifica_bilanci_esg");   // ordinata per numero indicatori decrescente
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -49,7 +50,7 @@ require_once __DIR__ . '/../includes/header.php';
                 <?php if (!empty($affidabilita)): ?>
                     <h1 class="display-4 fw-bold text-accent"><?php echo htmlspecialchars($affidabilita[0]['nome']); ?></h1>
                     <p class="mb-0">Azienda più affidabile
-                        (<?php echo $affidabilita[0]['percentuale_affidabilita']; ?>%)</p>
+                        (<?php echo htmlspecialchars((string)$affidabilita[0]['percentuale_affidabilita']); ?>%)</p>
                 <?php else: ?>
                     <h1 class="display-4 fw-bold">—</h1>
                     <p class="mb-0">Nessun dato disponibile</p>
@@ -64,7 +65,7 @@ require_once __DIR__ . '/../includes/header.php';
     <div class="col-md-6">
         <div class="statistiche-card card h-100">
             <div class="card-header">
-                <i class="bi bi-trophy"></i> Classifica Affidabilita' Aziende
+                <i class="bi bi-trophy"></i> Classifica Affidabilità Aziende
             </div>
             <div class="card-body">
                 <?php if (empty($affidabilita)): ?>
@@ -77,7 +78,7 @@ require_once __DIR__ . '/../includes/header.php';
                                 <th>Azienda</th>
                                 <th>Bilanci Giudicati</th>
                                 <th>Approvati Puri</th>
-                                <th>Affidabilita'</th>
+                                <th>Affidabilità</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -99,7 +100,7 @@ require_once __DIR__ . '/../includes/header.php';
                                     <td><?php echo $a['bilanci_giudicati']; ?></td>
                                     <td><?php echo $a['bilanci_approvati_puri']; ?></td>
                                     <td>
-                                        <span class="statistiche-badge"><?php echo $a['percentuale_affidabilita']; ?>%</span>
+                                        <span class="statistiche-badge"><?php echo htmlspecialchars((string)$a['percentuale_affidabilita']); ?>%</span>
                                     </td>
                                 </tr>
                             <?php $pos++;
@@ -137,7 +138,7 @@ require_once __DIR__ . '/../includes/header.php';
                                     <td><?php echo $pos; ?></td>
                                     <td><?php echo htmlspecialchars($b['azienda']); ?></td>
                                     <td><?php echo $b['data_creazione']; ?></td>
-                                    <td><span class="statistiche-badge text-uppercase"><?php echo $b['stato']; ?></span></td>
+                                    <td><span class="statistiche-badge text-uppercase"><?php echo htmlspecialchars($b['stato']); ?></span></td>
                                     <td>
                                         <span class="statistiche-badge"><?php echo $b['num_indicatori_esg']; ?></span>
                                     </td>

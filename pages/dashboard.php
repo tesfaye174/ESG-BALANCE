@@ -10,6 +10,7 @@ requireLogin();
 $ruolo    = currentRole();
 $username = currentUser();
 
+// gestisco l'aggiunta di email secondarie — ogni utente può averne più di una
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'aggiungi_email') {
     if (!verifyCsrf()) {
         setFlash('danger', 'Token di sicurezza non valido.');
@@ -26,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             setFlash('success', 'Email aggiunta con successo.');
         } catch (PDOException $e) {
             if ($e->getCode() == 23000) {
-                setFlash('danger', 'Questo indirizzo email e\' gia\' presente.');
+                setFlash('danger', 'Questo indirizzo email è già presente.');
             } else {
                 error_log('ESG-BALANCE Error: ' . $e->getMessage());
                 setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
@@ -39,28 +40,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
 
 $emails = query("SELECT email FROM email_utente WHERE username = ? ORDER BY email", [$username]);
 
-// preparo i dati per i grafici Chart.js prima di includere l'header HTML
-// (non posso fare query dopo aver iniziato l'output)
+// dati per i grafici
 $bilanci_assegnati = [];
 $competenze        = [];
 $aziende           = [];
 
-$_statiLbls = []; $_statiData = []; $_statiClrs = [];
-$_tipiLbls  = []; $_tipiData  = []; $_tipiClrs  = [];
-$_revLbls   = []; $_revData   = []; $_revPct    = [];
-$_revStLbls = []; $_revStData = []; $_revStClrs = [];
-$_compLbls  = []; $_compData  = [];
-$_azLbls    = []; $_azData    = [];
-$_respStLbls= []; $_respStData= []; $_respStClrs= [];
+$statiLbls = []; $statiData = []; $statiClrs = [];
+$tipiLbls  = []; $tipiData  = []; $tipiClrs  = [];
+$revLbls   = []; $revData   = []; $revPct    = [];
+$revStLbls = []; $revStData = []; $revStClrs = [];
+$compLbls  = []; $compData  = [];
+$azLbls    = []; $azData    = [];
+$respStLbls= []; $respStData= []; $respStClrs= [];
+$rilLbls   = []; $rilData   = []; $rilClrs   = [];
 
-// colori degli stati dei bilanci, coerenti con i badge CSS
-$_STATI_COLORS = [
+$statiColors = [
     'bozza'        => '#6c757d',
     'in_revisione' => '#f59e0b',
     'approvato'    => '#10b981',
     'respinto'     => '#ef4444',
 ];
 
+// carico i dati in base al ruolo — ogni ruolo vede solo i propri dati
 if ($ruolo === 'amministratore') {
 
     $chart_stati = query("SELECT stato, COUNT(*) AS n FROM bilanci GROUP BY stato");
@@ -68,22 +69,35 @@ if ($ruolo === 'amministratore') {
     $chart_rev   = query("SELECT username, nr_revisioni, ROUND(indice_affidabilita*100) AS pct FROM revisori ORDER BY nr_revisioni DESC");
 
     foreach ($chart_stati as $r) {
-        $_statiLbls[] = str_replace('_', ' ', ucfirst($r['stato']));
-        $_statiData[] = (int)$r['n'];
-        $_statiClrs[] = $_STATI_COLORS[$r['stato']] ?? '#adb5bd';
+        $statiLbls[] = str_replace('_', ' ', ucfirst($r['stato']));
+        $statiData[] = (int)$r['n'];
+        $statiClrs[] = $statiColors[$r['stato']] ?? '#adb5bd';
     }
 
-    $_tipiMap = ['ambientale' => '#10b981', 'sociale' => '#3b82f6', 'governance' => '#8b5cf6', 'generico' => '#6c757d'];
+    $tipiMap = ['ambientale' => '#10b981', 'sociale' => '#3b82f6', 'governance' => '#8b5cf6', 'generico' => '#6c757d'];
     foreach ($chart_tipi as $r) {
-        $_tipiLbls[] = ucfirst($r['tipo']);
-        $_tipiData[] = (int)$r['n'];
-        $_tipiClrs[] = $_tipiMap[$r['tipo']] ?? '#adb5bd';
+        $tipiLbls[] = ucfirst($r['tipo']);
+        $tipiData[] = (int)$r['n'];
+        $tipiClrs[] = $tipiMap[$r['tipo']] ?? '#adb5bd';
+    }
+
+    $chart_ril_esg = query(
+        "SELECT COALESCE(tipo, 'generico') AS tipo, ROUND(AVG(rilevanza), 1) AS media
+         FROM indicatori_esg
+         WHERE rilevanza IS NOT NULL
+         GROUP BY tipo
+         ORDER BY media DESC"
+    );
+    foreach ($chart_ril_esg as $r) {
+        $rilLbls[] = ucfirst($r['tipo']);
+        $rilData[] = (float)$r['media'];
+        $rilClrs[] = $tipiMap[$r['tipo']] ?? '#adb5bd';
     }
 
     foreach ($chart_rev as $r) {
-        $_revLbls[] = $r['username'];
-        $_revData[] = (int)$r['nr_revisioni'];
-        $_revPct[]  = (int)$r['pct'];
+        $revLbls[] = $r['username'];
+        $revData[] = (int)$r['nr_revisioni'];
+        $revPct[]  = (int)$r['pct'];
     }
 
 } elseif ($ruolo === 'revisore') {
@@ -107,14 +121,14 @@ if ($ruolo === 'amministratore') {
         $statiCnt[$b['stato']] = ($statiCnt[$b['stato']] ?? 0) + 1;
     }
     foreach ($statiCnt as $stato => $cnt) {
-        $_revStLbls[] = str_replace('_', ' ', ucfirst($stato));
-        $_revStData[] = $cnt;
-        $_revStClrs[] = $_STATI_COLORS[$stato] ?? '#adb5bd';
+        $revStLbls[] = str_replace('_', ' ', ucfirst($stato));
+        $revStData[] = $cnt;
+        $revStClrs[] = $statiColors[$stato] ?? '#adb5bd';
     }
 
     foreach ($competenze as $c) {
-        $_compLbls[] = $c['nome_competenza'];
-        $_compData[] = (int)$c['livello'];
+        $compLbls[] = $c['nome_competenza'];
+        $compData[] = (int)$c['livello'];
     }
 
 } elseif ($ruolo === 'responsabile') {
@@ -131,16 +145,15 @@ if ($ruolo === 'amministratore') {
     );
 
     foreach ($chart_stati_resp as $r) {
-        $_respStLbls[] = str_replace('_', ' ', ucfirst($r['stato']));
-        $_respStData[] = (int)$r['n'];
-        $_respStClrs[] = $_STATI_COLORS[$r['stato']] ?? '#adb5bd';
+        $respStLbls[] = str_replace('_', ' ', ucfirst($r['stato']));
+        $respStData[] = (int)$r['n'];
+        $respStClrs[] = $statiColors[$r['stato']] ?? '#adb5bd';
     }
     foreach ($aziende as $a) {
-        $_azLbls[] = $a['nome'];
-        $_azData[] = (int)$a['nr_bilanci'];
+        $azLbls[] = $a['nome'];
+        $azData[] = (int)$a['nr_bilanci'];
     }
 }
-// fine preparazione dati per i grafici
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
@@ -173,7 +186,7 @@ require_once __DIR__ . '/../includes/header.php';
                 <div class="card-body text-center">
                     <span class="dashboard-icon"><i class="bi bi-graph-up"></i></span>
                     <h5 class="card-title mt-3">Indicatori ESG</h5>
-                    <p class="card-text">Popola la lista degli indicatori ESG.</p>
+                    <p class="card-text">Crea e gestisci gli indicatori ESG da associare ai bilanci.</p>
                     <a href="admin/indicatori.php" class="btn dashboard-btn btn-outline-accent">Gestisci</a>
                 </div>
             </div>
@@ -217,6 +230,19 @@ require_once __DIR__ . '/../includes/header.php';
                 <div class="card-body d-flex align-items-center justify-content-center">
                     <div style="position:relative;height:250px;width:100%;">
                         <canvas id="chartRevisori"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4 mt-2">
+        <div class="col-md-12">
+            <div class="dashboard-card card h-100">
+                <div class="card-header"><i class="bi bi-graph-up-arrow me-2 text-accent"></i>Rilevanza Media Indicatori ESG per Tipo</div>
+                <div class="card-body d-flex align-items-center justify-content-center">
+                    <div style="position:relative;height:220px;width:100%;">
+                        <canvas id="chartRilevanzaEsg"></canvas>
                     </div>
                 </div>
             </div>
@@ -421,6 +447,7 @@ require_once __DIR__ . '/../includes/header.php';
 Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.font.size   = 13;
 
+// funzione helper: se i dati sono vuoti sostituisce il canvas con un messaggio
 const _empty = (el, msg) => {
     const p = document.createElement('p');
     p.className = 'text-muted text-center pt-4';
@@ -432,18 +459,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <?php if ($ruolo === 'amministratore'): ?>
 
-    // ogni grafico è in una IIFE (funzione auto-invocante) per isolare le variabili
-
-    // stato bilanci — donut
     (function () {
-        const data = <?= json_encode($_statiData) ?>;
+        const data = <?= json_encode($statiData) ?>;
         const el   = document.getElementById('chartStati');
         if (!data.length) { _empty(el, 'Nessun bilancio presente.'); return; }
         new Chart(el, {
             type: 'doughnut',
             data: {
-                labels: <?= json_encode($_statiLbls) ?>,
-                datasets: [{ data, backgroundColor: <?= json_encode($_statiClrs) ?>, borderWidth: 2, borderColor: '#fff' }]
+                labels: <?= json_encode($statiLbls) ?>,
+                datasets: [{ data, backgroundColor: <?= json_encode($statiClrs) ?>, borderWidth: 2, borderColor: '#fff' }]
             },
             options: {
                 maintainAspectRatio: false,
@@ -453,16 +477,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     })();
 
-    // indicatori per tipo — donut
     (function () {
-        const data = <?= json_encode($_tipiData) ?>;
+        const data = <?= json_encode($tipiData) ?>;
         const el   = document.getElementById('chartTipi');
         if (!data.length) { _empty(el, 'Nessun indicatore presente.'); return; }
         new Chart(el, {
             type: 'doughnut',
             data: {
-                labels: <?= json_encode($_tipiLbls) ?>,
-                datasets: [{ data, backgroundColor: <?= json_encode($_tipiClrs) ?>, borderWidth: 2, borderColor: '#fff' }]
+                labels: <?= json_encode($tipiLbls) ?>,
+                datasets: [{ data, backgroundColor: <?= json_encode($tipiClrs) ?>, borderWidth: 2, borderColor: '#fff' }]
             },
             options: {
                 maintainAspectRatio: false,
@@ -472,9 +495,37 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     })();
 
-    // revisori — barre raggruppate (nr_revisioni + affidabilità%)
+    // chart rilevanza media ESG per tipo
     (function () {
-        const labels = <?= json_encode($_revLbls) ?>;
+        const labels = <?= json_encode($rilLbls) ?>;
+        const el     = document.getElementById('chartRilevanzaEsg');
+        if (!labels.length) { _empty(el, 'Nessun indicatore con rilevanza impostata.'); return; }
+        new Chart(el, {
+            type: 'bar',
+            data: {
+                labels,
+                datasets: [{
+                    label: 'Rilevanza media (0-10)',
+                    data: <?= json_encode($rilData) ?>,
+                    backgroundColor: <?= json_encode($rilClrs) ?>,
+                    borderRadius: 4,
+                    barPercentage: 0.5
+                }]
+            },
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { min: 0, max: 10, ticks: { stepSize: 2 }, grid: { color: 'rgba(0,0,0,0.06)' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    })();
+
+    // chart revisori
+    (function () {
+        const labels = <?= json_encode($revLbls) ?>;
         const el     = document.getElementById('chartRevisori');
         if (!labels.length) { _empty(el, 'Nessun revisore registrato.'); return; }
         new Chart(el, {
@@ -484,14 +535,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 datasets: [
                     {
                         label: 'Nr. Revisioni',
-                        data: <?= json_encode($_revData) ?>,
+                        data: <?= json_encode($revData) ?>,
                         backgroundColor: '#2563eb',
                         borderRadius: 4,
                         barPercentage: 0.45
                     },
                     {
                         label: 'Affidabilità (%)',
-                        data: <?= json_encode($_revPct) ?>,
+                        data: <?= json_encode($revPct) ?>,
                         backgroundColor: '#10b981',
                         borderRadius: 4,
                         barPercentage: 0.45
@@ -511,16 +562,15 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <?php elseif ($ruolo === 'revisore'): ?>
 
-    // bilanci assegnati per stato — donut
     (function () {
-        const data = <?= json_encode($_revStData) ?>;
+        const data = <?= json_encode($revStData) ?>;
         const el   = document.getElementById('chartRevStati');
         if (!data.length) { _empty(el, 'Nessun bilancio assegnato.'); return; }
         new Chart(el, {
             type: 'doughnut',
             data: {
-                labels: <?= json_encode($_revStLbls) ?>,
-                datasets: [{ data, backgroundColor: <?= json_encode($_revStClrs) ?>, borderWidth: 2, borderColor: '#fff' }]
+                labels: <?= json_encode($revStLbls) ?>,
+                datasets: [{ data, backgroundColor: <?= json_encode($revStClrs) ?>, borderWidth: 2, borderColor: '#fff' }]
             },
             options: {
                 maintainAspectRatio: false,
@@ -530,9 +580,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     })();
 
-    // competenze — barre orizzontali (indexAxis: 'y')
     (function () {
-        const labels = <?= json_encode($_compLbls) ?>;
+        const labels = <?= json_encode($compLbls) ?>;
         const el     = document.getElementById('chartComp');
         if (!labels.length) { _empty(el, 'Nessuna competenza inserita.'); return; }
         new Chart(el, {
@@ -541,7 +590,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 labels,
                 datasets: [{
                     label: 'Livello',
-                    data: <?= json_encode($_compData) ?>,
+                    data: <?= json_encode($compData) ?>,
                     backgroundColor: '#2563eb',
                     borderRadius: 4,
                     barPercentage: 0.6
@@ -561,9 +610,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
 <?php elseif ($ruolo === 'responsabile'): ?>
 
-    // bilanci per azienda — barre verticali
     (function () {
-        const labels = <?= json_encode($_azLbls) ?>;
+        const labels = <?= json_encode($azLbls) ?>;
         const el     = document.getElementById('chartAziende');
         if (!labels.length) { _empty(el, 'Nessuna azienda registrata.'); return; }
         new Chart(el, {
@@ -572,7 +620,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 labels,
                 datasets: [{
                     label: 'Nr. Bilanci',
-                    data: <?= json_encode($_azData) ?>,
+                    data: <?= json_encode($azData) ?>,
                     backgroundColor: '#2563eb',
                     borderRadius: 4,
                     barPercentage: 0.5
@@ -589,16 +637,15 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     })();
 
-    // stato bilanci — donut
     (function () {
-        const data = <?= json_encode($_respStData) ?>;
+        const data = <?= json_encode($respStData) ?>;
         const el   = document.getElementById('chartRespStati');
         if (!data.length) { _empty(el, 'Nessun bilancio presente.'); return; }
         new Chart(el, {
             type: 'doughnut',
             data: {
-                labels: <?= json_encode($_respStLbls) ?>,
-                datasets: [{ data, backgroundColor: <?= json_encode($_respStClrs) ?>, borderWidth: 2, borderColor: '#fff' }]
+                labels: <?= json_encode($respStLbls) ?>,
+                datasets: [{ data, backgroundColor: <?= json_encode($respStClrs) ?>, borderWidth: 2, borderColor: '#fff' }]
             },
             options: {
                 maintainAspectRatio: false,

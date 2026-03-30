@@ -11,6 +11,7 @@ $username = currentUser();
 $id_bilancio = (int)($_GET['bilancio'] ?? 0);
 $id_azienda  = (int)($_GET['azienda'] ?? 0);
 
+// verifico ownership: il bilancio deve appartenere a un'azienda del responsabile loggato
 $bilancio = null;
 if ($id_bilancio > 0 && $id_azienda > 0) {
     $bilancio = queryOne(
@@ -33,30 +34,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
     if ($bilancio['stato'] !== 'bozza') {
-        setFlash('danger', 'Non puoi modificare un bilancio che non e\' piu\' in bozza.');
+        setFlash('danger', 'Non puoi modificare un bilancio che non è più in bozza.');
         header("Location: indicatori_bilancio.php?bilancio={$id_bilancio}&azienda={$id_azienda}");
         exit;
     }
 
-    $nome_voce       = $_POST['nome_voce'] ?? '';
-    $nome_indicatore = $_POST['nome_indicatore'] ?? '';
-    $valore_ind      = $_POST['valore_indicatore'] ?? '';
-    $fonte           = trim($_POST['fonte'] ?? '');
-    $data_rilev      = $_POST['data_rilevazione'] ?? '';
+    $nome_voce          = $_POST['nome_voce'] ?? '';
+    $nome_indicatore    = $_POST['nome_indicatore'] ?? '';
+    $valore_indicatore  = $_POST['valore_indicatore'] ?? '';
+    $fonte              = trim($_POST['fonte'] ?? '');
+    $data_rilevazione   = $_POST['data_rilevazione'] ?? '';
 
-    if ($nome_voce === '' || $nome_indicatore === '' || $valore_ind === '' || $fonte === '' || $data_rilev === '') {
+    if ($nome_voce === '' || $nome_indicatore === '' || $valore_indicatore === '' || $fonte === '' || $data_rilevazione === '') {
         setFlash('danger', 'Compila tutti i campi.');
-    } elseif (!is_numeric($valore_ind)) {
+    } elseif (!is_numeric($valore_indicatore)) {
         setFlash('danger', 'Il valore indicatore deve essere un numero valido.');
+    // doppio controllo sulla data: prima la creazione, poi il confronto per evitare date "fantasma" come 31 febbraio
+    } elseif (($dt = DateTime::createFromFormat('Y-m-d', $data_rilevazione)) === false || $dt->format('Y-m-d') !== $data_rilevazione) {
+        setFlash('danger', 'La data di rilevazione non è valida (formato atteso: AAAA-MM-GG).');
     } else {
         try {
+            // collego indicatore alla voce
             execSP('sp_collega_indicatore_voce', [
                 $id_bilancio,
                 $nome_voce,
                 $nome_indicatore,
-                $valore_ind,
+                $valore_indicatore,
                 $fonte,
-                $data_rilev
+                $data_rilevazione
             ]);
             logEvent(
                 'collegamento_indicatore',
@@ -65,7 +70,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             setFlash('success', 'Indicatore ESG collegato alla voce contabile.');
         } catch (PDOException $e) {
             error_log('ESG-BALANCE Error: ' . $e->getMessage());
-            setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
+            setFlash('danger', 'Errore nel collegamento dell\'indicatore.');
         }
     }
     header("Location: indicatori_bilancio.php?bilancio={$id_bilancio}&azienda={$id_azienda}");
@@ -77,6 +82,7 @@ $valori = query(
     [$id_bilancio]
 );
 
+// join con indicatori_esg per mostrare anche il tipo (ambientale/sociale/governance)
 $collegati = query(
     "SELECT vi.*, ie.tipo
      FROM voci_indicatori vi
@@ -153,7 +159,7 @@ require_once __DIR__ . '/../../includes/header.php';
             <div class="card-header bg-accent text-white">Collega Indicatore ESG</div>
             <div class="card-body">
                 <?php if ($bilancio['stato'] !== 'bozza'): ?>
-                    <p class="text-muted">Il bilancio non e' piu' in bozza, non puoi collegare nuovi indicatori.</p>
+                    <p class="text-muted">Il bilancio non è più in bozza, non puoi collegare nuovi indicatori.</p>
                 <?php elseif (empty($valori)): ?>
                     <p class="text-muted">Inserisci prima i valori delle voci contabili nel bilancio.</p>
                 <?php else: ?>

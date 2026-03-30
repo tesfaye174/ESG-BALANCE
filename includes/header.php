@@ -1,5 +1,6 @@
 <?php
 
+// header condiviso — HTML head e navbar
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
@@ -8,10 +9,11 @@ $current_user = $_SESSION['username'] ?? null;
 $current_role = $_SESSION['ruolo'] ?? null;
 $base_url = defined('BASE_URL') ? BASE_URL : '/ESG-BALANCE';
 
-function nav_active($path)
+// evidenzia la voce di menu attiva
+function nav_active(string $path): string
 {
-    $req = $_SERVER['REQUEST_URI'] ?? '';
-    return (strpos($req, $path) !== false) ? 'active' : '';
+    $req = parse_url($_SERVER['REQUEST_URI'] ?? '', PHP_URL_PATH) ?? '';
+    return ($req === $path || str_contains($req, $path)) ? 'active' : '';
 }
 ?>
 <!DOCTYPE html>
@@ -38,7 +40,7 @@ function nav_active($path)
                 <i class="bi bi-globe-americas fs-3"></i> <span>ESG-BALANCE</span>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav"
-                aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                aria-controls="mainNav" aria-expanded="false" aria-label="Mostra menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="mainNav">
@@ -55,7 +57,8 @@ function nav_active($path)
                                 class="bi bi-bar-chart-line me-1"></i>Statistiche</a>
                     </li>
 
-                    <?php if ($current_role === 'amministratore'): ?>
+                    <?php // menu diverso in base al ruolo dell'utente loggato
+                    if ($current_role === 'amministratore'): ?>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle <?php echo nav_active('/admin/'); ?>" href="#"
                             id="adminDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">Admin</a>
@@ -95,7 +98,7 @@ function nav_active($path)
                                     href="<?php echo $base_url; ?>/pages/responsabile/bilancio.php"><i
                                         class="bi bi-journal-text me-2"></i>Bilanci</a></li>
                             <li><a class="dropdown-item"
-                                    href="<?php echo $base_url; ?>/pages/responsabile/bilancio.php"><i
+                                    href="<?php echo $base_url; ?>/pages/responsabile/indicatori_bilancio.php"><i
                                         class="bi bi-graph-up-arrow me-2"></i>Indicatori Bilancio</a></li>
                         </ul>
                     </li>
@@ -115,7 +118,8 @@ function nav_active($path)
                         </span>
                     </li>
                     <li class="nav-item">
-                        <form method="POST" action="<?php echo $base_url; ?>/pages/login.php" class="d-inline">
+                        <?php // logout via POST con CSRF token per evitare logout forzato da link esterni ?>
+                    <form method="POST" action="<?php echo $base_url; ?>/pages/login.php" class="d-inline">
                             <input type="hidden" name="logout" value="1">
                             <input type="hidden" name="csrf_token" value="<?php echo csrfToken(); ?>">
                             <button type="submit" class="nav-link text-danger btn btn-link p-0 border-0 align-baseline">

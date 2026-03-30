@@ -13,45 +13,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: indicatori.php');
         exit;
     }
-    $nome       = trim($_POST['nome'] ?? '');
-    $rilevanza  = $_POST['rilevanza'] ?? '';
-    $tipo       = $_POST['tipo'] ?? '';
-    $cod_norm   = trim($_POST['codice_normativa'] ?? '');
-    $ambito     = trim($_POST['ambito_sociale'] ?? '');
-    $frequenza  = trim($_POST['frequenza_rilevazione'] ?? '');
+    $nome      = trim($_POST['nome'] ?? '');
+    $rilevanza = $_POST['rilevanza'] ?? '';
+    $tipo      = $_POST['tipo'] ?? '';
+    $cod_norm  = trim($_POST['codice_normativa'] ?? '');
+    $ambito    = trim($_POST['ambito_sociale'] ?? '');
+    $frequenza = trim($_POST['frequenza_rilevazione'] ?? '');
 
-    $img_path = null;
-    if (!empty($_FILES['immagine']['name'])) {
-        $allowed_ext = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
-        $allowed_mime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-        $ext = strtolower(pathinfo($_FILES['immagine']['name'], PATHINFO_EXTENSION));
-        $finfo = new finfo(FILEINFO_MIME_TYPE);
-        $mime = $finfo->file($_FILES['immagine']['tmp_name']);
-        if (in_array($ext, $allowed_ext) && in_array($mime, $allowed_mime)) {
-            $upload_dir = realpath(__DIR__ . '/../../assets/uploads') . DIRECTORY_SEPARATOR;
-            $img_name = bin2hex(random_bytes(16)) . '.' . $ext;
-            $dest = $upload_dir . $img_name;
-            // Verifica che il path di destinazione sia dentro la directory di upload
-            if (strpos(realpath(dirname($dest)) . DIRECTORY_SEPARATOR, $upload_dir) !== 0) {
-                setFlash('danger', 'Percorso di upload non valido.');
-                header('Location: indicatori.php');
-                exit;
-            }
-            move_uploaded_file($_FILES['immagine']['tmp_name'], $dest);
-            $img_path = 'assets/uploads/' . $img_name;
-        } else {
-            setFlash('danger', 'Formato immagine non valido. Sono ammessi: JPEG, PNG, GIF, WebP.');
-            header('Location: indicatori.php');
-            exit;
-        }
-    }
+    $img_path = uploadImmagine('immagine', 'indicatori.php');
 
     if ($nome === '') {
-        setFlash('danger', 'Il nome dell\'indicatore e\' obbligatorio.');
-    } elseif ($rilevanza !== '' && (!is_numeric($rilevanza) || (float)$rilevanza < 0 || (float)$rilevanza > 10)) {
-        setFlash('danger', 'La rilevanza deve essere un numero tra 0 e 10.');
+        setFlash('danger', 'Il nome dell\'indicatore è obbligatorio.');
+    } elseif ($rilevanza !== '' && (!ctype_digit((string)$rilevanza) || (int)$rilevanza < 0 || (int)$rilevanza > 10)) {
+        setFlash('danger', 'La rilevanza deve essere un numero intero tra 0 e 10.');
+    // validazione specifica per sottotipo — rispecchia la gerarchia ISA dello schema
     } elseif ($tipo === 'ambientale' && $cod_norm === '') {
-        setFlash('danger', 'Il codice normativa e\' obbligatorio per gli indicatori ambientali.');
+        setFlash('danger', 'Il codice normativo è obbligatorio per gli indicatori ambientali.');
     } elseif ($tipo === 'sociale' && ($ambito === '' || $frequenza === '')) {
         setFlash('danger', 'Ambito sociale e frequenza di rilevazione sono obbligatori per gli indicatori sociali.');
     } else {
@@ -59,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             execSP('sp_inserisci_indicatore_esg', [
                 $nome,
                 $img_path,
-                $rilevanza ?: null,
+                ($rilevanza !== '' ? (int)$rilevanza : null),
                 $tipo ?: '',
                 $cod_norm ?: '',
                 $ambito ?: '',
@@ -69,10 +46,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             setFlash('success', 'Indicatore ESG aggiunto.');
         } catch (PDOException $e) {
             if ($e->getCode() == 23000) {
-                setFlash('danger', 'Indicatore gia\' esistente.');
+                setFlash('danger', 'Indicatore già esistente.');
             } else {
                 error_log('ESG-BALANCE Error: ' . $e->getMessage());
-                setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
+                setFlash('danger', 'Errore nella creazione dell\'indicatore.');
             }
         }
     }
@@ -80,6 +57,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
+// uso LEFT JOIN per recuperare i dettagli di tutti i sottotipi — null se non applicabile
 $indicatori = query(
     "SELECT i.nome, i.rilevanza, i.tipo, i.immagine,
             ia.codice_normativa,
@@ -111,7 +89,7 @@ require_once __DIR__ . '/../../includes/header.php';
                     <div class="mb-3">
                         <label for="rilevanza" class="form-label">Rilevanza (0-10)</label>
                         <input type="number" class="form-control" id="rilevanza" name="rilevanza" min="0" max="10"
-                            step="0.1">
+                            step="1">
                     </div>
                     <div class="mb-3">
                         <label for="tipo" class="form-label">Tipo</label>
@@ -207,6 +185,7 @@ require_once __DIR__ . '/../../includes/header.php';
 </div>
 
 <script>
+    // mostro/nascondo i campi specifici per sottotipo in base alla selezione
     document.getElementById('tipo').addEventListener('change', function() {
         document.getElementById('campi_ambientale').style.display = this.value === 'ambientale' ? 'block' : 'none';
         document.getElementById('campi_sociale').style.display = this.value === 'sociale' ? 'block' : 'none';

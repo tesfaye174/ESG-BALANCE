@@ -13,31 +13,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         header('Location: assegna_revisore.php');
         exit;
     }
-    $revisore   = $_POST['revisore'] ?? '';
-    $bilancio   = (int)($_POST['bilancio'] ?? 0);
+    $revisore = $_POST['revisore'] ?? '';
+    $bilancio = (int)($_POST['bilancio'] ?? 0);
 
     if ($revisore === '' || $bilancio === 0) {
         setFlash('danger', 'Seleziona un revisore e un bilancio.');
     } else {
         try {
+            // salvo lo stato prima dell'assegnazione per loggare il cambio se avviene (bozza → in_revisione)
+            $stato_prima = queryOne("SELECT stato FROM bilanci WHERE id = ?", [$bilancio]);
             execSP('sp_associa_revisore_bilancio', [$revisore, $bilancio]);
             logEvent('assegnazione_revisore', "Revisore {$revisore} assegnato al bilancio #{$bilancio}");
 
-            // la SP cambia automaticamente lo stato a 'in_revisione' se è il primo revisore assegnato
-            // rileggo lo stato per loggare il cambio se è avvenuto
-            $bil_stato = queryOne("SELECT stato FROM bilanci WHERE id = ?", [$bilancio]);
-            if ($bil_stato && $bil_stato['stato'] === 'in_revisione') {
-                logEvent('cambio_stato_bilancio', "Bilancio #{$bilancio}: stato cambiato a 'in_revisione'");
+            $stato_dopo = queryOne("SELECT stato FROM bilanci WHERE id = ?", [$bilancio]);
+            if ($stato_prima && $stato_dopo && $stato_prima['stato'] !== $stato_dopo['stato']) {
+                // il trigger T1 ha cambiato lo stato automaticamente dopo l'INSERT in revisioni
+                logEvent('cambio_stato_bilancio', "Bilancio #{$bilancio}: stato cambiato da '{$stato_prima['stato']}' a '{$stato_dopo['stato']}'");
             }
 
-            setFlash('success', 'Revisore assegnato al bilancio.');
+            setFlash('success', 'Revisore assegnato con successo.');
         } catch (PDOException $e) {
-            // 23000 = questo revisore e' gia' assegnato a questo bilancio (PK duplicata)
             if ($e->getCode() == 23000) {
-                setFlash('danger', 'Questo revisore e\' gia\' assegnato a questo bilancio.');
+                setFlash('danger', 'Questo revisore è già assegnato a questo bilancio.');
             } else {
                 error_log('ESG-BALANCE Error: ' . $e->getMessage());
-                setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
+                setFlash('danger', 'Errore nell\'assegnazione del revisore.');
             }
         }
     }
@@ -45,13 +45,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
-$revisori = query("SELECT r.username, u.luogo_nascita, r.nr_revisioni, r.indice_affidabilita
-                    FROM revisori r JOIN utenti u ON u.username = r.username
-                    ORDER BY r.username");
+// dati per popolare i select — mostro anche nr_revisioni per aiutare l'admin nella scelta
+$revisori = query(
+    "SELECT r.username, r.nr_revisioni, r.indice_affidabilita
+     FROM revisori r
+     JOIN utenti u ON u.username = r.username
+     ORDER BY r.username"
+);
 
-$bilanci = query("SELECT b.id, b.data_creazione, b.stato, a.nome AS azienda
-                   FROM bilanci b JOIN aziende a ON a.id = b.id_azienda
-                   ORDER BY b.data_creazione DESC");
+$bilanci = query(
+    "SELECT b.id, b.data_creazione, b.stato, a.nome AS azienda
+     FROM bilanci b
+     JOIN aziende a ON a.id = b.id_azienda
+     ORDER BY b.data_creazione DESC"
+);
 
 $assegnazioni = query(
     "SELECT r.username_revisore, r.id_bilancio, b.data_creazione, b.stato, a.nome AS azienda

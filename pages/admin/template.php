@@ -7,29 +7,29 @@ require_once __DIR__ . '/../../includes/functions.php';
 
 requireRole('amministratore');
 
+// gestione dell'aggiunta di una nuova voce al template condiviso da tutte le aziende
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verifyCsrf()) {
         setFlash('danger', 'Token di sicurezza non valido.');
         header('Location: template.php');
         exit;
     }
-    $nome = trim($_POST['nome'] ?? '');
+    $nome        = trim($_POST['nome'] ?? '');
     $descrizione = trim($_POST['descrizione'] ?? '');
 
     if ($nome === '') {
-        setFlash('danger', 'Il nome della voce contabile e\' obbligatorio.');
+        setFlash('danger', 'Il nome della voce contabile è obbligatorio.');
     } else {
         try {
             execSP('sp_crea_voce_contabile', [$nome, $descrizione]);
             logEvent('creazione_voce_contabile', "Voce contabile creata: {$nome}");
             setFlash('success', 'Voce contabile aggiunta.');
         } catch (PDOException $e) {
-            // Errore 23000 = violazione della PRIMARY KEY (nome gia' presente)
             if ($e->getCode() == 23000) {
-                setFlash('danger', 'Voce contabile gia\' esistente.');
+                setFlash('danger', 'Voce contabile già esistente.');
             } else {
                 error_log('ESG-BALANCE Error: ' . $e->getMessage());
-                setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
+                setFlash('danger', 'Errore nel salvataggio della voce.');
             }
         }
     }
@@ -37,11 +37,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
 }
 
+// carico tutte le voci contabili — vengono usate come template da tutti i bilanci
 $voci = query("SELECT nome, descrizione FROM voci_contabili ORDER BY nome");
 
 require_once __DIR__ . '/../../includes/header.php';
 ?>
-
 
 <div class="d-flex align-items-center mb-4 gap-2">
     <i class="bi bi-file-earmark-text fs-2 text-accent"></i>

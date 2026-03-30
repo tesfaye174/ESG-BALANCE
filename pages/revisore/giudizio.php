@@ -8,6 +8,7 @@ require_once __DIR__ . '/../../includes/functions.php';
 requireRole('revisore');
 $username = currentUser();
 
+// se viene passato un id in GET mostro direttamente il form di giudizio per quel bilancio
 $id_bilancio = (int)($_GET['id'] ?? 0);
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -20,8 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $esito   = $_POST['esito'] ?? '';
     $rilievi = trim($_POST['rilievi'] ?? '');
 
-    // controllo manuale degli esiti validi invece di fidarmi solo del SELECT HTML
-    // un utente potrebbe modificare il valore con inspect element o con una richiesta diretta
+    // whitelist degli esiti accettati — stessa ENUM definita nello schema SQL
     $esiti_validi = ['approvazione', 'approvazione_con_rilievi', 'respingimento'];
 
     if (!in_array($esito, $esiti_validi)) {
@@ -38,8 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             ]);
             logEvent('inserimento_giudizio', "Giudizio emesso su bilancio #{$bil_id}: {$esito}");
 
-            // controllo se il bilancio ha cambiato stato dopo il giudizio
-            // la SP aggiorna lo stato solo quando tutti i revisori hanno giudicato
+            // controllo se il trigger T2 ha già chiuso il bilancio dopo questo giudizio
             $bil_stato = queryOne("SELECT stato FROM bilanci WHERE id = ?", [$bil_id]);
             if ($bil_stato && in_array($bil_stato['stato'], ['approvato', 'respinto'])) {
                 logEvent('cambio_stato_bilancio', "Bilancio #{$bil_id}: stato cambiato a '{$bil_stato['stato']}'");
@@ -47,12 +46,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             redirectWith(BASE_URL . '/pages/revisore/revisione.php', 'success', 'Giudizio emesso con successo.');
         } catch (PDOException $e) {
-            // 23000 = giudizio gia' emesso per questo bilancio (PK duplicata)
+            // errore 23000 = UNIQUE constraint violato: il revisore ha già giudicato questo bilancio
             if ($e->getCode() == 23000) {
-                setFlash('danger', 'Hai gia\' emesso un giudizio per questo bilancio.');
+                setFlash('danger', 'Hai già emesso un giudizio per questo bilancio.');
             } else {
                 error_log('ESG-BALANCE Error: ' . $e->getMessage());
-                setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
+                setFlash('danger', 'Errore nell\'inserimento del giudizio.');
             }
             header("Location: giudizio.php?id={$bil_id}");
             exit;
@@ -60,7 +59,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$bilancio = null;
+$bilancio           = null;
 $giudizio_esistente = null;
 
 if ($id_bilancio > 0) {
@@ -79,8 +78,7 @@ if ($id_bilancio > 0) {
     );
 }
 
-// LEFT JOIN con giudizi: se g.esito IS NULL il revisore non ha ancora giudicato quel bilancio
-// (se avesse già giudicato la JOIN troverebbe la riga e il WHERE la escluderebbe)
+// carico solo i bilanci assegnati a questo revisore per cui non ha ancora emesso giudizio
 $bilanci_da_giudicare = query(
     "SELECT r.id_bilancio, b.data_creazione, b.stato, a.nome AS azienda
      FROM revisioni r
@@ -136,7 +134,7 @@ require_once __DIR__ . '/../../includes/header.php';
 <?php elseif ($bilancio && $giudizio_esistente): ?>
 
     <div class="alert alert-info">
-        Hai gia' emesso un giudizio per questo bilancio:
+        Hai già emesso un giudizio per questo bilancio:
         <strong><?php echo str_replace('_', ' ', $giudizio_esistente['esito']); ?></strong>
         (<?php echo $giudizio_esistente['data_giudizio']; ?>)
         <?php if ($giudizio_esistente['rilievi']): ?>

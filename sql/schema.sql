@@ -1,6 +1,5 @@
--- ESG-BALANCE: Schema del database
--- Corso di Basi di Dati, A.A. 2025/2026
--- CdS Informatica per il Management - Universita' di Bologna
+-- Schema del database ESG-BALANCE
+-- Basi di Dati, A.A. 2025/2026
 
 DROP DATABASE IF EXISTS esg_balance;
 CREATE DATABASE esg_balance
@@ -9,9 +8,6 @@ CREATE DATABASE esg_balance
 
 USE esg_balance;
 
--- 1. UTENTI
--- Tabella padre della gerarchia totale/esclusiva.
--- Ogni utente ha esattamente un ruolo.
 CREATE TABLE utenti (
     username        VARCHAR(50)     NOT NULL,
     password_hash   VARCHAR(255)    NOT NULL,
@@ -23,8 +19,6 @@ CREATE TABLE utenti (
     UNIQUE KEY (codice_fiscale)
 ) ENGINE=InnoDB;
 
--- 2. EMAIL_UTENTE
--- Un utente puo' avere uno o piu' recapiti email.
 CREATE TABLE email_utente (
     username    VARCHAR(50)     NOT NULL,
     email       VARCHAR(150)    NOT NULL,
@@ -32,9 +26,6 @@ CREATE TABLE email_utente (
     FOREIGN KEY (username) REFERENCES utenti(username) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 3. REVISORI
--- Sotto-entita' di utenti (ruolo = 'revisore').
--- nr_revisioni e indice_affidabilita sono campi aggiuntivi.
 CREATE TABLE revisori (
     username            VARCHAR(50)     NOT NULL,
     nr_revisioni        INT             DEFAULT 0,
@@ -43,18 +34,13 @@ CREATE TABLE revisori (
     FOREIGN KEY (username) REFERENCES utenti(username) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 4. RESPONSABILI
--- Sotto-entita' di utenti (ruolo = 'responsabile').
--- Campo aggiuntivo: curriculum vitae in formato PDF.
 CREATE TABLE responsabili (
-    username        VARCHAR(50)     NOT NULL,
-    curriculum_pdf  VARCHAR(255)    DEFAULT NULL,
+    username VARCHAR(50) NOT NULL,
+    curriculum_pdf VARCHAR(255) DEFAULT NULL,
     PRIMARY KEY (username),
     FOREIGN KEY (username) REFERENCES utenti(username) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 5. COMPETENZE_REVISORE
--- Lista competenze di ogni revisore con livello (0-5).
 CREATE TABLE competenze_revisore (
     username            VARCHAR(50)     NOT NULL,
     nome_competenza     VARCHAR(100)    NOT NULL,
@@ -64,10 +50,6 @@ CREATE TABLE competenze_revisore (
     CONSTRAINT chk_livello CHECK (livello BETWEEN 0 AND 5)
 ) ENGINE=InnoDB;
 
--- 6. AZIENDE
--- Ogni azienda e' associata ad un solo responsabile aziendale.
--- nr_bilanci e' una ridondanza concettuale (mantenuta tramite trigger).
--- ragione_sociale e' univoca.
 CREATE TABLE aziende (
     id                      INT             NOT NULL AUTO_INCREMENT,
     nome                    VARCHAR(150)    NOT NULL,
@@ -84,18 +66,14 @@ CREATE TABLE aziende (
     FOREIGN KEY (username_responsabile) REFERENCES responsabili(username) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 7. VOCI_CONTABILI
--- Template condiviso: ogni voce ha un nome univoco e una descrizione.
--- Popolata solo dagli amministratori.
+-- template bilancio
 CREATE TABLE voci_contabili (
     nome        VARCHAR(150)    NOT NULL,
     descrizione TEXT            DEFAULT NULL,
     PRIMARY KEY (nome)
 ) ENGINE=InnoDB;
 
--- 8. BILANCI
--- Bilancio di esercizio di un'azienda.
--- Stato: bozza -> in_revisione -> approvato | respinto
+-- un bilancio per azienda per anno, stato gestito dai trigger
 CREATE TABLE bilanci (
     id              INT     NOT NULL AUTO_INCREMENT,
     id_azienda      INT     NOT NULL,
@@ -107,8 +85,6 @@ CREATE TABLE bilanci (
     FOREIGN KEY (id_azienda) REFERENCES aziende(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 9. VALORI_BILANCIO
--- Associa un valore numerico ad ogni voce contabile di un bilancio.
 CREATE TABLE valori_bilancio (
     id_bilancio INT             NOT NULL,
     nome_voce   VARCHAR(150)    NOT NULL,
@@ -118,9 +94,6 @@ CREATE TABLE valori_bilancio (
     FOREIGN KEY (nome_voce)   REFERENCES voci_contabili(nome) ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- 10. INDICATORI_ESG
--- Tabella padre della gerarchia parziale/esclusiva.
--- tipo NULL = indicatore generico senza sotto-tabella dedicata.
 CREATE TABLE indicatori_esg (
     nome        VARCHAR(150)    NOT NULL,
     immagine    VARCHAR(255)    DEFAULT NULL,
@@ -130,19 +103,13 @@ CREATE TABLE indicatori_esg (
     CONSTRAINT chk_rilevanza CHECK (rilevanza BETWEEN 0 AND 10)
 ) ENGINE=InnoDB;
 
--- 11. INDICATORI_AMBIENTALI
--- Sotto-entita' di indicatori_esg (tipo = 'ambientale').
--- Campo aggiuntivo: codice normativa di rilevamento.
 CREATE TABLE indicatori_ambientali (
-    nome                VARCHAR(150)    NOT NULL,
-    codice_normativa    VARCHAR(100)    NOT NULL,
+    nome VARCHAR(150) NOT NULL,
+    codice_normativa VARCHAR(100) NOT NULL,
     PRIMARY KEY (nome),
     FOREIGN KEY (nome) REFERENCES indicatori_esg(nome) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- 12. INDICATORI_SOCIALI
--- Sotto-entita' di indicatori_esg (tipo = 'sociale').
--- Campi aggiuntivi: ambito sociale e frequenza di rilevazione.
 CREATE TABLE indicatori_sociali (
     nome                    VARCHAR(150)    NOT NULL,
     ambito_sociale          VARCHAR(150)    NOT NULL,
@@ -151,9 +118,6 @@ CREATE TABLE indicatori_sociali (
     FOREIGN KEY (nome) REFERENCES indicatori_esg(nome) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- 13. VOCI_INDICATORI
--- Collegamento tra voce contabile di un bilancio e indicatore ESG.
--- Per ogni coppia <voce, indicatore> si memorizzano valore, fonte, data.
 CREATE TABLE voci_indicatori (
     id_bilancio         INT             NOT NULL,
     nome_voce           VARCHAR(150)    NOT NULL,
@@ -166,9 +130,6 @@ CREATE TABLE voci_indicatori (
     FOREIGN KEY (nome_indicatore) REFERENCES indicatori_esg(nome) ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- 14. REVISIONI
--- Associazione revisore-bilancio (N:M).
--- Un bilancio puo' essere valutato da piu' revisori.
 CREATE TABLE revisioni (
     username_revisore   VARCHAR(50) NOT NULL,
     id_bilancio         INT         NOT NULL,
@@ -177,9 +138,6 @@ CREATE TABLE revisioni (
     FOREIGN KEY (id_bilancio)       REFERENCES bilanci(id)       ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 15. NOTE_REVISIONE
--- Note del revisore su singole voci di bilancio.
--- Ogni nota ha una data e un campo testo.
 CREATE TABLE note_revisione (
     id                  INT             NOT NULL AUTO_INCREMENT,
     username_revisore   VARCHAR(50)     NOT NULL,
@@ -194,9 +152,7 @@ CREATE TABLE note_revisione (
         REFERENCES valori_bilancio(id_bilancio, nome_voce) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB;
 
--- 16. GIUDIZI
--- Giudizio complessivo del revisore su un bilancio.
--- Esito: approvazione | approvazione_con_rilievi | respingimento
+-- ridondanza nr_bilanci (vedi relazione)
 CREATE TABLE giudizi (
     username_revisore   VARCHAR(50)     NOT NULL,
     id_bilancio         INT             NOT NULL,
@@ -208,8 +164,7 @@ CREATE TABLE giudizi (
         REFERENCES revisioni(username_revisore, id_bilancio) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
--- 17. LOG_EVENTI
--- Tabella per il logging degli eventi significativi dell'applicazione.
+-- fallback log su mysql se mongodb è offline
 CREATE TABLE log_eventi (
     id          INT             NOT NULL AUTO_INCREMENT,
     evento      VARCHAR(100)    NOT NULL,
@@ -219,9 +174,10 @@ CREATE TABLE log_eventi (
     PRIMARY KEY (id)
 ) ENGINE=InnoDB;
 
--- INDICI SU FOREIGN KEY (migliorano le performance delle JOIN e delle query filtrate)
+CREATE INDEX idx_bilanci_stato               ON bilanci(stato);
 CREATE INDEX idx_email_utente_username       ON email_utente(username);
 CREATE INDEX idx_valori_bilancio_bilancio    ON valori_bilancio(id_bilancio);
 CREATE INDEX idx_voci_indicatori_bilancio    ON voci_indicatori(id_bilancio);
 CREATE INDEX idx_revisioni_revisore          ON revisioni(username_revisore);
 CREATE INDEX idx_note_revisione_bilancio     ON note_revisione(id_bilancio);
+CREATE INDEX idx_giudizi_bilancio            ON giudizi(id_bilancio);

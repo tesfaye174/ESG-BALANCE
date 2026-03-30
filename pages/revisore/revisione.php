@@ -10,15 +10,16 @@ $username = currentUser();
 
 $id_bilancio = (int)($_GET['id'] ?? 0);
 
+// gestisco l'inserimento di note di revisione su singole voci contabili
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'nota') {
     if (!verifyCsrf()) {
         setFlash('danger', 'Token di sicurezza non valido.');
         header('Location: revisione.php');
         exit;
     }
-    $bil_id   = (int)($_POST['id_bilancio'] ?? 0);
-    $voce     = $_POST['nome_voce'] ?? '';
-    $testo    = trim($_POST['testo'] ?? '');
+    $bil_id = (int)($_POST['id_bilancio'] ?? 0);
+    $voce   = $_POST['nome_voce'] ?? '';
+    $testo  = trim($_POST['testo'] ?? '');
 
     if ($testo === '' || $voce === '') {
         setFlash('danger', 'Compila tutti i campi della nota.');
@@ -26,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         try {
             execSP('sp_inserisci_nota', [$username, $bil_id, $voce, $testo]);
             logEvent('inserimento_nota', "Nota inserita su bilancio #{$bil_id}, voce: {$voce}");
-            setFlash('success', 'Nota aggiunta.');
+            setFlash('success', 'Nota aggiunta con successo.');
         } catch (PDOException $e) {
             error_log('ESG-BALANCE Error: ' . $e->getMessage());
             setFlash('danger', 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.');
@@ -36,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     exit;
 }
 
+// carico bilanci assegnati
 $bilanci_assegnati = query(
     "SELECT r.id_bilancio, b.data_creazione, b.stato, a.nome AS azienda
      FROM revisioni r
@@ -47,13 +49,11 @@ $bilanci_assegnati = query(
 );
 
 $bilancio_detail = null;
-$valori = [];
-$note = [];
+$valori          = [];
+$note            = [];
 $indicatori_voci = [];
 
 if ($id_bilancio > 0) {
-    // la JOIN con revisioni serve a verificare che il revisore sia assegnato a questo bilancio
-    // (non basta che il bilancio esista, deve essere assegnato a lui)
     $bilancio_detail = queryOne(
         "SELECT b.*, a.nome AS azienda, a.ragione_sociale
          FROM bilanci b
@@ -76,6 +76,7 @@ if ($id_bilancio > 0) {
         [$username, $id_bilancio]
     );
 
+    // carico anche gli indicatori ESG collegati alle voci — li filtro poi in PHP per voce
     $indicatori_voci = query(
         "SELECT vi.nome_voce, vi.nome_indicatore, vi.valore_indicatore, vi.fonte, vi.data_rilevazione
          FROM voci_indicatori vi WHERE vi.id_bilancio = ?
@@ -160,8 +161,7 @@ require_once __DIR__ . '/../../includes/header.php';
                             <td class="text-end">&euro; <?php echo number_format($v['valore'], 2, ',', '.'); ?></td>
                             <td>
                                 <?php
-                                // filtro gli indicatori ESG collegati a questa specifica voce
-                                // fn() è la sintassi short di arrow function (PHP 7.4+)
+                                // filtro in PHP gli indicatori che appartengono a questa voce specifica
                                 $ind_voce = array_filter($indicatori_voci, fn($i) => $i['nome_voce'] === $v['nome_voce']);
                                 if (empty($ind_voce)): ?>
                                     <span class="text-muted">—</span>

@@ -7,127 +7,176 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* dimensioni A4 */
+:root {
+    --a4-w: 210mm;
+    --a4-h: 297mm;
+    --margin-top: 25mm;
+    --margin-bottom: 22mm;
+    --margin-side: 25mm;
+}
+
 body {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 12pt;
-    line-height: 1.7;
+    font-family: 'Times New Roman', Times, serif;
+    font-size: 11pt;
+    line-height: 1.6;
     color: #000;
-    background: #fff;
-    padding: 20px 16px;
+    background: #e0e0e0;
+    padding: 24px 0;
 }
 
-/* ── Page shell ─────────────────────────────── */
 .page {
-    max-width: 900px;
-    margin: 0 auto 36px;
+    width: var(--a4-w);
+    min-height: var(--a4-h);
+    overflow: visible;
+    margin: 0 auto 20px;
     background: #fff;
-    padding: 50px 60px;
-    border: 1px solid #ccc;
+    padding: var(--margin-top) var(--margin-side) var(--margin-bottom);
+    box-shadow: 0 2px 8px rgba(0,0,0,.25);
+    position: relative;
 }
 
-/* ── Cover ───────────────────────────────────── */
+.cover { padding-top: 0; padding-bottom: 0; }
+
+.page:not(.cover):not(.toc-page)::after {
+    content: attr(data-page);
+    position: absolute;
+    bottom: 10mm;
+    right: var(--margin-side);
+    font-size: 9pt;
+    color: #555;
+    font-family: Arial, sans-serif;
+}
+
+.page:not(.cover)::before {
+    content: 'ESG-BALANCE — Relazione di Progetto';
+    position: absolute;
+    top: 8mm;
+    left: var(--margin-side);
+    right: var(--margin-side);
+    font-size: 8pt;
+    color: #888;
+    font-family: Arial, sans-serif;
+    border-bottom: 0.5pt solid #ccc;
+    padding-bottom: 2mm;
+}
+
+/* copertina */
 .cover {
-    min-height: 720px;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     text-align: center;
-    border-top: 3px solid #000;
+    border-top: 4pt solid #000;
 }
-.cover-logo { font-size: 52px; font-weight: bold; color: #000; letter-spacing: -2px; margin-bottom: 6px; }
-.cover-logo span { color: #000; }
-.cover-subtitle { font-size: 15px; color: #333; margin-bottom: 36px; max-width: 500px; line-height: 1.5; }
-.cover-divider { width: 50px; height: 2px; background: #000; margin: 0 auto 30px; }
-.cover-meta { font-size: 13px; color: #000; line-height: 2.2; }
+.cover-logo { font-size: 48pt; font-weight: bold; color: #000; letter-spacing: -1pt; margin-bottom: 6pt; font-family: Arial, sans-serif; }
+.cover-subtitle { font-size: 13pt; color: #333; margin-bottom: 28pt; max-width: 120mm; line-height: 1.5; font-family: Arial, sans-serif; }
+.cover-divider { width: 30mm; height: 1pt; background: #000; margin: 0 auto 22pt; }
+.cover-meta { font-size: 11pt; color: #000; line-height: 2.0; font-family: Arial, sans-serif; }
 .cover-meta strong { color: #000; }
 .cover-badge {
     display: inline-block;
-    background: #fff;
-    color: #000;
-    border: 1px solid #000;
-    font-size: 11px;
+    border: 1pt solid #000;
+    font-size: 9pt;
     font-weight: bold;
-    letter-spacing: 1px;
+    letter-spacing: 1pt;
     text-transform: uppercase;
-    padding: 4px 14px;
-    margin-bottom: 24px;
+    padding: 3pt 12pt;
+    margin-bottom: 20pt;
+    font-family: Arial, sans-serif;
 }
 
-/* ── Typography ──────────────────────────────── */
-h1 { font-size: 20pt; font-weight: bold; color: #000; margin-bottom: 10px; }
+h1 { font-size: 16pt; font-weight: bold; color: #000; margin-bottom: 10pt; font-family: Arial, sans-serif; }
 h2 {
-    font-size: 15pt; font-weight: bold; color: #000;
-    border-bottom: 1px solid #000;
-    padding-bottom: 6px;
-    margin: 40px 0 16px;
+    font-size: 13pt; font-weight: bold; color: #000;
+    border-bottom: 1pt solid #000;
+    padding-bottom: 4pt;
+    margin: 24pt 0 10pt;
+    font-family: Arial, sans-serif;
 }
-h3 { font-size: 13pt; font-weight: bold; color: #000; margin: 24px 0 10px; }
-h4 { font-size: 12pt; font-weight: bold; color: #000; margin: 16px 0 6px; }
-p  { margin: 8px 0; }
-ul, ol { padding-left: 24px; margin: 8px 0; }
-li { margin-bottom: 4px; }
+h3 { font-size: 11pt; font-weight: bold; color: #000; margin: 14pt 0 6pt; font-family: Arial, sans-serif; }
+h4 { font-size: 11pt; font-weight: bold; color: #000; margin: 10pt 0 4pt; font-family: Arial, sans-serif; }
+p  { margin: 5pt 0; text-align: justify; }
+ul, ol { padding-left: 16pt; margin: 5pt 0; }
+li { margin-bottom: 3pt; }
 
-/* ── Section numbering ───────────────────────── */
-.sec-num { color: #000; margin-right: 5px; }
+.sec-num { color: #000; margin-right: 4pt; }
 
-/* ── Tables ──────────────────────────────────── */
-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 11pt; }
+/* tabelle */
+table { width: 100%; border-collapse: collapse; margin: 8pt 0; font-size: 10pt; }
 thead th {
-    background: #f0f0f0; color: #000;
-    font-weight: bold; font-size: 10pt;
-    padding: 7px 10px; border: 1px solid #bbb;
-    text-align: left;
+    background: #e8e8e8; color: #000;
+    font-weight: bold; font-size: 9pt;
+    padding: 5pt 8pt; border: 0.5pt solid #999;
+    text-align: left; font-family: Arial, sans-serif;
 }
-tbody td { padding: 6px 10px; border: 1px solid #ccc; vertical-align: top; }
-tbody tr:nth-child(even) td { background: #fafafa; }
+tbody td { padding: 4pt 8pt; border: 0.5pt solid #bbb; vertical-align: top; }
+tbody tr:nth-child(even) td { background: #f8f8f8; }
 
-/* ── Callout boxes ───────────────────────────── */
-.info   { background: #f5f5f5; border-left: 3px solid #555; padding: 10px 14px; margin: 12px 0; }
-.ok     { background: #f5f5f5; border-left: 3px solid #555; padding: 10px 14px; margin: 12px 0; }
-.warn   { background: #f5f5f5; border-left: 3px solid #888; padding: 10px 14px; margin: 12px 0; }
-.callout p { margin: 0; font-size: 11.5pt; }
+.info, .ok { background: #f5f5f5; border-left: 2.5pt solid #555; padding: 7pt 12pt; margin: 8pt 0; font-size: 10pt; }
+.warn { background: #f5f5f5; border-left: 2.5pt solid #888; padding: 7pt 12pt; margin: 8pt 0; font-size: 10pt; }
+.callout p { margin: 0; }
 
-/* ── Code blocks ─────────────────────────────── */
-.code-wrap { background: #f5f5f5; border: 1px solid #bbb; margin: 10px 0; overflow: hidden; }
-.code-lang { background: #e0e0e0; color: #000; font-family: 'Courier New', Courier, monospace; font-size: 9pt; font-weight: bold; padding: 3px 12px; letter-spacing: 0.5px; text-transform: uppercase; }
-.code { display: block; color: #000; padding: 12px 14px; font-family: 'Courier New', Consolas, monospace; font-size: 10pt; overflow-x: auto; white-space: pre; line-height: 1.5; }
-code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #ddd; font-family: 'Courier New', monospace; font-size: 10.5pt; }
+.code-wrap { background: #f5f5f5; border: 0.5pt solid #bbb; margin: 8pt 0; overflow: hidden; }
+.code-lang { background: #ddd; color: #000; font-family: 'Courier New', monospace; font-size: 8pt; font-weight: bold; padding: 2pt 10pt; letter-spacing: 0.5pt; text-transform: uppercase; }
+.code { display: block; color: #000; padding: 8pt 12pt; font-family: 'Courier New', Consolas, monospace; font-size: 8.5pt; overflow-x: auto; white-space: pre; line-height: 1.45; }
+code { background: #f0f0f0; color: #000; padding: 1pt 4pt; border: 0.5pt solid #ddd; font-family: 'Courier New', monospace; font-size: 9.5pt; }
 
-/* ── SQL syntax ───────────────────────────────── */
 .kw  { font-weight: bold; }
 .cmt { color: #555; font-style: italic; }
 
-/* ── Badge ───────────────────────────────────── */
-.badge { display: inline-block; padding: 1px 7px; border: 1px solid #bbb; font-size: 10pt; font-weight: bold; background: #f0f0f0; color: #000; }
-.b-blue  { background: #f0f0f0; color: #000; }
-.b-green { background: #f0f0f0; color: #000; }
-.b-gray  { background: #f0f0f0; color: #000; }
-.b-red   { background: #f0f0f0; color: #000; }
-.b-amber { background: #f0f0f0; color: #000; }
+.badge { display: inline-block; padding: 1pt 6pt; border: 0.5pt solid #bbb; font-size: 9pt; font-weight: bold; background: #f0f0f0; color: #000; font-family: Arial, sans-serif; }
 
-/* ── Table of contents ───────────────────────── */
-.toc a { color: #000; text-decoration: underline; }
+.toc-page { }
+.toc a { color: #000; text-decoration: none; border-bottom: 0.5pt dotted #999; }
 .toc a:hover { color: #333; }
-.toc li { margin-bottom: 4px; }
+.toc li { margin-bottom: 5pt; }
 
-/* ── E-R diagram container ───────────────────── */
-.er-container { background: #fafafa; border: 1px solid #ccc; padding: 14px; margin: 14px 0; overflow-x: auto; }
+.er-container { background: #fafafa; border: 0.5pt solid #ccc; padding: 10pt; margin: 10pt 0; overflow-x: auto; }
 
-/* ── Print ───────────────────────────────────── */
 @media print {
-    body { background: white; padding: 0; }
-    .page { border: none; margin: 0; padding: 40px 50px; page-break-after: always; }
+    @page {
+        size: A4;
+        margin: 25mm 25mm 22mm 25mm;
+    }
+
+    body {
+        background: white;
+        padding: 0;
+    }
+
+    .page {
+        width: 100%;
+        min-height: auto;
+        margin: 0;
+        padding: 0;
+        box-shadow: none;
+        page-break-after: always;
+        page-break-inside: avoid;
+        overflow: visible;
+    }
+
+    .page::before,
+    .page::after { display: none; }
+
+    table { page-break-inside: avoid; }
+    h2, h3 { page-break-after: avoid; }
+    .code-wrap { page-break-inside: avoid; }
+
+    .code { overflow: visible; white-space: pre-wrap; }
+    .er-container { overflow: visible; }
+    a[href]::after, a[href]::before { content: none !important; }
 }
 </style>
 </head>
 <body>
 
-<!-- COPERTINA -->
+<!-- copertina -->
 <div class="page cover">
     <div class="cover-badge">Relazione di Progetto</div>
     <div class="cover-logo">ESG<span>-BALANCE</span></div>
-    <p class="cover-subtitle">Gestione integrata di bilanci aziendali e indicatori ESG<br>con architettura multi-ruolo e workflow di revisione</p>
+    <p class="cover-subtitle">Piattaforma web per la gestione di bilanci aziendali e indicatori ESG,<br>con ruoli distinti e processo di revisione</p>
     <div class="cover-divider"></div>
     <div class="cover-meta">
         <p><strong>Corso:</strong> Basi di Dati — A.A. 2025/2026</p>
@@ -140,12 +189,12 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
     </div>
 </div>
 
-<!-- INDICE -->
-<div class="page">
+<!-- indice -->
+<div class="page toc-page" data-page="ii">
     <h1>Indice</h1>
-    <ol class="toc" style="line-height:2.2;margin-top:20px;font-size:14px;">
+    <ol class="toc" style="line-height:2.0;margin-top:14pt;font-size:11pt;">
         <li><a href="#s1">Raccolta e Analisi dei Requisiti</a>
-            <ol style="font-size:13px;margin-top:4px;">
+            <ol style="font-size:10pt;margin-top:3pt;">
                 <li><a href="#s1-1">Specifica dei dati</a></li>
                 <li><a href="#s1-2">Lista delle operazioni</a></li>
                 <li><a href="#s1-3">Tavola dei volumi</a></li>
@@ -153,14 +202,14 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
             </ol>
         </li>
         <li><a href="#s2">Progettazione Concettuale</a>
-            <ol style="font-size:13px;margin-top:4px;">
+            <ol style="font-size:10pt;margin-top:3pt;">
                 <li><a href="#s2-1">Diagramma Entity-Relationship</a></li>
                 <li><a href="#s2-2">Dizionario delle entità e delle relazioni</a></li>
                 <li><a href="#s2-3">Tavola delle business rules</a></li>
             </ol>
         </li>
         <li><a href="#s3">Progettazione Logica</a>
-            <ol style="font-size:13px;margin-top:4px;">
+            <ol style="font-size:10pt;margin-top:3pt;">
                 <li><a href="#s3-1">Ristrutturazione dello schema concettuale</a></li>
                 <li><a href="#s3-2">Analisi delle ridondanze</a></li>
                 <li><a href="#s3-3">Lista delle tabelle con vincoli di chiave</a></li>
@@ -173,13 +222,13 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
     </ol>
 </div>
 
-<!-- 1. RACCOLTA E ANALISI REQUISITI -->
-<div class="page" id="s1">
+<!-- sez. 1 - raccolta requisiti -->
+<div class="page" id="s1" data-page="1">
     <h1><span class="sec-num">1.</span>Raccolta e Analisi dei Requisiti</h1>
 
     <h2 id="s1-1"><span class="sec-num">1.1</span> Specifica dei dati</h2>
 
-    <p>La piattaforma <strong>ESG-BALANCE</strong> supporta le aziende nella gestione dei propri bilanci economico-finanziari, integrandoli con i dati relativi alla sostenibilità, con particolare attenzione agli indicatori ESG (Environmental, Social and Governance).</p>
+    <p>La piattaforma <strong>ESG-BALANCE</strong> permette alle aziende di gestire i propri bilanci di esercizio e di associarvi i dati di sostenibilità tramite gli indicatori ESG (Environmental, Social, Governance).</p>
 
     <h3>Utenti</h3>
     <p>La piattaforma supporta la registrazione degli utenti. Ogni utente dispone di: <em>username</em> (univoco), <em>password</em>, <em>Codice Fiscale</em>, <em>data e luogo di nascita</em> e uno o più <em>recapiti email</em>. Ogni utente appartiene a esattamente una delle seguenti categorie: <strong>amministratore</strong>, <strong>revisore ESG</strong> o <strong>responsabile aziendale</strong>.</p>
@@ -212,6 +261,10 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
     <h3>Logging MongoDB</h3>
     <p>Tutti gli eventi significativi (creazione bilanci, inserimento valori, inizio revisione, ecc.) vengono registrati su una collezione MongoDB come documento con <em>evento</em>, <em>utente</em>, <em>dettagli</em> e <em>timestamp</em>. In assenza di connessione MongoDB, il fallback è la tabella MySQL <code>log_eventi</code>.</p>
 
+</div>
+
+<!-- pag. 2 - lista operazioni -->
+<div class="page" data-page="2">
     <h2 id="s1-2"><span class="sec-num">1.2</span> Lista delle operazioni</h2>
     <table>
         <thead><tr><th>#</th><th>Operazione</th><th>Attore</th><th>Tipo</th></tr></thead>
@@ -234,8 +287,12 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
             <tr><td>O16</td><td>Classifica bilanci per numero indicatori ESG</td><td>Tutti (auth)</td><td><span class="badge b-gray">B</span></td></tr>
         </tbody>
     </table>
-    <p class="info"><strong>I</strong> = interattiva (risposta attesa dall'utente) &nbsp;·&nbsp; <strong>B</strong> = batch (elaborazione in background/periodica)</p>
+    <p class="info"><strong>I</strong> = interattiva (risposta attesa dall'utente) &nbsp;·&nbsp; <strong>B</strong> = batch (consultazione periodica/statistica)</p>
 
+</div>
+
+<!-- tavola volumi -->
+<div class="page" data-page="3">
     <h2 id="s1-3"><span class="sec-num">1.3</span> Tavola dei volumi</h2>
     <table>
         <thead><tr><th>Concetto</th><th>Tipo</th><th>Volume stimato</th></tr></thead>
@@ -260,6 +317,10 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
         </tbody>
     </table>
 
+</div>
+
+<!-- pag. 4 -->
+<div class="page" data-page="4">
     <h2 id="s1-4"><span class="sec-num">1.4</span> Glossario dei dati</h2>
     <table>
         <thead><tr><th>Termine</th><th>Descrizione</th><th>Sinonimi / Note</th></tr></thead>
@@ -283,8 +344,8 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
     </table>
 </div>
 
-<!-- 2. PROGETTAZIONE CONCETTUALE -->
-<div class="page" id="s2">
+<!-- sez. 2 - progettazione concettuale -->
+<div class="page" id="s2" data-page="5">
     <h1><span class="sec-num">2.</span>Progettazione Concettuale</h1>
 
     <h2 id="s2-1"><span class="sec-num">2.1</span> Diagramma Entity-Relationship</h2>
@@ -307,9 +368,7 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
         </style>
       </defs>
 
-      <!-- ═══════════════════════════════════════
-           ROW 1 — UTENTI
-           ═══════════════════════════════════════ -->
+      <!-- utenti -->
       <rect class="e" x="360" y="16" width="140" height="34" rx="3"/>
       <text class="et" x="430" y="33">UTENTI</text>
 
@@ -322,18 +381,14 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
       <line class="li" x1="400" y1="114" x2="130" y2="140"/>
       <line class="li" x1="460" y1="114" x2="700" y2="140"/>
 
-      <!-- ═══════════════════════════════════════
-           ROW 2 — REVISORI | RESPONSABILI
-           ═══════════════════════════════════════ -->
+      <!-- revisori / responsabili -->
       <rect class="e" x="60" y="140" width="140" height="34" rx="3"/>
       <text class="et" x="130" y="157">REVISORI</text>
 
       <rect class="e" x="620" y="140" width="160" height="34" rx="3"/>
       <text class="et" x="700" y="157">RESPONSABILI</text>
 
-      <!-- ═══════════════════════════════════════
-           ROW 3 — COMPETENZE | REVISIONA | GIUDIZI | GESTISCE | (vuoto)
-           ═══════════════════════════════════════ -->
+      <!-- row 3 -->
 
       <!-- COMPETENZE (entità debole di REVISORI) -->
       <rect class="ew" x="20" y="268" width="170" height="34" rx="3"/>
@@ -366,9 +421,7 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
       <line class="ln" x1="700" y1="174" x2="700" y2="238"/>
       <text class="ct" x="690" y="205">1</text>
 
-      <!-- ═══════════════════════════════════════
-           ROW 4 — NOTE_REVISIONE | BILANCI | HA | AZIENDE
-           ═══════════════════════════════════════ -->
+      <!-- bilanci e aziende -->
 
       <!-- NOTE_REVISIONE (entità debole di REVISIONA) -->
       <rect class="ew" x="20" y="370" width="180" height="34" rx="3"/>
@@ -402,9 +455,7 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
       <line class="ln" x1="700" y1="278" x2="700" y2="355"/>
       <text class="ct" x="690" y="318">N</text>
 
-      <!-- ═══════════════════════════════════════
-           ROW 5 — VOCI_CONTABILI | VALORIZZA | COLLEGA | INDICATORI_ESG
-           ═══════════════════════════════════════ -->
+      <!-- voci contabili e indicatori -->
 
       <!-- VOCI_CONTABILI -->
       <rect class="e" x="20" y="490" width="170" height="34" rx="3"/>
@@ -439,9 +490,7 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
       <line class="ln" x1="452" y1="452" x2="610" y2="497"/>
       <text class="ct" x="540" y="480">M</text>
 
-      <!-- ═══════════════════════════════════════
-           ROW 6 — ISA (P,E) per INDICATORI_ESG  (3 sotto-tipi)
-           ═══════════════════════════════════════ -->
+      <!-- isa indicatori -->
       <line class="li" x1="695" y1="524" x2="695" y2="556"/>
       <!-- triangolo ISA più largo per ospitare 3 rami -->
       <polygon points="695,556 638,600 752,600" fill="#e8e8e8" stroke="#555" stroke-width="1.5"/>
@@ -454,9 +503,7 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
       <!-- ramo destro → IND_SOCIALI -->
       <line class="li" x1="752" y1="600" x2="830" y2="640"/>
 
-      <!-- ═══════════════════════════════════════
-           ROW 7 — IND_AMBIENTALI | IND_GOVERNANCE | IND_SOCIALI
-           ═══════════════════════════════════════ -->
+      <!-- sotto-tipi indicatori -->
       <rect class="e" x="388" y="640" width="176" height="34" rx="3"/>
       <text class="et" x="476" y="657">IND_AMBIENTALI</text>
 
@@ -470,9 +517,7 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
       <rect class="e" x="782" y="640" width="106" height="34" rx="3"/>
       <text class="et" x="835" y="657">IND_SOCIALI</text>
 
-      <!-- ═══════════════════════════════════════
-           LEGENDA
-           ═══════════════════════════════════════ -->
+      <!-- legenda -->
       <rect x="10" y="704" width="555" height="46" rx="3" fill="#f5f5f5" stroke="#ccc"/>
       <rect x="20" y="714" width="16" height="13" rx="2" fill="#f0f0f0" stroke="#333" stroke-width="1.5"/>
       <text style="font-size:10px;fill:#555" x="42" y="725">Entità</text>
@@ -486,10 +531,14 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
       <text style="font-size:10px;fill:#666" x="467" y="725">Solo tipo (no sotto-tab.)</text>
     </svg>
     </div>
-    <p style="font-size:12px;color:#555;margin-top:8px;text-align:center;">
+    <p style="font-size:9pt;color:#555;margin-top:6pt;text-align:center;">
         <em>Fig. 1 — Diagramma E-R semplificato. EMAIL_UTENTE è un attributo multi-valore di UTENTI. COMPETENZE è un'entità debole di REVISORI. IND_GOVERNANCE è un sotto-tipo della specializzazione ISA (P,E) ma non dispone di una sotto-tabella dedicata, in quanto non presenta attributi aggiuntivi rispetto a INDICATORI_ESG.</em>
     </p>
 
+</div>
+
+<!-- dizionario entità -->
+<div class="page" data-page="6">
     <h2 id="s2-2"><span class="sec-num">2.2</span> Dizionario delle entità e delle relazioni</h2>
 
     <h3>Entità</h3>
@@ -510,7 +559,7 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
             <tr><td><strong>LOG_EVENTI</strong></td><td>Log degli eventi (MongoDB / fallback MySQL)</td><td>id, evento, utente, dettagli, timestamp</td><td>id (_id MongoDB)</td></tr>
         </tbody>
     </table>
-    <p style="font-size:12px;color:#555;">* nr_bilanci è una ridondanza concettuale (analizzata in §3.2). U = attributo univoco.</p>
+    <p style="font-size:9pt;color:#555;">* nr_bilanci è una ridondanza concettuale (analizzata in §3.2). U = attributo univoco.</p>
 
     <h3>Relazioni</h3>
     <table>
@@ -528,6 +577,10 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
         </tbody>
     </table>
 
+</div>
+
+<!-- pag. 7 -->
+<div class="page" data-page="7">
     <h2 id="s2-3"><span class="sec-num">2.3</span> Tavola delle business rules</h2>
     <table>
         <thead><tr><th>#</th><th>Business Rule</th></tr></thead>
@@ -551,8 +604,8 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
     </table>
 </div>
 
-<!-- 3. PROGETTAZIONE LOGICA -->
-<div class="page" id="s3">
+<!-- sez. 3 -->
+<div class="page" id="s3" data-page="8">
     <h1><span class="sec-num">3.</span>Progettazione Logica</h1>
 
     <h2 id="s3-1"><span class="sec-num">3.1</span> Ristrutturazione dello schema concettuale</h2>
@@ -582,6 +635,10 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
         <li><code>giudizi(username_revisore, id_bilancio, esito, data_giudizio, rilievi)</code>: entità derivata dalla relazione revisiona, PK composta.</li>
     </ul>
 
+</div>
+
+<!-- analisi ridondanze -->
+<div class="page" data-page="9">
     <h2 id="s3-2"><span class="sec-num">3.2</span> Analisi delle ridondanze — campo <code>nr_bilanci</code></h2>
 
     <p>Il campo <code>nr_bilanci</code> nella tabella <code>aziende</code> è una <strong>ridondanza concettuale</strong>: il suo valore è derivabile con un <code>COUNT</code> sulla tabella <code>bilanci</code>. Si analizza se convenga mantenerla.</p>
@@ -660,9 +717,13 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
 
     <div class="ok">
         <p><strong>Decisione: si mantiene la ridondanza nr_bilanci</strong> (costo 40.5 &lt; 104.5).</p>
-        <p>Il fattore determinante è OP2 (eseguita 3 volte/mese in modalità batch): senza ridondanza richiede la lettura di tutti i 50 record di bilanci + JOIN, con costo mensile 90 contro 15. I trigger T3 e T4 garantiscono la consistenza automatica del contatore senza intervento applicativo diretto.</p>
+        <p>Il fattore decisivo è OP2 (eseguita 3 volte/mese in batch): senza ridondanza tocca tutti i 50 record di bilanci con JOIN, per un costo mensile di 90 contro 15. I trigger T3 e T4 mantengono aggiornato il contatore a ogni INSERT/DELETE su bilanci, quindi non serve intervenire nel codice PHP.</p>
     </div>
 
+</div>
+
+<!-- pag. 10 - tabelle e vincoli -->
+<div class="page" data-page="10">
     <h2 id="s3-3"><span class="sec-num">3.3</span> Lista delle tabelle con vincoli di chiave</h2>
     <table>
         <thead><tr><th>#</th><th>Tabella</th><th>Chiave primaria</th><th>Chiavi univoche</th><th>Chiavi esterne</th></tr></thead>
@@ -681,12 +742,16 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
             <tr><td>12</td><td>indicatori_sociali</td><td>nome</td><td>—</td><td>nome → indicatori_esg</td></tr>
             <tr><td>13</td><td>voci_indicatori</td><td>(id_bilancio, nome_voce, nome_indicatore)</td><td>—</td><td>(id_bilancio, nome_voce) → valori_bilancio; nome_indicatore → indicatori_esg</td></tr>
             <tr><td>14</td><td>revisioni</td><td>(username_revisore, id_bilancio)</td><td>—</td><td>username_revisore → revisori; id_bilancio → bilanci</td></tr>
-            <tr><td>15</td><td>note_revisione</td><td>id (AUTO_INCREMENT)</td><td>—</td><td>(username_revisore, id_bilancio) → revisioni; nome_voce → voci_contabili</td></tr>
+            <tr><td>15</td><td>note_revisione</td><td>id (AUTO_INCREMENT)</td><td>—</td><td>(username_revisore, id_bilancio) → revisioni; (id_bilancio, nome_voce) → valori_bilancio</td></tr>
             <tr><td>16</td><td>giudizi</td><td>(username_revisore, id_bilancio)</td><td>—</td><td>(username_revisore, id_bilancio) → revisioni</td></tr>
             <tr><td>17</td><td>log_eventi</td><td>id (AUTO_INCREMENT)</td><td>—</td><td>— (fallback MySQL)</td></tr>
         </tbody>
     </table>
 
+</div>
+
+<!-- vincoli inter-relazionali -->
+<div class="page" data-page="11">
     <h2 id="s3-4"><span class="sec-num">3.4</span> Vincoli inter-relazionali</h2>
 
     <h3>Cascade e integrità referenziale</h3>
@@ -724,8 +789,8 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
     </table>
 </div>
 
-<!-- 4. NORMALIZZAZIONE -->
-<div class="page" id="s4">
+<!-- sez. 4 - normalizzazione -->
+<div class="page" id="s4" data-page="12">
     <h1><span class="sec-num">4.</span>Normalizzazione</h1>
 
     <p>Tutte le 17 tabelle sono in Forma Normale di Boyce-Codd (BCNF). Una relazione è in BCNF se, per ogni dipendenza funzionale non banale X → Y, X è una superchiave. Si analizzano di seguito i casi più rilevanti.</p>
@@ -757,8 +822,8 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
     </div>
 </div>
 
-<!-- 5. APPLICAZIONE WEB -->
-<div class="page" id="s5">
+<!-- sez. 5 -->
+<div class="page" id="s5" data-page="13">
     <h1><span class="sec-num">5.</span>Descrizione dell'Applicazione Web</h1>
 
     <h3>Stack tecnologico</h3>
@@ -786,13 +851,17 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
         <li><strong>Errori:</strong> i messaggi di errore PDO non sono mai esposti all'utente; vengono loggati con <code>error_log()</code>.</li>
     </ul>
 
+</div>
+
+<!-- struttura pagine -->
+<div class="page" data-page="14">
     <h3>Struttura delle pagine</h3>
     <table>
         <thead><tr><th>File</th><th>Ruolo richiesto</th><th>Funzionalità</th></tr></thead>
         <tbody>
             <tr><td>index.php</td><td>Nessuno (landing)</td><td>Pagina di benvenuto con presentazione del progetto e accesso rapido a login/registrazione. Se l'utente è già autenticato, redirige alla dashboard.</td></tr>
             <tr><td>pages/login.php</td><td>Non autenticato</td><td>Form di login. Chiama <code>sp_login</code> per recuperare hash e ruolo, verifica con <code>password_verify()</code>, inizializza la sessione.</td></tr>
-            <tr><td>pages/register.php</td><td>Non autenticato</td><td>Registrazione di revisori ed responsabili (l'admin è pre-caricato). Chiama <code>sp_registra_utente</code> in transazione atomica.</td></tr>
+            <tr><td>pages/register.php</td><td>Non autenticato</td><td>Registrazione di revisori e responsabili (l'admin è pre-caricato). Chiama <code>sp_registra_utente</code> in transazione atomica.</td></tr>
             <tr><td>pages/dashboard.php</td><td>Autenticato (tutti)</td><td>Dashboard personalizzata per ruolo con KPI numerici e grafici Chart.js (donut chart stati bilanci, bar chart indicatori, ecc.).</td></tr>
             <tr><td>pages/statistiche.php</td><td>Autenticato (tutti)</td><td>Visualizza le 4 statistiche via viste SQL: nr aziende, nr revisori, classifica affidabilità aziende, classifica bilanci per nr indicatori ESG.</td></tr>
             <tr><td>pages/admin/template.php</td><td>Amministratore</td><td>Gestione del template: inserimento nuove voci contabili (<code>sp_crea_voce_contabile</code>) e lista delle voci esistenti.</td></tr>
@@ -807,6 +876,10 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
         </tbody>
     </table>
 
+</div>
+
+<!-- pag. 15 -->
+<div class="page" data-page="15">
     <h3>Stored Procedures implementate (14 totali)</h3>
     <p>Tutte le operazioni sui dati passano attraverso stored procedure, in accordo con le specifiche del progetto. Le principali sono:</p>
     <ul>
@@ -838,8 +911,8 @@ code { background: #f0f0f0; color: #000; padding: 1px 5px; border: 1px solid #dd
     </table>
 </div>
 
-<!-- APPENDICE A — SCHEMA SQL -->
-<div class="page" id="app">
+<!-- appendice A -->
+<div class="page" id="app" data-page="16">
     <h1>Appendice A — Schema SQL completo</h1>
     <p>Di seguito è riportato il codice DDL completo per la creazione dello schema del database. I file completi di stored procedure, trigger e viste sono inclusi nell'archivio del progetto come <code>sql/stored_procedures.sql</code>, <code>sql/triggers.sql</code> e <code>sql/views.sql</code>.</p>
 
@@ -909,6 +982,10 @@ CREATE TABLE competenze_revisore (
 ) ENGINE=InnoDB;</code>
     </div>
 
+</div>
+
+<!-- pag. 17 -->
+<div class="page" data-page="17">
     <h3>Aziende e bilanci (tabelle 6–9)</h3>
     <p><code>aziende.nr_bilanci</code> è una ridondanza intenzionale mantenuta coerente dai trigger T3 e T4 (§3.2). <code>bilanci</code> ha chiave candidata composta <code>(id_azienda, anno)</code> che impedisce duplicati di esercizio.</p>
     <div class="code-wrap">
@@ -1010,6 +1087,10 @@ CREATE TABLE voci_indicatori (
 ) ENGINE=InnoDB;</code>
     </div>
 
+</div>
+
+<!-- indicatori esg e revisione -->
+<div class="page" data-page="18">
     <h3>Processo di revisione (tabelle 14–16)</h3>
     <p><code>revisioni</code> implementa la relazione N:M tra revisori e bilanci. La FK su <code>note_revisione</code> referenzia <code>valori_bilancio(id_bilancio, nome_voce)</code> per garantire che la voce annotata appartenga effettivamente al bilancio in questione.</p>
     <div class="code-wrap">
@@ -1072,7 +1153,11 @@ CREATE INDEX idx_revisioni_revisore       ON revisioni(username_revisore);
 CREATE INDEX idx_note_revisione_bilancio  ON note_revisione(id_bilancio);</code>
     </div>
 
-    <h2 style="margin-top:36px;">Trigger — <code>sql/triggers.sql</code> (estratto principale)</h2>
+</div>
+
+<!-- trigger -->
+<div class="page" data-page="19">
+    <h2 style="margin-top:24pt;">Trigger — <code>sql/triggers.sql</code> (estratto principale)</h2>
     <div class="code-wrap">
         <div class="code-lang">SQL — triggers.sql</div>
         <code class="code">-- T1: Cambio stato bozza → in_revisione
@@ -1121,7 +1206,11 @@ BEGIN
 END$$</code>
     </div>
 
-    <h2 style="margin-top:36px;">Viste — <code>sql/views.sql</code></h2>
+</div>
+
+<!-- viste -->
+<div class="page" data-page="20">
+    <h2>Viste — <code>sql/views.sql</code></h2>
     <div class="code-wrap">
         <div class="code-lang">SQL — views.sql</div>
         <code class="code">CREATE OR REPLACE VIEW v_num_aziende AS
@@ -1130,7 +1219,7 @@ SELECT COUNT(*) AS totale_aziende FROM aziende;
 CREATE OR REPLACE VIEW v_num_revisori AS
 SELECT COUNT(*) AS totale_revisori FROM revisori;
 
--- V3: Azienda con percentuale piu' alta di bilanci approvati senza rilievi
+-- V3: Azienda con percentuale più alta di bilanci approvati senza rilievi
 CREATE OR REPLACE VIEW v_affidabilita_aziende AS
 SELECT
     a.id AS id_azienda, a.nome, a.ragione_sociale,
@@ -1168,7 +1257,7 @@ GROUP BY b.id, a.nome, a.ragione_sociale, b.anno, b.data_creazione, b.stato
 ORDER BY num_indicatori_esg DESC;</code>
     </div>
 
-    <p style="margin-top:32px;font-size:12px;color:#555;text-align:center;">
+    <p style="margin-top:20pt;font-size:9pt;color:#555;text-align:center;">
         Relazione di progetto — ESG-BALANCE &nbsp;·&nbsp; Tesfaye Venieri, mat. 0000990286 &nbsp;·&nbsp;
         Basi di Dati A.A. 2025/2026 — Università di Bologna
     </p>

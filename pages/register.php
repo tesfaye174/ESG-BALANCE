@@ -13,7 +13,6 @@ if (isLoggedIn()) {
 $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // CF in maiuscolo per uniformità con come viene salvato nel DB
     $username   = trim($_POST['username'] ?? '');
     $password   = $_POST['password'] ?? '';
     $confirm    = $_POST['password_confirm'] ?? '';
@@ -36,31 +35,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (strlen($cf) !== 16) {
         $error = 'Il codice fiscale deve essere di 16 caratteri.';
     } elseif (!in_array($ruolo, ['revisore', 'responsabile'])) {
-        // l'amministratore non si registra da qui, viene creato direttamente nel DB
         $error = 'Ruolo non valido.';
     } else {
-        // bcrypt con cost=12: sicuro senza essere troppo lento per un server locale
-        // cost più alto = più sicuro ma più lento; 12 è il valore consigliato
+        // uso bcrypt con cost 12: abbastanza lento da rallentare brute force senza impattare troppo l'UX
         $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
 
+        // il curriculum è richiesto solo per i responsabili, non per i revisori
         $cv_path = null;
         if ($ruolo === 'responsabile' && !empty($_FILES['curriculum']['name'])) {
-            // validazione upload: controllo sia l'estensione che il MIME type reale del file
-            // solo l'estensione non basta perché si può rinominare un file malevolo in .pdf
             $upload_dir = realpath(__DIR__ . '/../assets/uploads') . DIRECTORY_SEPARATOR;
             $ext = strtolower(pathinfo($_FILES['curriculum']['name'], PATHINFO_EXTENSION));
-            $cv_name = bin2hex(random_bytes(16)) . '.' . $ext; // nome casuale per evitare collisioni
+            $cv_name = bin2hex(random_bytes(16)) . '.' . $ext;
             $cv_dest = $upload_dir . $cv_name;
 
-            // protezione path traversal: il path finale deve stare dentro assets/uploads
             if (strpos(realpath(dirname($cv_dest)) . DIRECTORY_SEPARATOR, $upload_dir) !== 0) {
                 $error = 'Percorso di upload non valido.';
             } else {
                 $finfo = new finfo(FILEINFO_MIME_TYPE);
                 $mime = $finfo->file($_FILES['curriculum']['tmp_name']);
                 if ($ext === 'pdf' && $mime === 'application/pdf') {
-                    move_uploaded_file($_FILES['curriculum']['tmp_name'], $cv_dest);
-                    $cv_path = 'assets/uploads/' . $cv_name;
+                    if (!move_uploaded_file($_FILES['curriculum']['tmp_name'], $cv_dest)) {
+                        $error = 'Errore durante il salvataggio del curriculum.';
+                    } else {
+                        $cv_path = 'assets/uploads/' . $cv_name;
+                    }
                 } else {
                     $error = 'Il curriculum deve essere in formato PDF.';
                 }
@@ -82,12 +80,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 logEvent('registrazione_utente', "Nuovo utente registrato: {$username} ({$ruolo})");
                 redirectWith(BASE_URL . '/pages/login.php', 'success', 'Registrazione completata. Effettua il login.');
             } catch (PDOException $e) {
-                // 23000 = violazione vincolo UNIQUE: username o codice fiscale già in uso
+                // codice 23000 = violazione constraint UNIQUE (username o codice fiscale duplicati)
                 if ($e->getCode() == 23000) {
-                    $error = 'Username gia\' in uso.';
+                    $msg = $e->getMessage();
+                    if (stripos($msg, 'codice_fiscale') !== false || stripos($msg, 'cf') !== false) {
+                        $error = 'Codice fiscale già registrato.';
+                    } else {
+                        $error = 'Username già in uso.';
+                    }
                 } else {
                     error_log('ESG-BALANCE Error: ' . $e->getMessage());
-                    $error = 'Errore durante l\'operazione. Riprova o contatta l\'amministratore.';
+                    $error = 'Errore durante la registrazione.';
                 }
             }
         }
@@ -96,8 +99,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 require_once __DIR__ . '/../includes/header.php';
 ?>
-
-
 
 <script>
     document.body.classList.add('register-bg');
@@ -121,11 +122,11 @@ require_once __DIR__ . '/../includes/header.php';
                     <?php csrfField(); ?>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="username" class="form-label">Username *</label>
+                            <label for="username" class="form-label">Nome utente *</label>
                             <div class="input-group">
                                 <span class="input-group-text"><i class="bi bi-person"></i></span>
                                 <input type="text" class="form-control" id="username" name="username"
-                                    value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>" required autofocus placeholder="Scegli uno username">
+                                    value="<?php echo htmlspecialchars($_POST['username'] ?? ''); ?>" required autofocus placeholder="Scegli un nome utente">
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
@@ -209,7 +210,6 @@ require_once __DIR__ . '/../includes/header.php';
     if (document.getElementById('ruolo').value === 'responsabile') {
         document.getElementById('cv_group').style.display = 'block';
     }
-    document.body.classList.add('register-bg');
 </script>
 
 <?php require_once __DIR__ . '/../includes/footer.php'; ?>
