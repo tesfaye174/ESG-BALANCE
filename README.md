@@ -1,6 +1,6 @@
 # ESG-BALANCE
 
-Applicazione web PHP per la gestione di bilanci aziendali e indicatori ESG, sviluppata come progetto per il corso di Basi di Dati (A.A. 2025/2026, Unibo).
+Progetto per il corso di Basi di Dati (A.A. 2025/2026, Unibo). Applicazione web PHP per bilanci aziendali e indicatori ESG.
 
 ## Requisiti
 
@@ -13,13 +13,13 @@ Applicazione web PHP per la gestione di bilanci aziendali e indicatori ESG, svil
 ## Installazione
 
 1. Clonare la repo in `htdocs/ESG-BALANCE`
-2. Importare lo schema e i dati di esempio:
+2. Importare lo schema e i dati di esempio (nell'ordine indicato):
    ```sql
    mysql -u root -p < sql/schema.sql
-   mysql -u root -p esg_balance < sql/seed.sql
    mysql -u root -p esg_balance < sql/stored_procedures.sql
    mysql -u root -p esg_balance < sql/triggers.sql
    mysql -u root -p esg_balance < sql/views.sql
+   mysql -u root -p esg_balance < sql/seed.sql
    ```
 3. (Opzionale) Installare le dipendenze Composer per MongoDB:
    ```bash
@@ -32,11 +32,9 @@ Applicazione web PHP per la gestione di bilanci aziendali e indicatori ESG, svil
 
 | Utente | Password | Ruolo |
 |--------|----------|-------|
-| f.montanari |  | Amministratore |
-| m.conti | | Revisore |
-| s.ferrara |  | Revisore |
-| l.damico |  | Responsabile |
-| a.pellegrini |  | Responsabile |
+| admin    | admin       | Amministratore |
+| tesfaye  | password123 | Revisore ESG   |
+| giovanni | password123 | Responsabile   |
 
 ## Struttura
 

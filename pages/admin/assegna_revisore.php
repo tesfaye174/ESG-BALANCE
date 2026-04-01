@@ -49,7 +49,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $revisori = query(
     "SELECT r.username, r.nr_revisioni, r.indice_affidabilita
      FROM revisori r
-     JOIN utenti u ON u.username = r.username
      ORDER BY r.username"
 );
 

@@ -64,8 +64,7 @@ BEGIN
     INSERT INTO voci_contabili (nome, descrizione) VALUES (p_nome, p_descrizione);
 END$$
 
--- inserimento indicatore esg con gerarchia parziale/esclusiva
--- se tipo e' ambientale o sociale inserisce anche nella sotto-tabella
+-- inserisce l'indicatore e, se ambientale/sociale, anche nella sotto-tabella
 CREATE PROCEDURE sp_inserisci_indicatore_esg(
     IN p_nome VARCHAR(150),
     IN p_immagine VARCHAR(255),
@@ -158,12 +157,22 @@ CREATE PROCEDURE sp_associa_revisore_bilancio(
     IN p_id_bilancio        INT
 )
 BEGIN
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        RESIGNAL;
+    END;
+
+    START TRANSACTION;
+
     INSERT INTO revisioni (username_revisore, id_bilancio)
     VALUES (p_username_revisore, p_id_bilancio);
 
     UPDATE revisori
     SET nr_revisioni = nr_revisioni + 1
     WHERE username = p_username_revisore;
+
+    COMMIT;
 END$$
 
 -- upsert competenza

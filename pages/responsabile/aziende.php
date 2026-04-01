@@ -20,15 +20,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $settore = trim($_POST['settore'] ?? '');
     $num_dip = (int)($_POST['num_dipendenti'] ?? 0);
 
-    // il logo è opzionale — se non viene caricato uploadImmagine restituisce null
-    $logo_path = uploadImmagine('logo', 'aziende.php');
-
     if ($nome === '' || $rag_soc === '' || $piva === '') {
         setFlash('danger', 'Nome, ragione sociale e partita IVA sono obbligatori.');
     } elseif (!preg_match('/^\d{11}$/', $piva)) {
         // la partita IVA italiana è esattamente 11 cifre numeriche
         setFlash('danger', 'La Partita IVA deve essere composta da esattamente 11 cifre numeriche.');
     } else {
+        // upload logo solo se i campi obbligatori sono validi, per evitare file orfani su disco
+        $logo_path = uploadImmagine('logo', 'aziende.php');
         try {
             execSP('sp_registra_azienda', [
                 $nome,

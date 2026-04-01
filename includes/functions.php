@@ -3,7 +3,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/mongodb.php';
 
-// log evento: prima MongoDB, poi MySQL se MongoDB non c'è
+// log su MongoDB, fallback MySQL
 function logEvent(string $evento, string $dettagli, ?string $utente = null): void
 {
     $utente = $utente ?? ($_SESSION['username'] ?? 'sistema');
@@ -34,7 +34,7 @@ function logEvent(string $evento, string $dettagli, ?string $utente = null): voi
     }
 }
 
-// flash messages — messaggi da mostrare una volta sola dopo un redirect
+// flash messages — mostrati una volta dopo il redirect
 function setFlash(string $type, string $message): void
 {
     $_SESSION['flash'] = ['type' => $type, 'message' => $message];
@@ -85,7 +85,7 @@ function statoBadgeClass(string $stato): string
     };
 }
 
-// upload immagine con controllo estensione + MIME, nome randomizzato
+// upload immagine: valida estensione e MIME, nome random
 function uploadImmagine(string $field, string $redirect_url): ?string
 {
     if (empty($_FILES[$field]['name'])) {
@@ -95,7 +95,6 @@ function uploadImmagine(string $field, string $redirect_url): ?string
     $allowed_ext  = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
     $allowed_mime = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
     $ext   = strtolower(pathinfo($_FILES[$field]['name'], PATHINFO_EXTENSION));
-    // finfo legge il MIME dal contenuto reale, non dall'estensione
     $finfo = new finfo(FILEINFO_MIME_TYPE);
     $mime  = $finfo->file($_FILES[$field]['tmp_name']);
 
@@ -109,7 +108,6 @@ function uploadImmagine(string $field, string $redirect_url): ?string
     $img_name   = bin2hex(random_bytes(16)) . '.' . $ext;
     $dest       = $upload_dir . $img_name;
 
-    // sicurezza: verifico che il file finisca davvero dentro uploads
     if (strpos(realpath(dirname($dest)) . DIRECTORY_SEPARATOR, $upload_dir) !== 0) {
         setFlash('danger', 'Percorso di upload non valido.');
         header('Location: ' . $redirect_url);

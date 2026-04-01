@@ -46,7 +46,9 @@ function requireRole(string $ruolo): void
     requireLogin();
     if (($_SESSION['ruolo'] ?? '') !== $ruolo) {
         error_log("accesso negato: utente=" . ($_SESSION['username'] ?? 'anonimo') . " ha tentato di accedere come {$ruolo}");
-        logEvent('accesso_non_autorizzato', 'Tentativo di accesso a ruolo: ' . $ruolo);
+        if (function_exists('logEvent')) {
+            logEvent('accesso_non_autorizzato', 'Tentativo di accesso a ruolo: ' . $ruolo);
+        }
         header('Location: ' . BASE_URL . '/pages/dashboard.php');
         exit;
     }
@@ -67,7 +69,7 @@ function currentUser(): ?string
     return $_SESSION['username'] ?? null;
 }
 
-// genera il token CSRF una volta e lo riusa per tutta la sessione
+// genera il token CSRF e lo tiene in sessione
 function csrfToken(): string
 {
     if (empty($_SESSION['csrf_token'])) {
@@ -76,13 +78,12 @@ function csrfToken(): string
     return $_SESSION['csrf_token'];
 }
 
-// campo hidden con il token da mettere nei form
 function csrfField(): void
 {
     echo '<input type="hidden" name="csrf_token" value="' . csrfToken() . '">';
 }
 
-// hash_equals evita timing attack
+// confronto sicuro token
 function verifyCsrf(): bool
 {
     $token = $_POST['csrf_token'] ?? '';

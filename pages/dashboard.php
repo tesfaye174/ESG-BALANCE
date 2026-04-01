@@ -14,7 +14,7 @@ $username = currentUser();
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'aggiungi_email') {
     if (!verifyCsrf()) {
         setFlash('danger', 'Token di sicurezza non valido.');
-        header('Location: dashboard.php');
+        header('Location: ' . BASE_URL . '/pages/dashboard.php');
         exit;
     }
     $nuova_email = trim($_POST['nuova_email'] ?? '');
@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
             }
         }
     }
-    header('Location: dashboard.php');
+    header('Location: ' . BASE_URL . '/pages/dashboard.php');
     exit;
 }
 
@@ -443,6 +443,7 @@ require_once __DIR__ . '/../includes/header.php';
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<?php $je = fn($v) => json_encode($v, JSON_HEX_TAG | JSON_HEX_AMP); ?>
 <script>
 Chart.defaults.font.family = "'Inter', sans-serif";
 Chart.defaults.font.size   = 13;
@@ -460,14 +461,14 @@ document.addEventListener('DOMContentLoaded', function () {
 <?php if ($ruolo === 'amministratore'): ?>
 
     (function () {
-        const data = <?= json_encode($statiData) ?>;
+        const data = <?= $je($statiData) ?>;
         const el   = document.getElementById('chartStati');
         if (!data.length) { _empty(el, 'Nessun bilancio presente.'); return; }
         new Chart(el, {
             type: 'doughnut',
             data: {
-                labels: <?= json_encode($statiLbls) ?>,
-                datasets: [{ data, backgroundColor: <?= json_encode($statiClrs) ?>, borderWidth: 2, borderColor: '#fff' }]
+                labels: <?= $je($statiLbls) ?>,
+                datasets: [{ data, backgroundColor: <?= $je($statiClrs) ?>, borderWidth: 2, borderColor: '#fff' }]
             },
             options: {
                 maintainAspectRatio: false,
@@ -478,14 +479,14 @@ document.addEventListener('DOMContentLoaded', function () {
     })();
 
     (function () {
-        const data = <?= json_encode($tipiData) ?>;
+        const data = <?= $je($tipiData) ?>;
         const el   = document.getElementById('chartTipi');
         if (!data.length) { _empty(el, 'Nessun indicatore presente.'); return; }
         new Chart(el, {
             type: 'doughnut',
             data: {
-                labels: <?= json_encode($tipiLbls) ?>,
-                datasets: [{ data, backgroundColor: <?= json_encode($tipiClrs) ?>, borderWidth: 2, borderColor: '#fff' }]
+                labels: <?= $je($tipiLbls) ?>,
+                datasets: [{ data, backgroundColor: <?= $je($tipiClrs) ?>, borderWidth: 2, borderColor: '#fff' }]
             },
             options: {
                 maintainAspectRatio: false,
@@ -497,7 +498,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // chart rilevanza media ESG per tipo
     (function () {
-        const labels = <?= json_encode($rilLbls) ?>;
+        const labels = <?= $je($rilLbls) ?>;
         const el     = document.getElementById('chartRilevanzaEsg');
         if (!labels.length) { _empty(el, 'Nessun indicatore con rilevanza impostata.'); return; }
         new Chart(el, {
@@ -506,8 +507,8 @@ document.addEventListener('DOMContentLoaded', function () {
                 labels,
                 datasets: [{
                     label: 'Rilevanza media (0-10)',
-                    data: <?= json_encode($rilData) ?>,
-                    backgroundColor: <?= json_encode($rilClrs) ?>,
+                    data: <?= $je($rilData) ?>,
+                    backgroundColor: <?= $je($rilClrs) ?>,
                     borderRadius: 4,
                     barPercentage: 0.5
                 }]
@@ -525,7 +526,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // chart revisori
     (function () {
-        const labels = <?= json_encode($revLbls) ?>;
+        const labels = <?= $je($revLbls) ?>;
         const el     = document.getElementById('chartRevisori');
         if (!labels.length) { _empty(el, 'Nessun revisore registrato.'); return; }
         new Chart(el, {
@@ -535,14 +536,14 @@ document.addEventListener('DOMContentLoaded', function () {
                 datasets: [
                     {
                         label: 'Nr. Revisioni',
-                        data: <?= json_encode($revData) ?>,
+                        data: <?= $je($revData) ?>,
                         backgroundColor: '#2563eb',
                         borderRadius: 4,
                         barPercentage: 0.45
                     },
                     {
                         label: 'Affidabilità (%)',
-                        data: <?= json_encode($revPct) ?>,
+                        data: <?= $je($revPct) ?>,
                         backgroundColor: '#10b981',
                         borderRadius: 4,
                         barPercentage: 0.45
@@ -563,14 +564,14 @@ document.addEventListener('DOMContentLoaded', function () {
 <?php elseif ($ruolo === 'revisore'): ?>
 
     (function () {
-        const data = <?= json_encode($revStData) ?>;
+        const data = <?= $je($revStData) ?>;
         const el   = document.getElementById('chartRevStati');
         if (!data.length) { _empty(el, 'Nessun bilancio assegnato.'); return; }
         new Chart(el, {
             type: 'doughnut',
             data: {
-                labels: <?= json_encode($revStLbls) ?>,
-                datasets: [{ data, backgroundColor: <?= json_encode($revStClrs) ?>, borderWidth: 2, borderColor: '#fff' }]
+                labels: <?= $je($revStLbls) ?>,
+                datasets: [{ data, backgroundColor: <?= $je($revStClrs) ?>, borderWidth: 2, borderColor: '#fff' }]
             },
             options: {
                 maintainAspectRatio: false,
@@ -581,7 +582,7 @@ document.addEventListener('DOMContentLoaded', function () {
     })();
 
     (function () {
-        const labels = <?= json_encode($compLbls) ?>;
+        const labels = <?= $je($compLbls) ?>;
         const el     = document.getElementById('chartComp');
         if (!labels.length) { _empty(el, 'Nessuna competenza inserita.'); return; }
         new Chart(el, {
@@ -590,7 +591,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 labels,
                 datasets: [{
                     label: 'Livello',
-                    data: <?= json_encode($compData) ?>,
+                    data: <?= $je($compData) ?>,
                     backgroundColor: '#2563eb',
                     borderRadius: 4,
                     barPercentage: 0.6
@@ -611,7 +612,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <?php elseif ($ruolo === 'responsabile'): ?>
 
     (function () {
-        const labels = <?= json_encode($azLbls) ?>;
+        const labels = <?= $je($azLbls) ?>;
         const el     = document.getElementById('chartAziende');
         if (!labels.length) { _empty(el, 'Nessuna azienda registrata.'); return; }
         new Chart(el, {
@@ -620,7 +621,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 labels,
                 datasets: [{
                     label: 'Nr. Bilanci',
-                    data: <?= json_encode($azData) ?>,
+                    data: <?= $je($azData) ?>,
                     backgroundColor: '#2563eb',
                     borderRadius: 4,
                     barPercentage: 0.5
@@ -638,14 +639,14 @@ document.addEventListener('DOMContentLoaded', function () {
     })();
 
     (function () {
-        const data = <?= json_encode($respStData) ?>;
+        const data = <?= $je($respStData) ?>;
         const el   = document.getElementById('chartRespStati');
         if (!data.length) { _empty(el, 'Nessun bilancio presente.'); return; }
         new Chart(el, {
             type: 'doughnut',
             data: {
-                labels: <?= json_encode($respStLbls) ?>,
-                datasets: [{ data, backgroundColor: <?= json_encode($respStClrs) ?>, borderWidth: 2, borderColor: '#fff' }]
+                labels: <?= $je($respStLbls) ?>,
+                datasets: [{ data, backgroundColor: <?= $je($respStClrs) ?>, borderWidth: 2, borderColor: '#fff' }]
             },
             options: {
                 maintainAspectRatio: false,

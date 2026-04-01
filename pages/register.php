@@ -30,6 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Le password non coincidono.';
     } elseif (strlen($password) < 6) {
         $error = 'La password deve avere almeno 6 caratteri.';
+    } elseif (!preg_match('/^[a-zA-Z0-9_]{3,50}$/', $username)) {
+        $error = 'Username non valido: usa solo lettere, numeri e underscore (3-50 caratteri).';
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = 'Indirizzo email non valido.';
     } elseif (strlen($cf) !== 16) {
@@ -37,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } elseif (!in_array($ruolo, ['revisore', 'responsabile'])) {
         $error = 'Ruolo non valido.';
     } else {
-        // uso bcrypt con cost 12: abbastanza lento da rallentare brute force senza impattare troppo l'UX
+        // cost 12 va bene per bcrypt
         $hash = password_hash($password, PASSWORD_BCRYPT, ['cost' => 12]);
 
         // il curriculum è richiesto solo per i responsabili, non per i revisori

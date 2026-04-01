@@ -14,7 +14,7 @@ $id_bilancio = (int)($_GET['id'] ?? 0);
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['action'] === 'nota') {
     if (!verifyCsrf()) {
         setFlash('danger', 'Token di sicurezza non valido.');
-        header('Location: revisione.php');
+        header("Location: revisione.php?id={$id_bilancio}");
         exit;
     }
     $bil_id = (int)($_POST['id_bilancio'] ?? 0);
